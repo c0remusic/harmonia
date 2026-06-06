@@ -1,0 +1,10 @@
+.claude/
+.remember/
+CLAUDE.md
+docs/
+site/
+FUNCTIONS_GUIDE.md
+push/
+*.JPG
+*.PNG
+*BACKUP*
