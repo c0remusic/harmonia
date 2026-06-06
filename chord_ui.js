@@ -1,0 +1,974 @@
+// chord_ui.js — ChordSelector UI horizontale (Max for Live)
+// Zones :  CONFIG (gauche) | GRILLE 8 colonnes (centre) | MONITOR (droite)
+//          + barre VOICING (bas)
+//
+// inlet 0  → "root N", "scale N", "active fn deg", "notes ...", "clearnotes"
+// outlet 0 → messages vers chord_engine
+
+autowatch = 1;
+inlets  = 1;
+outlets = 2;   // 0 = messages chord_engine, 1 = redimensionnement (→ thispatcher)
+
+// =====================================================
+// DONNÉES D'AFFICHAGE (aucune logique harmonique ici :
+// la grille vient du moteur, source de vérité)
+// =====================================================
+
+var NOTE_NAMES  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+var SCALE_NAMES = ["Major","Minor","Dorian","Phrygian","Lydian","Mixolydian","Harm Minor"];
+var SCALE_ABBR  = ["Maj","Min","Dor","Phr","Lyd","Mix","HMi"];
+var DEG_NAMES   = ["I","II","III","IV","V","VI","VII"];
+var DEG_FUNCTIONS = ["Tonic","Supertonic","Mediant","Subdominant","Dominant","Submediant","Leading tone"];
+
+var VOICING_LIST = ["classic","piano","open","spread","house","prog","rootl.A","rootl.B","drop2","drop3"];
+
+// Grille reçue du moteur :
+//  gridCols[d] = [ {fn, label}, ... ]   (colonnes diatoniques, contiguës)
+//  gridBor     = [ {label, semis, type, roman}, ... ]   (colonne BORROWED)
+var gridCols   = [[],[],[],[],[],[],[]];
+var gridBor    = [];
+var gridColsTmp, gridBorTmp;   // accumulation pendant la réception
+
+// =====================================================
+// ÉTAT
+// =====================================================
+
+var scaleIdx    = 0;
+var rootIdx     = 0;
+var octave      = 0;
+var OCT_MIN     = -2, OCT_MAX = 2;
+var latchMode   = false;
+var vlEnabled   = false;
+var vlMode      = "anchored";
+var voicingIdx  = 0;
+var activeNotes = [];
+var initDone    = false;  // track si on a synchronisé l'état au démarrage
+var activeCol   = -1;   // 0..6 diatonique, 7 = borrowed, -1 = rien
+var activeRow   = -1;
+var lastOctClick = 0;
+var hoverDD     = -1;   // index cellule survolée dans le popover (-1 = aucune)
+var lastClickInJsui = 0;   // timestamp du dernier clic dans le jsui
+var hoverSync   = false;   // hover sur le bouton SYNC
+var syncPressed = 0;       // timestamp du clic SYNC (feedback temporaire)
+var hoverCell   = -1;      // index cellule grille survolée (-1 = aucune)
+var hoverCfg    = "";      // ID config survolé ("vl", "vlmode", "oct", "voicing", "")
+var hoverOctave = -1;      // index octave survolé dans le sélecteur (-1 = aucun)
+var pressedCell = 0;       // timestamp clic cellule (feedback 150ms)
+var pressedCfg  = 0;       // timestamp clic config (feedback 150ms)
+var collapsed   = false;  // device replié (CONFIG + MONITOR seulement)
+var fullW       = 0;      // largeur mémorisée en mode déplié
+var openDropdown = "";    // "" | "key" | "scale" | "voicing"
+
+// =====================================================
+// MESSAGES ENTRANTS (depuis chord_engine)
+// =====================================================
+
+function scale(v) { scaleIdx = parseInt(v); mgraphics.redraw(); }
+function root(v)  { rootIdx  = parseInt(v); mgraphics.redraw(); }
+
+function active(fn, degree) {
+	fn = String(fn);
+	if (fn === "color") {
+		var s = parseInt(degree);
+		activeCol = 7; activeRow = -1;
+		for (var i = 0; i < gridBor.length; i++) { if (gridBor[i].semis === s) { activeRow = i; break; } }
+	} else {
+		var d = parseInt(degree);
+		activeCol = -1; activeRow = -1;
+		if (d >= 0 && d < 7) {
+			var cc = gridCols[d];
+			for (var j = 0; j < cc.length; j++) { if (cc[j].fn === fn) { activeCol = d; activeRow = j; break; } }
+		}
+	}
+	mgraphics.redraw();
+}
+
+function notes() {
+	activeNotes = [];
+	for (var i = 0; i < arguments.length; i++) activeNotes.push(parseInt(arguments[i]));
+	mgraphics.redraw();
+}
+
+function clearnotes() {
+	activeNotes = [];
+	activeCol = -1; activeRow = -1;
+	mgraphics.redraw();
+}
+
+// =====================================================
+// RÉCEPTION DE LA GRILLE (depuis le moteur)
+// =====================================================
+
+function gridclear() {
+	gridColsTmp = [[],[],[],[],[],[],[]];
+	gridBorTmp  = [];
+}
+function gridcell(col, fn, label) {
+	if (!gridColsTmp) gridclear();
+	gridColsTmp[parseInt(col)].push({ fn:String(fn), label:String(label) });
+}
+function gridbor(i, label, semis, type, roman) {
+	if (!gridBorTmp) gridBorTmp = [];
+	gridBorTmp[parseInt(i)] = { label:String(label), semis:parseInt(semis), type:String(type), roman:String(roman) };
+}
+function griddone() {
+	if (gridColsTmp) gridCols = gridColsTmp;
+	if (gridBorTmp)  gridBor  = gridBorTmp;
+	gridColsTmp = null; gridBorTmp = null;
+	mgraphics.redraw();
+}
+
+// Nombre de lignes = la colonne la plus remplie
+function gridRows() {
+	var m = gridBor.length;
+	for (var d = 0; d < 7; d++) { if (gridCols[d].length > m) m = gridCols[d].length; }
+	return Math.max(1, m);
+}
+
+// =====================================================
+// LAYOUT (recalculé dans paint ET onclick — cohérence garantie)
+// =====================================================
+
+var PAD    = 4;
+var CFG_W  = 136;  // colonne CONFIG gauche (élargie pour la lisibilité)
+var MON_W  = 96;   // colonne MONITOR droite
+var HDR_H  = 15;   // bandeau des degrés
+var KB_H   = 40;   // mini-clavier
+var HOLD_H = 15;   // bouton HOLD/LATCH
+var extMode = false;  // toggle EXT : affiche tous les accords (cap levé)
+
+// CONFIG : TONALITY | CHORD STYLE (pas de gap).
+// HOLD est dans le MONITOR (feature de sortie, pas harmonique).
+var CFG_ITEMS = ["keyscale","oct","voicing","vl","vlmode"];
+var SYNC_W = 22;
+function cfgKind(id) {
+	if (id==="keyscale"||id==="voicing") return "sel";
+	if (id==="oct") return "step";
+	if (id==="_gap") return "gap";
+	return "btn";
+}
+// Sous-rectangles de la rangée keyscale : SYNC (gauche) | KEY | SCALE
+function ksSyncRect(r)  { return [ r[0], r[1], SYNC_W, r[3] ]; }
+function ksKeyRect(r)   { var w = (r[2]-SYNC_W)*0.5; return [ r[0]+SYNC_W, r[1], w, r[3] ]; }
+function ksScaleRect(r) { var w = (r[2]-SYNC_W)*0.5; return [ r[0]+SYNC_W+w, r[1], w, r[3] ]; }
+function cfgWeight(id) {
+	return 1.0;   // toutes les cases : même hauteur
+}
+
+function L() {
+	var W = box.rect[2] - box.rect[0];
+	var H = box.rect[3] - box.rect[1];
+
+	var gridX   = CFG_W;
+	var gridR   = W - MON_W;
+	var gridW   = gridR - gridX;
+	var colW    = gridW / 8;
+	var gridTop = HDR_H;
+	var gridBot = H - PAD;
+	var gridH   = gridBot - gridTop;
+
+	var nRows = gridRows();
+
+	// En mode replié : pas de grille, le monitor vient juste après CONFIG
+	var contentW, mGridR, mMonX, mMonW;
+	if (collapsed) {
+		mGridR  = CFG_W;
+		mMonX   = CFG_W + PAD;
+		mMonW   = MON_W - 2 * PAD;
+		contentW = CFG_W + MON_W;
+	} else {
+		mGridR  = gridR;
+		mMonX   = gridR + PAD;
+		mMonW   = W - PAD - (gridR + PAD);
+		contentW = W;
+	}
+
+	return {
+		W:W, H:H, contentW:contentW,
+		gridX:gridX, gridR:mGridR, gridW:gridW, colW:colW,
+		gridTop:gridTop, gridH:gridH,
+		rowH: gridH / nRows,
+		nRows:nRows,
+		monX: mMonX,
+		monW: mMonW
+	};
+}
+
+// Petit bouton flèche repli/dépli (coin haut-droit du contenu visible)
+function collapseRect(l) {
+	return [ l.contentW - 16, PAD, 12, 12 ];
+}
+// Toggle EXT (à gauche de la flèche de repli)
+function extRect(l) {
+	return [ l.contentW - 16 - 44, PAD, 40, 13 ];
+}
+// HOLD/LATCH : dans le MONITOR (feature de sortie/perf) — en bas sous le clavier
+function holdRect(l) {
+	return [ l.monX, l.H - PAD - HOLD_H, l.monW - 1, HOLD_H ];
+}
+
+// Redimensionne le device via live.thisdevice (outlet 1).
+// Envoie "setwidth <w>" → connecter l'outlet 1 du jsui à live.thisdevice.
+function setDeviceWidth(w) {
+	outlet(1, "setwidth", Math.round(w));
+}
+
+// Case grille (col 0..7, row i) — hauteur de ligne uniforme
+function cellRect(l, col, row) {
+	return [ l.gridX + col * l.colW, l.gridTop + row * l.rowH, l.colW - 1, l.rowH - 1 ];
+}
+// Rectangle d'un item CONFIG (par son index dans CFG_ITEMS).
+// Hauteur proportionnelle au poids
+function cfgRect(l, i) {
+	var Ht = l.H - 2 * PAD;
+	var total = 0;
+	for (var t = 0; t < CFG_ITEMS.length; t++) total += cfgWeight(CFG_ITEMS[t]);
+	var unit = Ht / total;
+	var y = PAD;
+	for (var k = 0; k < i; k++) y += cfgWeight(CFG_ITEMS[k]) * unit;
+	var h = cfgWeight(CFG_ITEMS[i]) * unit;
+	return [ PAD, y, CFG_W - 2 * PAD, h - 2 ];
+}
+
+function cfgWeight(id) {
+	if (id === "oct") return 0.8;   // octave compact
+	return 1.2;   // autres : plus grand
+}
+function cfgIndex(id) { for (var i=0;i<CFG_ITEMS.length;i++) if (CFG_ITEMS[i]===id) return i; return -1; }
+
+// =====================================================
+// DESSIN
+// =====================================================
+
+function paint() {
+	var g = mgraphics;
+	var l = L();
+
+	// Au premier appel : sync l'état avec le moteur
+	if (!initDone) {
+		initDone = true;
+		outlet(0, "requeststate");  // demande au moteur d'envoyer son état
+	}
+
+	g.set_source_rgba(0.09, 0.09, 0.10, 1.0);
+	g.rectangle(0, 0, l.W, l.H);
+	g.fill();
+	g.select_font_face("Arial");
+
+	drawConfig(g, l);
+	if (!collapsed) drawGrid(g, l);
+	drawMonitor(g, l);
+	drawCollapse(g, l);
+	drawDropdown(g, l);   // par-dessus tout
+}
+
+// Toggle EXT
+function drawExt(g, l) {
+	var r = extRect(l);
+	g.set_source_rgba(extMode?0.86:0.20, extMode?0.86:0.20, extMode?0.90:0.22, 1.0);
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 2, 2);
+	g.fill();
+	g.set_source_rgba(extMode?0.10:0.62, extMode?0.10:0.62, extMode?0.12:0.66, 1.0);
+	g.set_font_size(9);
+	var t = extMode ? "EXT ●" : "EXT";
+	var tw = safeTextW(t, 9);
+	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]-3);
+	g.text_path(t);
+	g.fill();
+}
+
+// ---------- MENU DÉROULANT ----------
+function ddItems() {
+	if (openDropdown === "key")     return NOTE_NAMES;
+	if (openDropdown === "scale")   return SCALE_NAMES;
+	if (openDropdown === "voicing") return VOICING_LIST;
+	return [];
+}
+function ddCurrent() {
+	if (openDropdown === "key")     return rootIdx;
+	if (openDropdown === "scale")   return scaleIdx;
+	if (openDropdown === "voicing") return voicingIdx;
+	return -1;
+}
+// Popover superposé à la zone CONFIG (colonne gauche)
+function ddLayout(l) {
+	var items  = ddItems();
+	var n      = items.length;
+	var x0     = PAD * 2;
+	var y0     = PAD * 2 + 14;   // 14 = hauteur titre
+	var w      = CFG_W - PAD * 4;
+	var h      = l.H - PAD * 4 - 14;
+	var perRow = (openDropdown === "voicing") ? 2 : (openDropdown === "key") ? 3 : 2;
+	var rows   = Math.ceil(n / perRow);
+	var ch     = h / rows;       // remplit toute la hauteur disponible
+	return { n:n, items:items, x0:x0, y0:y0, w:w, perRow:perRow, cw:w/perRow, ch:ch };
+}
+function ddCellRect(dl, i) {
+	var c = i % dl.perRow, r = Math.floor(i / dl.perRow);
+	return [ dl.x0 + c * dl.cw, dl.y0 + r * dl.ch, dl.cw - 3, dl.ch - 3 ];
+}
+function drawDropdown(g, l) {
+	if (openDropdown === "") return;
+	var dl  = ddLayout(l);
+	var cur = ddCurrent();
+
+	// fond opaque sur toute la zone CONFIG
+	g.set_source_rgba(0.07, 0.07, 0.09, 0.97);
+	g.rectangle_rounded(0, 0, CFG_W, l.H, 4, 4);
+	g.fill();
+
+	// titre
+	g.set_source_rgba(0.55, 0.55, 0.60, 1.0);
+	g.set_font_size(8);
+	g.move_to(dl.x0, PAD * 2 + 8);
+	g.text_path(openDropdown.toUpperCase());
+	g.fill();
+
+	g.set_font_size(10);
+	for (var i = 0; i < dl.n; i++) {
+		var r  = ddCellRect(dl, i);
+		var on = (i === cur);
+		// couleur fond actif : doré pour KEY, bleu pour SCALE, blanc cassé pour VOICING/TYPES
+		var br, bg, bb, tr, tg, tb;
+		var isHov = (i === hoverDD && !on);
+		if (on) {
+			if      (openDropdown === "key")     { br=0.96; bg=0.80; bb=0.30; tr=0.08; tg=0.06; tb=0.04; }
+			else if (openDropdown === "scale")   { br=0.28; bg=0.52; bb=0.90; tr=0.96; tg=0.96; tb=0.96; }
+			else                                 { br=0.86; bg=0.86; bb=0.90; tr=0.10; tg=0.10; tb=0.12; }
+		} else if (isHov) {
+			br=0.26; bg=0.26; bb=0.30; tr=0.95; tg=0.95; tb=0.98;
+		} else {
+			br=0.16; bg=0.16; bb=0.18; tr=0.80; tg=0.80; tb=0.84;
+		}
+		g.set_source_rgba(br, bg, bb, 1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.fill();
+		g.set_source_rgba(tr, tg, tb, 1.0);
+		var t  = String(dl.items[i]);
+		var tw = safeTextW(t, 10);
+		g.move_to(r[0] + (r[2]-tw)*0.5, r[1] + r[3]*0.5 + 3.5);
+		g.text_path(t);
+		g.fill();
+	}
+}
+function applyDropdown(i) {
+	if (openDropdown === "key")     { rootIdx = i;    outlet(0,"rootidx",i); }
+	else if (openDropdown === "scale")   { scaleIdx = i;   outlet(0,"scaleidx",i); }
+	else if (openDropdown === "voicing") { voicingIdx = i; outlet(0,"voicingidx",i); }
+}
+
+// Flèche de repli/dépli
+function drawCollapse(g, l) {
+	var r = collapseRect(l);
+	g.set_source_rgba(0.30,0.30,0.34,1.0);
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 2, 2);
+	g.fill();
+	g.set_source_rgba(0.85,0.85,0.90,1.0);
+	g.set_font_size(10);
+	var a = collapsed ? "▶" : "◀";
+	g.move_to(r[0]+2, r[1]+r[3]-2);
+	g.text_path(a);
+	g.fill();
+}
+
+// ---------- CONFIG (gauche) ----------
+// TONALITY : [KEY | SCALE | sync]   |   CHORD STYLE : OCT / VOICING / VL / VLMODE
+function drawConfig(g, l) {
+	var ks = cfgRect(l, cfgIndex("keyscale"));
+	drawSyncButton(g, ksSyncRect(ks));
+	drawSelector (g, ksKeyRect(ks),   "KEY",   NOTE_NAMES[rootIdx],  openDropdown==="key");
+	drawSelector (g, ksScaleRect(ks), "SCALE", SCALE_ABBR[scaleIdx], openDropdown==="scale");
+
+	drawOctaveSelector(g, cfgRect(l,cfgIndex("oct")));
+	drawSelector (g, cfgRect(l,cfgIndex("voicing")), "VOICING", VOICING_LIST[voicingIdx], openDropdown==="voicing", hoverCfg==="voicing", pressedCfg);
+	drawCfgButton(g, cfgRect(l,cfgIndex("vl")),      vlEnabled?"VOICE LEADING ON":"VOICE LEADING", vlEnabled, hoverCfg==="vl", pressedCfg);
+	var vlLbl = (vlMode==="anchored")?"ANCHOR":(vlMode==="relative")?"RELAT":"PIANO";
+	drawCfgButton(g, cfgRect(l,cfgIndex("vlmode")),  vlLbl, vlMode!=="anchored", hoverCfg==="vlmode", pressedCfg);
+}
+
+// Sélecteur octave : -3 -2 -1 0 +1 +2 +3
+function drawOctaveSelector(g, r) {
+	var values = [-3, -2, -1, 0, 1, 2, 3];
+	var n = values.length;
+	var cellW = r[2] / n;
+	var now = Date.now();
+
+	g.set_font_size(8);
+	for (var i = 0; i < n; i++) {
+		var cellR = [r[0] + i * cellW, r[1], cellW - 1, r[3]];
+		var isActive = (values[i] === octave);
+		var isHoverOct = (Math.abs(hoverOctave - i) < 0.5);
+		var isPressed = (now - pressedCfg) < 150 && hoverCfg === "oct";
+
+		// Fond
+		if (isActive) {
+			g.set_source_rgba(0.96, 0.80, 0.45, 1.0);   // doré pour actif
+		} else if (isPressed && isHoverOct) {
+			g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
+		} else if (isHoverOct) {
+			g.set_source_rgba(0.20, 0.20, 0.24, 1.0);
+		} else {
+			g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+		}
+		g.rectangle_rounded(cellR[0], cellR[1], cellR[2], cellR[3], 2, 2);
+		g.fill();
+
+		// Label
+		var label = (values[i] > 0 ? "+" : "") + values[i];
+		g.set_source_rgba(isActive ? 0.08 : 0.80, isActive ? 0.08 : 0.80, isActive ? 0.08 : 0.84, 1.0);
+		var tw = safeTextW(label, 8);
+		g.move_to(cellR[0] + (cellR[2] - tw) * 0.5, cellR[1] + cellR[3] * 0.5 + 2);
+		g.text_path(label);
+		g.fill();
+	}
+}
+
+// Bouton SYNC avec feedback hover/press
+function drawSyncButton(g, r) {
+	var now = Date.now();
+	var isPressed = (now - syncPressed) < 150;   // feedback 150ms
+
+	// Fond : feedback visuel selon état
+	if (isPressed) {
+		g.set_source_rgba(0.28, 0.28, 0.32, 1.0);   // enfoncé : sombre
+	} else if (hoverSync) {
+		g.set_source_rgba(0.26, 0.26, 0.30, 1.0);   // hover : légèrement éclairé
+	} else {
+		g.set_source_rgba(0.18, 0.18, 0.20, 1.0);   // repos
+	}
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+
+	// Diapason ASCII : couleur selon état
+	if (isPressed) {
+		g.set_source_rgba(0.98, 0.90, 0.50, 1.0);   // enfoncé : plus clair
+	} else if (hoverSync) {
+		g.set_source_rgba(0.98, 0.85, 0.40, 1.0);   // hover : plus vif
+	} else {
+		g.set_source_rgba(0.96, 0.80, 0.45, 1.0);   // repos
+	}
+	g.set_font_size(11);
+	var tw = 6;
+	g.move_to(r[0] + r[2] * 0.5 - tw * 0.5, r[1] + r[3] * 0.5 + 3);
+	g.text_path("♪");
+	g.fill();
+}
+
+// Sélecteur à menu déroulant (clic = ouvre la liste)
+function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
+	var now = Date.now();
+	var isPressed = (now - pressTime) < 150;
+
+	// fond : feedback hover/press
+	if (isOpen) {
+		g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
+	} else if (isPressed) {
+		g.set_source_rgba(0.19, 0.19, 0.23, 1.0);
+	} else if (isHover) {
+		g.set_source_rgba(0.18, 0.18, 0.22, 1.0);
+	} else {
+		g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+	}
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+	if (isOpen) {
+		g.set_source_rgba(0.86, 0.86, 0.90, 0.55);
+		g.set_line_width(1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.stroke();
+	}
+
+	var labelFs = Math.max(7, Math.min(9,  r[3] * 0.30));
+	var valueFs = Math.max(9, Math.min(14, r[3] * 0.46));
+
+	g.set_source_rgba(isOpen?0.75:0.48, isOpen?0.75:0.48, isOpen?0.80:0.54, 1.0);
+	g.set_font_size(labelFs);
+	g.move_to(r[0]+6, r[1] + labelFs + 2);
+	g.text_path(label);
+	g.fill();
+
+	var vy = r[1] + r[3] - 5;
+	g.set_source_rgba(0.96,0.86,0.46,1.0);
+	g.set_font_size(valueFs);
+	var vw = safeTextW(value, valueFs);
+	g.move_to(r[0]+(r[2]-vw)*0.5 - 4, vy);
+	g.text_path(value);
+	g.fill();
+
+	// caret ▾ (pointe vers haut quand ouvert)
+	g.set_source_rgba(isOpen?0.80:0.55, isOpen?0.80:0.55, isOpen?0.85:0.62, 1.0);
+	g.set_font_size(9);
+	g.move_to(r[0]+r[2]-11, vy);
+	g.text_path(isOpen ? "▴" : "▾");
+	g.fill();
+}
+
+function drawStepper(g, r, label, value, isHover, pressTime) {
+	var now = Date.now();
+	var isPressed = (now - pressTime) < 150;
+
+	// fond : feedback hover/press
+	if (isPressed) {
+		g.set_source_rgba(0.19, 0.19, 0.23, 1.0);
+	} else if (isHover) {
+		g.set_source_rgba(0.18, 0.18, 0.22, 1.0);
+	} else {
+		g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+	}
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+
+	// tailles adaptatives selon la hauteur du slot
+	var labelFs = Math.max(7, Math.min(9,  r[3] * 0.30));
+	var valueFs = Math.max(9, Math.min(14, r[3] * 0.46));
+
+	// label en haut (discret)
+	g.set_source_rgba(0.48,0.48,0.54,1.0);
+	g.set_font_size(labelFs);
+	g.move_to(r[0]+6, r[1] + labelFs + 2);
+	g.text_path(label);
+	g.fill();
+
+	// ligne valeur (en bas) : ◀  valeur  ▶
+	var vy = r[1] + r[3] - 5;
+
+	g.set_source_rgba(0.55,0.55,0.62,1.0);
+	g.set_font_size(valueFs);
+	g.move_to(r[0]+5, vy);
+	g.text_path("◀");
+	g.fill();
+	g.move_to(r[0]+r[2]-valueFs-2, vy);
+	g.text_path("▶");
+	g.fill();
+
+	g.set_source_rgba(0.96,0.86,0.46,1.0);   // valeur en doré, bien visible
+	var vw = safeTextW(value, valueFs);
+	g.move_to(r[0]+(r[2]-vw)*0.5, vy);
+	g.text_path(value);
+	g.fill();
+}
+
+function drawCfgButton(g, r, txt, on, isHover, pressTime) {
+	var now = Date.now();
+	var isPressed = (now - pressTime) < 150;
+
+	// Feedback : ON couleur de base, sinon repos/hover/press
+	if (on) {
+		if (isPressed) g.set_source_rgba(0.76, 0.76, 0.80, 1.0);
+		else if (isHover) g.set_source_rgba(0.90, 0.90, 0.95, 1.0);
+		else g.set_source_rgba(0.86, 0.86, 0.90, 1.0);
+	} else {
+		if (isPressed) g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
+		else if (isHover) g.set_source_rgba(0.24, 0.24, 0.28, 1.0);
+		else g.set_source_rgba(0.18, 0.18, 0.20, 1.0);
+	}
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+
+	g.set_source_rgba(on?0.10:0.72, on?0.10:0.72, on?0.12:0.75, 1.0);
+	g.set_font_size(9);
+	var tw = safeTextW(txt, 9);
+	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
+	g.text_path(txt);
+	g.fill();
+}
+
+// ---------- GRILLE 8 colonnes ----------
+function drawGrid(g, l) {
+	// Bandeau des degrés (Roman numeral + fonction côte à côte)
+	for (var c = 0; c < 7; c++) {
+		g.set_source_rgba(0.80,0.80,0.85,1.0);
+		g.set_font_size(9);
+		var lbl = DEG_NAMES[c];
+		var func = DEG_FUNCTIONS[c];
+		var combined = lbl + " " + func;
+		var cw = safeTextW(combined, 9);
+		g.move_to(l.gridX + c*l.colW + (l.colW-cw)*0.5, l.gridTop-4);
+		g.text_path(combined);
+		g.fill();
+	}
+	// en-tête BORROWED
+	g.set_source_rgba(0.80,0.55,0.85,1.0);
+	g.set_font_size(9);
+	var bh = "BORROWED";
+	var bhw = safeTextW(bh, 9);
+	g.move_to(l.gridX + 7*l.colW + (l.colW-bhw)*0.5, l.gridTop-4);
+	g.text_path(bh);
+	g.fill();
+
+	// Cases diatoniques — grille reçue du moteur (contiguës)
+	for (var col = 0; col < 7; col++) {
+		var cc = gridCols[col];
+		for (var row = 0; row < cc.length; row++) {
+			var rect = cellRect(l, col, row);
+			var isAct = (activeCol === col && activeRow === row);
+			var isHov = (hoverCell === col * 100 + row);
+			drawCell(g, rect, true, cc[row].label, isAct, false, "", isHov);
+		}
+	}
+
+	// Colonne BORROWED
+	for (var i = 0; i < gridBor.length; i++) {
+		var c = gridBor[i];
+		var rect2 = cellRect(l, 7, i);
+		var isAct2 = (activeCol === 7 && activeRow === i);
+		var isHov2 = (hoverCell === 700 + i);
+		drawCell(g, rect2, true, c.label, isAct2, true, c.roman, isHov2);
+	}
+}
+
+function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
+	// fond
+	if (!valid) {
+		g.set_source_rgba(0.12,0.12,0.13,1.0);
+	} else if (isAct) {
+		g.set_source_rgba(borrowed?0.85:0.92, borrowed?0.55:0.92, borrowed?0.90:0.92, 1.0);
+	} else if (isHov) {
+		g.set_source_rgba(borrowed?0.32:0.24, borrowed?0.22:0.24, borrowed?0.36:0.26, 1.0);
+	} else if (borrowed) {
+		g.set_source_rgba(0.26,0.16,0.30,1.0);
+	} else {
+		g.set_source_rgba(0.19,0.19,0.21,1.0);
+	}
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+
+	if (!valid) return;
+
+	// texte principal (nom d'accord, ou accord + fonction pour borrowed)
+	if (isAct) g.set_source_rgba(0.08,0.08,0.08,1.0);
+	else       g.set_source_rgba(1.0,1.0,1.0,1.0);  // blanc pur pour plus de contraste
+	var fs = Math.min(15, r[3]*0.6);  // taille plus grande
+	g.set_font_size(fs);
+
+	if (borrowed && roman) {
+		// Borrowed : affiche "Label Roman" sur une ligne
+		var combined = label + " " + roman;
+		var cw = safeTextW(combined, fs);
+		g.move_to(r[0]+(r[2]-cw)*0.5, r[1]+r[3]*0.5+fs*0.25);
+		g.text_path(combined);
+		g.fill();
+	} else {
+		// Diatonic : affiche juste le label
+		var tw = safeTextW(label, fs);
+		g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+fs*0.35);
+		g.text_path(label);
+		g.fill();
+	}
+}
+
+// ---------- MONITOR (droite) ----------
+var WHITE_SEMI = [0,2,4,5,7,9,11];
+
+function midiName(n) {
+	var pc = ((n % 12) + 12) % 12;
+	var oct = Math.floor(n / 12) - 2;
+	return NOTE_NAMES[pc] + oct;
+}
+function kbRange() {
+	if (activeNotes.length === 0) return { low:48, oct:2 };
+	var mn = Math.min.apply(null, activeNotes), mx = Math.max.apply(null, activeNotes);
+	var low = Math.floor(mn/12)*12, high = Math.ceil((mx+1)/12)*12;
+	return { low:low, oct:Math.max(2,(high-low)/12) };
+}
+function isNoteActive(m) {
+	for (var i=0;i<activeNotes.length;i++) if (activeNotes[i]===m) return true;
+	return false;
+}
+
+function drawMonitor(g, l) {
+	var x0 = l.monX, w = l.monW;
+
+	// titre
+	g.set_source_rgba(0.5,0.5,0.55,1.0);
+	g.set_font_size(8);
+	g.move_to(x0, 11);
+	g.text_path("MONITOR");
+	g.fill();
+
+	// noms de notes
+	var kbY = l.H - PAD - HOLD_H - PAD - KB_H;  // clavier réduit pour faire place à HOLD en bas
+	if (activeNotes.length === 0) {
+		g.set_source_rgba(0.4,0.4,0.4,1.0);
+		g.set_font_size(11);
+		g.move_to(x0, 44);
+		g.text_path("—");
+		g.fill();
+	} else {
+		var sorted = activeNotes.slice().sort(function(a,b){return a-b;});
+		g.set_source_rgba(0.55,0.85,0.60,1.0);
+		g.set_font_size(11);
+		var lineH = 15, listTop = 38;
+		var perCol = Math.max(1, Math.floor((kbY - listTop) / lineH));
+		var colW2 = w/2;
+		for (var k=0;k<sorted.length;k++){
+			var ci = Math.floor(k/perCol), ri = k%perCol;
+			if (ci > 1) break;
+			g.move_to(x0 + ci*colW2, listTop + ri*lineH + 8);
+			g.text_path(midiName(sorted[k]));
+			g.fill();
+		}
+	}
+
+	// mini-clavier
+	var rng = kbRange(), nWhite = 7*rng.oct, wkW = w/nWhite;
+	for (var o=0;o<rng.oct;o++){
+		for (var i=0;i<7;i++){
+			var midi = rng.low + o*12 + WHITE_SEMI[i];
+			var wx = x0 + (o*7+i)*wkW;
+			g.set_source_rgba(isNoteActive(midi)?0.30:0.90, isNoteActive(midi)?0.78:0.90, isNoteActive(midi)?0.40:0.90, 1.0);
+			g.rectangle(wx, kbY, wkW-1, KB_H);
+			g.fill();
+		}
+	}
+	var bkW = wkW*0.6;
+	for (var o2=0;o2<rng.oct;o2++){
+		for (var j=0;j<7;j++){
+			if (j===2||j===6) continue;
+			var m2 = rng.low + o2*12 + WHITE_SEMI[j]+1;
+			var bx = x0 + (o2*7+j+1)*wkW - bkW*0.5;
+			g.set_source_rgba(isNoteActive(m2)?0.20:0.12, isNoteActive(m2)?0.62:0.12, isNoteActive(m2)?0.30:0.13, 1.0);
+			g.rectangle(bx, kbY, bkW, KB_H*0.62);
+			g.fill();
+		}
+	}
+	g.set_source_rgba(0.3,0.3,0.3,1.0);
+	g.rectangle(x0, kbY, w, KB_H); g.set_line_width(1.0); g.stroke();
+
+	// HOLD / LATCH (en bas sous le clavier)
+	var hr = holdRect(l);
+	g.set_source_rgba(latchMode?0.90:0.18, latchMode?0.65:0.18, latchMode?0.10:0.20, 1.0);
+	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
+	g.fill();
+	g.set_source_rgba(latchMode?0.08:0.75, latchMode?0.08:0.75, latchMode?0.08:0.78, 1.0);
+	g.set_font_size(9);
+	var ht = latchMode ? "LATCH" : "HOLD";
+	var htw = safeTextW(ht, 9);
+	g.move_to(hr[0]+(hr[2]-htw)*0.5, hr[1]+hr[3]*0.5+3);
+	g.text_path(ht);
+	g.fill();
+}
+
+function safeTextW(str, fs) {
+	try { var m = mgraphics.text_measure(str); if (m && m[0] > 0) return m[0]; } catch(e) {}
+	return String(str).length * fs * 0.58;
+}
+
+// =====================================================
+// INTERACTION
+// =====================================================
+
+function playCell(col, row, fn, semis, type) {
+	// gère HOLD / LATCH de façon unifiée
+	var isActiveCell = (col === activeCol && row === activeRow);
+	if (latchMode && isActiveCell) {
+		activeCol = -1; activeRow = -1;
+		outlet(0, "release");
+	} else {
+		activeCol = col; activeRow = row;
+		if (col === 7) outlet(0, "colorchord", semis, type);
+		else           outlet(0, fn, col);
+	}
+	mgraphics.redraw();
+}
+
+function onidleout(x, y, but) {
+	// souris quitte le jsui — pas de fermeture ici, géré par mousestate patcher
+}
+
+function closemenu() {
+	var now = Date.now();
+	if (now - lastClickInJsui > 100) {   // 100ms délai : ignore les clics jsui récents
+		if (openDropdown !== "") { openDropdown = ""; hoverDD = -1; mgraphics.redraw(); }
+	}
+}
+
+function onidle(x, y, but) {
+	var l = L();
+	var ks = cfgRect(l, cfgIndex("keyscale"));
+
+	// Hover SYNC
+	var syncR = ksSyncRect(ks);
+	var newHoverSync = hit(x, y, syncR);
+	if (newHoverSync !== hoverSync) { hoverSync = newHoverSync; mgraphics.redraw(); }
+
+	// Hover config buttons + octave selector
+	var newHoverCfg = "";
+	var newHoverOctave = -1;
+	["oct", "voicing", "vl", "vlmode"].forEach(function(id) {
+		if (hit(x, y, cfgRect(l, cfgIndex(id)))) {
+			newHoverCfg = id;
+			if (id === "oct") {
+				var octR = cfgRect(l, cfgIndex("oct"));
+				var cellW = octR[2] / 7;
+				newHoverOctave = Math.floor((x - octR[0]) / cellW);
+				if (newHoverOctave < 0 || newHoverOctave > 6) newHoverOctave = -1;
+			}
+		}
+	});
+	if (newHoverCfg !== hoverCfg || newHoverOctave !== hoverOctave) {
+		hoverCfg = newHoverCfg;
+		hoverOctave = newHoverOctave;
+		mgraphics.redraw();
+	}
+
+	// Hover cellules grille
+	var newHoverCell = -1;
+	for (var col = 0; col < 7; col++) {
+		for (var row = 0; row < gridCols[col].length; row++) {
+			if (hit(x, y, cellRect(l, col, row))) {
+				newHoverCell = col * 100 + row;
+			}
+		}
+	}
+	for (var i = 0; i < gridBor.length; i++) {
+		if (hit(x, y, cellRect(l, 7, i))) {
+			newHoverCell = 700 + i;
+		}
+	}
+	if (newHoverCell !== hoverCell) { hoverCell = newHoverCell; mgraphics.redraw(); }
+
+	if (openDropdown === "") { if (hoverDD !== -1) { hoverDD = -1; mgraphics.redraw(); } return; }
+	var dl = ddLayout(l);
+	var found = -1;
+	for (var i = 0; i < dl.n; i++) { if (hit(x, y, ddCellRect(dl, i))) { found = i; break; } }
+	if (found !== hoverDD) { hoverDD = found; mgraphics.redraw(); }
+}
+
+function onclick(x, y, but, cmd, shift, capslock, option, ctrl) {
+	lastClickInJsui = Date.now();
+	var l = L();
+
+	// ----- Menu déroulant ouvert : priorité absolue -----
+	if (openDropdown !== "") {
+		var dl = ddLayout(l);
+		for (var di = 0; di < dl.n; di++) {
+			if (hit(x, y, ddCellRect(dl, di))) { applyDropdown(di); openDropdown=""; hoverDD=-1; mgraphics.redraw(); return; }
+		}
+		openDropdown = ""; hoverDD = -1;   // clic hors cellule → ferme
+		mgraphics.redraw();
+		return;
+	}
+
+	// ----- Flèche repli/dépli -----
+	if (hit(x,y,collapseRect(l))) {
+		if (!collapsed) {
+			fullW = box.rect[2] - box.rect[0];   // mémorise la largeur dépliée
+			collapsed = true;
+			setDeviceWidth(CFG_W + MON_W);
+		} else {
+			collapsed = false;
+			setDeviceWidth(fullW > 0 ? fullW : (CFG_W + MON_W + 480));
+		}
+		mgraphics.redraw();
+		return;
+	}
+
+	// ----- HOLD / LATCH (dans le monitor) -----
+	if (hit(x,y,holdRect(l))) {
+		latchMode = !latchMode;
+		if (!latchMode && activeCol>=0){ activeCol=-1; activeRow=-1; outlet(0,"release"); }
+		mgraphics.redraw(); return;
+	}
+
+	// ----- CONFIG : TONALITY [KEY|SCALE|sync] + CHORD STYLE (oct/voicing/vl/vlmode) -----
+	var ks = cfgRect(l, cfgIndex("keyscale"));
+	if (hit(x,y,ksSyncRect(ks)))  { syncPressed = Date.now(); outlet(0, "synclive"); mgraphics.redraw(); return; }
+	if (hit(x,y,ksKeyRect(ks)))   { openDropdown = "key";   mgraphics.redraw(); return; }
+	if (hit(x,y,ksScaleRect(ks))) { openDropdown = "scale"; mgraphics.redraw(); return; }
+	if (hit(x,y,cfgRect(l,cfgIndex("oct")))) {
+		pressedCfg = Date.now();
+		var octR = cfgRect(l, cfgIndex("oct"));
+		var cellW = octR[2] / 7;
+		var idx = Math.floor((x - octR[0]) / cellW);
+		if (idx >= 0 && idx <= 6) {
+			var newOct = idx - 3;   // -3 à +3
+			if (newOct !== octave) { octave = newOct; outlet(0, "octave", octave); }
+		}
+		mgraphics.redraw();
+		return;
+	}
+	if (hit(x,y,cfgRect(l,cfgIndex("voicing")))) { pressedCfg = Date.now(); openDropdown = "voicing"; mgraphics.redraw(); return; }
+	if (hit(x,y,cfgRect(l,cfgIndex("vl"))))      { pressedCfg = Date.now(); vlEnabled = !vlEnabled; outlet(0,"voiceleading", vlEnabled?"on":"off"); mgraphics.redraw(); return; }
+	if (hit(x,y,cfgRect(l,cfgIndex("vlmode")))) { pressedCfg = Date.now();
+		vlMode = (vlMode==="anchored")?"relative":(vlMode==="relative")?"piano":"anchored";
+		outlet(0,"vlmode",vlMode); mgraphics.redraw(); return;
+	}
+
+	// ----- Grille (cachée en mode replié) -----
+	if (collapsed) return;
+
+	// ----- BORROWED (8e colonne) -----
+	for (var bi=0; bi<gridBor.length; bi++){
+		if (hit(x,y,cellRect(l,7,bi))){ var c=gridBor[bi]; playCell(7, bi, null, c.semis, c.type); return; }
+	}
+
+	// ----- Cases diatoniques -----
+	for (var col=0; col<7; col++){
+		var cc = gridCols[col];
+		for (var row=0; row<cc.length; row++){
+			if (hit(x,y,cellRect(l,col,row))){
+				playCell(col, row, cc[row].fn, 0, null);
+				return;
+			}
+		}
+	}
+}
+
+// relâchement souris → note-off en mode HOLD
+function ondrag(x, y, but) {
+	if (but === 0 && !latchMode && activeCol >= 0) {
+		activeCol = -1; activeRow = -1;
+		outlet(0, "release");
+		mgraphics.redraw();
+	}
+}
+
+function hit(x, y, r) { return x>=r[0] && x<=r[0]+r[2] && y>=r[1] && y<=r[1]+r[3]; }
+
+function stepKey(x, r) {
+	if (x < r[0] + r[2]*0.5) rootIdx = (rootIdx + 11) % 12;
+	else                     rootIdx = (rootIdx + 1) % 12;
+	outlet(0, "rootidx", rootIdx);
+	mgraphics.redraw();
+}
+function stepScale(x, r) {
+	if (x < r[0] + r[2]*0.5) scaleIdx = (scaleIdx + 6) % 7;
+	else                     scaleIdx = (scaleIdx + 1) % 7;
+	outlet(0, "scaleidx", scaleIdx);
+	mgraphics.redraw();
+}
+function stepVoicing(x, r) {
+	var n = VOICING_LIST.length;
+	if (x < r[0] + r[2]*0.5) voicingIdx = (voicingIdx + n - 1) % n;
+	else                     voicingIdx = (voicingIdx + 1) % n;
+	outlet(0, "voicingidx", voicingIdx);
+	mgraphics.redraw();
+}
+
+function stepOct(x, r) {
+	var third = r[2]/4;
+	if (x < r[0] + third)            { octave = Math.max(OCT_MIN, octave-1); sendOct(); }
+	else if (x > r[0] + r[2]-third)  { octave = Math.min(OCT_MAX, octave+1); sendOct(); }
+	else {
+		var now = (new Date()).getTime();
+		if (now - lastOctClick < 400) { octave = 0; sendOct(); lastOctClick = 0; }
+		else lastOctClick = now;
+	}
+}
+function sendOct() { outlet(0, "octave", octave); mgraphics.redraw(); }
+
+// =====================================================
+// INIT
+// =====================================================
+
+mgraphics.init();
+mgraphics.relative_coords = 0;
+mgraphics.autofill = 0;
+post("CHORD UI (horizontal) LOADED\n");
+
+// Demande la grille au moteur (différé le temps que tout soit prêt)
+var reqGridTask = new Task(function(){ outlet(0, "requestgrid"); }, this);
+reqGridTask.schedule(400);
+
+function read() { /* fichier déjà chargé */ }
