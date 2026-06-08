@@ -627,9 +627,9 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	// Couleur selon le mode : ANCHOR=gris (comme VOICE LEADING OFF), RELATIVE=bleu, PIANO=doré
 	var br, bg, bb;
 	if (mode === "anchored") {
-		// Gris cohérent avec VOICE LEADING OFF: bg_cfg au repos, 0.22,0.22,0.25 au hover/press
+		// Gris cohérent avec VOICE LEADING OFF: bg_cfg au repos, bg_hover au hover/press
 		if (isPressed || isHover) {
-			br = 0.22; bg = 0.22; bb = 0.25;
+			br = COLORS.bg_hover[0]; bg = COLORS.bg_hover[1]; bb = COLORS.bg_hover[2];
 		} else {
 			br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
 		}
