@@ -811,27 +811,21 @@ function drawMonitor(g, l) {
 	g.set_source_rgba(0.3,0.3,0.3,1.0);
 	g.rectangle(x0, kbY, w, KB_H); g.set_line_width(1.0); g.stroke();
 
-	// HOLD / LATCH (en bas sous le clavier)
+	// HOLD / LATCH (en bas sous le clavier) — seamless like VOICE LEADING
 	var hr = holdRect(l);
-	// HOLD/LATCH : doré + shadow quand ON, gris quand OFF (seamless, no text)
+	var now = Date.now();
+	var holdPressed = (now - pressedCell) < 150;  // reuse pressedCell for visual feedback
+
+	// Same style as drawCfgButton: ON=gold, OFF=bg_cfg, with hover/press feedback
 	if (latchMode) {
-		// shadow
-		g.set_source_rgba(0, 0, 0, 0.18);
-		g.rectangle_rounded(hr[0]+1, hr[1]+1, hr[2], hr[3], 3, 3);
-		g.fill();
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		if (holdPressed) g.set_source_rgba(COLORS.gold_active[0]*0.85, COLORS.gold_active[1]*0.85, COLORS.gold_active[2]*0.85, 1.0);
+		else g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else {
-		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
+		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
 	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 	g.fill();
-	if (latchMode) {
-		g.set_source_rgba(1.0, 1.0, 1.0, 0.3);
-		g.set_line_width(1.5);
-		g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
-		g.stroke();
-	}
-	// No text label (seamless like VOICE LEADING / ANCHOR)
+	// No text label (seamless)
 }
 
 function safeTextW(str, fs) {
