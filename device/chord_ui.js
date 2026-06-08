@@ -513,7 +513,7 @@ function drawSyncButton(g, r) {
 	}
 	g.set_font_size(11);
 	var tw = 6;
-	g.move_to(r[0] + r[2] * 0.5 - tw * 0.5, r[1] + r[3] * 0.5 + 3);
+	g.move_to(r[0] + r[2] * 0.5 - tw * 0.5, r[1] + r[3] * 0.5 + 2);
 	g.text_path("♪");
 	g.fill();
 }
