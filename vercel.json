@@ -1,5 +1,10 @@
 {
-  "public": "site",
-  "buildCommand": "",
-  "outputDirectory": ""
+  "buildCommand": "echo 'static site - no build'",
+  "outputDirectory": "site",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 }
