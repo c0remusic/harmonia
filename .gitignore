@@ -8,6 +8,7 @@ FUNCTIONS_GUIDE.md
 website/
 site/
 !site/index.html  # Exception: CSS colors synced with device palette
+!site/harmonia_v1.zip  # Exception: Distribution zip with device files
 push/
 *BACKUP*
 Capture.PNG
