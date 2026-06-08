@@ -92,6 +92,10 @@
     section.block { padding: 90px 48px; max-width: 1200px; margin: 0 auto; }
     .label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
       letter-spacing: .14em; text-transform: uppercase; margin-bottom: 16px; }
+    .sec-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.22); color: var(--gold); margin-bottom: 18px; }
+    .sec-icon.blue { background: var(--blue-dim); border-color: rgba(142,204,232,0.22); color: var(--blue); }
+    .sec-icon svg { width: 19px; height: 19px; }
     .heading { font-family: 'DM Serif Display', serif; font-size: clamp(34px, 4.2vw, 52px);
       line-height: 1.05; letter-spacing: -0.02em; }
     .sub { font-size: 15.5px; color: var(--muted); line-height: 1.8; max-width: 540px; margin-top: 18px; }
@@ -260,6 +264,7 @@
   <section class="block" id="features">
     <div class="features-head">
       <div>
+        <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg></div>
         <p class="label">Features</p>
         <p class="heading">Everything you need,<br>nothing you don&rsquo;t</p>
       </div>
@@ -301,6 +306,7 @@
 
   <!-- VOICINGS -->
   <section class="block" id="voicings">
+    <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
     <p class="label">Voicings</p>
     <p class="heading">10 ways to voice any chord</p>
     <div class="voicings-grid">
@@ -321,6 +327,7 @@
   <section class="block" id="download">
     <div class="card">
       <div>
+        <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h2>Free download</h2>
         <p class="req">
           Requires <b>Ableton Live 11+</b> &middot; <b>Max for Live</b><br>
@@ -341,7 +348,7 @@
   <section class="block" id="support">
     <div class="card support">
       <div>
-        <div class="support-icon">&hearts;</div>
+        <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.9 9.5 2.2 6 5.5 6c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.3 0 4.6 3.5 3 6.5C19 16.65 12 21 12 21z"/></svg></div>
         <h2>Support the project</h2>
         <p class="txt">Harmonia is free and open source. If it&rsquo;s been useful to you, a small donation goes a long way &mdash; it helps keep the project alive and fund future features.</p>
       </div>
@@ -353,6 +360,7 @@
 
   <!-- CONTACT & COMMUNITY -->
   <section class="block" id="contact">
+    <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H7l-3 3V4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
     <p class="label">Contact &amp; community</p>
     <p class="heading">Get in touch &amp; join the community</p>
     <div class="contact-grid">
