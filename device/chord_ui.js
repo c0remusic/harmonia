@@ -450,7 +450,11 @@ function drawOctaveSelector(g, r) {
 
 		// Fond
 		if (isActive) {
-			g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+			if (isHoverOct || isPressed) {
+				g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);
+			} else {
+				g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+			}
 		} else if (isHoverOct || isPressed) {
 			g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 		} else {
@@ -712,7 +716,12 @@ function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
 	if (!valid) {
 		g.set_source_rgba(0.13, 0.13, 0.14, 1.0);
 	} else if (isAct) {
-		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
+		if (isHov) {
+			// Case active + hover: bleu plus clair
+			g.set_source_rgba(COLORS.blue_accent[0]*1.15, COLORS.blue_accent[1]*1.15, COLORS.blue_accent[2]*1.15, 1.0);
+		} else {
+			g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
+		}
 	} else if (isHov) {
 		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
