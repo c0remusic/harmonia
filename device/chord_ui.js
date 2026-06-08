@@ -325,8 +325,8 @@ function ddLayout(l) {
 	var n      = items.length;
 	var x0     = PAD * 2;
 	var y0     = PAD * 2 + 14;   // 14 = hauteur titre
-	var w      = CFG_W - PAD * 4;
-	var h      = Math.min(l.H - PAD * 4 - 14, 120);   // limité à 120px pour ne pas bouffe la grille
+	var w      = Math.min(CFG_W - PAD * 4, 100);   // largeur réduite pour ne pas bouffe les accords
+	var h      = Math.min(l.H - PAD * 4 - 14, 100);   // hauteur réduite
 	var perRow = (openDropdown === "voicing") ? 2 : (openDropdown === "key") ? 3 : 2;
 	var rows   = Math.ceil(n / perRow);
 	var ch     = h / rows;       // hauteur cellule adaptive
@@ -541,7 +541,9 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 	// Valeur centré au milieu
 	// KEY/SCALE: texte adaptatif; VOICING: fixe 9px
 	var valFs = (label === "VOICING") ? 9 : Math.max(10, Math.min(13, r[3] * 0.50));
-	g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+	// CLASSIC en gris, autres voicings en doré
+	var isClassic = (label === "VOICING" && value === "CLASSIC");
+	g.set_source_rgba(isClassic ? 0.80 : COLORS.gold_active[0], isClassic ? 0.80 : COLORS.gold_active[1], isClassic ? 0.82 : COLORS.gold_active[2], 1.0);
 	g.set_font_size(valFs);
 	var vw = safeTextW(value, valFs);
 	var vy = (label === "VOICING") ? r[1] + r[3] * 0.5 + 2 : r[1] + r[3] - 5;  // VOICING au milieu, KEY/SCALE en bas
