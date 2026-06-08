@@ -290,9 +290,9 @@ function paint() {
 	drawMonitor(g, l);
 	drawCollapse(g, l);
 
-	// Overlay: légère teinte claire quand dropdown ouvert (rend le reste légèrement plus visible)
+	// Overlay: teinte claire quand dropdown ouvert (rend le reste légèrement plus visible)
 	if (openDropdown !== "") {
-		g.set_source_rgba(1, 1, 1, 0.08);
+		g.set_source_rgba(1, 1, 1, 0.15);
 		g.rectangle(0, 0, l.W, l.H);
 		g.fill();
 	}
