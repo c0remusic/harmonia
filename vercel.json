@@ -1,0 +1,5 @@
+{
+  "public": "site",
+  "buildCommand": "echo 'Static site - no build needed'",
+  "outputDirectory": "site"
+}
