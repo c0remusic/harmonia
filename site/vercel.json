@@ -1,0 +1,4 @@
+{
+  "buildCommand": "echo 'static site - nothing to build'",
+  "outputDirectory": "."
+}
