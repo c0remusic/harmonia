@@ -11,9 +11,9 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #2A2A2A;
-      --bg2: #363636;
-      --bg3: #464646;
+      --bg: #161616;
+      --bg2: #232323;
+      --bg3: #303030;
       --border: rgba(255,255,255,0.08);
       --gold: #FFAD56;
       --gold-dim: rgba(255, 173, 86, 0.14);
@@ -42,6 +42,8 @@
       background: radial-gradient(ellipse 50% 45% at 72% 18%, rgba(255,173,86,0.14) 0%, transparent 70%),
                   radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.10) 0%, transparent 65%),
                   radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,173,86,0.09) 0%, transparent 70%); }
+    .page-bg .vignette { position: absolute; inset: 0;
+      background: radial-gradient(ellipse 90% 80% at 50% 35%, transparent 40%, rgba(0,0,0,0.55) 100%); }
     nav, .hero, section.block, footer { position: relative; z-index: 1; }
 
     /* NAV */
@@ -155,6 +157,7 @@
   <div class="page-bg">
     <div class="grid"></div>
     <div class="glow"></div>
+    <div class="vignette"></div>
   </div>
 
   <nav id="nav">
