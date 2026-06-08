@@ -18,9 +18,26 @@ var NOTE_NAMES  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 var SCALE_NAMES = ["Major","Minor","Dorian","Phrygian","Lydian","Mixolydian","Harm Minor"];
 var SCALE_ABBR  = ["Maj","Min","Dor","Phr","Lyd","Mix","HMi"];
 var DEG_NAMES   = ["I","II","III","IV","V","VI","VII"];
-var DEG_FUNCTIONS = ["Tonic","Supertonic","Mediant","Subdominant","Dominant","Submediant","Leading tone"];
+var DEG_FUNCTIONS = ["TONIC","SUPERTONIC","MEDIANT","SUBDOMINANT","DOMINANT","SUBMEDIANT","LEADING TONE"];
 
-var VOICING_LIST = ["classic","piano","open","spread","house","prog","rootl.A","rootl.B","drop2","drop3"];
+var VOICING_LIST = ["CLASSIC","PIANO","OPEN","SPREAD","HOUSE","PROG","ROOTL.A","ROOTL.B","DROP2","DROP3"];
+
+// =====================================================
+// PALETTE DE COULEURS UNIFIÉE
+// =====================================================
+var COLORS = {
+	// Palette du screenshot device
+	bg_main:      [0.169, 0.169, 0.180],    // #2B2B2E — fond principal
+	bg_cell:      [0.302, 0.302, 0.322],    // #4D4D52 — cases grille
+	bg_cfg:       [0.169, 0.169, 0.180],    // #2B2B2E — items CONFIG
+	bg_hover:     [0.35, 0.35, 0.37],       // gris plus clair au hover
+	gold_active:  [0.980, 0.820, 0.420],    // #FAD16B — doré actif
+	gold_hover:   [0.99, 0.85, 0.45],       // or plus clair au hover
+	violet_accent:[0.65, 0.55, 0.75],       // violet BORROWED plus voyant
+	text_white:   [0.95, 0.95, 0.96],       // blanc cassé
+	text_dim:     [0.55, 0.55, 0.60],       // gris moyen pour labels
+	text_dark:    [0.169, 0.169, 0.180],    // #2B2B2E sombre pour texte sur doré
+};
 
 // Grille reçue du moteur :
 //  gridCols[d] = [ {fn, label}, ... ]   (colonnes diatoniques, contiguës)
@@ -54,10 +71,25 @@ var hoverCell   = -1;      // index cellule grille survolée (-1 = aucune)
 var hoverCfg    = "";      // ID config survolé ("vl", "vlmode", "oct", "voicing", "")
 var hoverOctave = -1;      // index octave survolé dans le sélecteur (-1 = aucun)
 var pressedCell = 0;       // timestamp clic cellule (feedback 150ms)
-var pressedCfg  = 0;       // timestamp clic config (feedback 150ms)
+// Timestamps individuels pour feedback 150ms par bouton
+var pressedKeyscale = 0;
+var pressedOct      = 0;
+var pressedVoicing  = 0;
+var pressedVL       = 0;
+var pressedVLMode   = 0;
 var collapsed   = false;  // device replié (CONFIG + MONITOR seulement)
 var fullW       = 0;      // largeur mémorisée en mode déplié
 var openDropdown = "";    // "" | "key" | "scale" | "voicing"
+
+// =====================================================
+// ANIMATIONS ET MICRO-INTERACTIONS
+// =====================================================
+function animCurve(timestamp, dur) {
+	if (timestamp === 0) return 0;
+	var dt = Date.now() - timestamp;
+	if (dt < 0 || dt > dur) return 0;
+	return 1 - (dt / dur);
+}
 
 // =====================================================
 // MESSAGES ENTRANTS (depuis chord_engine)
@@ -135,7 +167,6 @@ var MON_W  = 96;   // colonne MONITOR droite
 var HDR_H  = 15;   // bandeau des degrés
 var KB_H   = 40;   // mini-clavier
 var HOLD_H = 15;   // bouton HOLD/LATCH
-var extMode = false;  // toggle EXT : affiche tous les accords (cap levé)
 
 // CONFIG : TONALITY | CHORD STYLE (pas de gap).
 // HOLD est dans le MONITOR (feature de sortie, pas harmonique).
@@ -198,10 +229,6 @@ function L() {
 function collapseRect(l) {
 	return [ l.contentW - 16, PAD, 12, 12 ];
 }
-// Toggle EXT (à gauche de la flèche de repli)
-function extRect(l) {
-	return [ l.contentW - 16 - 44, PAD, 40, 13 ];
-}
 // HOLD/LATCH : dans le MONITOR (feature de sortie/perf) — en bas sous le clavier
 function holdRect(l) {
 	return [ l.monX, l.H - PAD - HOLD_H, l.monW - 1, HOLD_H ];
@@ -250,7 +277,7 @@ function paint() {
 		outlet(0, "requeststate");  // demande au moteur d'envoyer son état
 	}
 
-	g.set_source_rgba(0.09, 0.09, 0.10, 1.0);
+	g.set_source_rgba(COLORS.bg_main[0], COLORS.bg_main[1], COLORS.bg_main[2], 1.0);
 	g.rectangle(0, 0, l.W, l.H);
 	g.fill();
 	g.select_font_face("Arial");
@@ -260,22 +287,15 @@ function paint() {
 	drawMonitor(g, l);
 	drawCollapse(g, l);
 	drawDropdown(g, l);   // par-dessus tout
+
+	// Redraw continu pour animations (300ms max)
+	if (animCurve(pressedCell, 300) > 0 ||
+	    animCurve(pressedVL, 250) > 0 ||
+	    animCurve(pressedVLMode, 250) > 0) {
+		mgraphics.redraw();
+	}
 }
 
-// Toggle EXT
-function drawExt(g, l) {
-	var r = extRect(l);
-	g.set_source_rgba(extMode?0.86:0.20, extMode?0.86:0.20, extMode?0.90:0.22, 1.0);
-	g.rectangle_rounded(r[0], r[1], r[2], r[3], 2, 2);
-	g.fill();
-	g.set_source_rgba(extMode?0.10:0.62, extMode?0.10:0.62, extMode?0.12:0.66, 1.0);
-	g.set_font_size(9);
-	var t = extMode ? "EXT ●" : "EXT";
-	var tw = safeTextW(t, 9);
-	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]-3);
-	g.text_path(t);
-	g.fill();
-}
 
 // ---------- MENU DÉROULANT ----------
 function ddItems() {
@@ -332,9 +352,9 @@ function drawDropdown(g, l) {
 		var br, bg, bb, tr, tg, tb;
 		var isHov = (i === hoverDD && !on);
 		if (on) {
-			if      (openDropdown === "key")     { br=0.96; bg=0.80; bb=0.30; tr=0.08; tg=0.06; tb=0.04; }
+			// Doré pour KEY et VOICING (cohérent), bleu pour SCALE
+			if      (openDropdown === "key" || openDropdown === "voicing")  { br=COLORS.gold_active[0]; bg=COLORS.gold_active[1]; bb=COLORS.gold_active[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
 			else if (openDropdown === "scale")   { br=0.28; bg=0.52; bb=0.90; tr=0.96; tg=0.96; tb=0.96; }
-			else                                 { br=0.86; bg=0.86; bb=0.90; tr=0.10; tg=0.10; tb=0.12; }
 		} else if (isHov) {
 			br=0.26; bg=0.26; bb=0.30; tr=0.95; tg=0.95; tb=0.98;
 		} else {
@@ -376,14 +396,35 @@ function drawCollapse(g, l) {
 function drawConfig(g, l) {
 	var ks = cfgRect(l, cfgIndex("keyscale"));
 	drawSyncButton(g, ksSyncRect(ks));
-	drawSelector (g, ksKeyRect(ks),   "KEY",   NOTE_NAMES[rootIdx],  openDropdown==="key");
-	drawSelector (g, ksScaleRect(ks), "SCALE", SCALE_ABBR[scaleIdx], openDropdown==="scale");
+	drawSelector (g, ksKeyRect(ks),   "KEY",   NOTE_NAMES[rootIdx],  openDropdown==="key",   hoverCfg==="key",   pressedKeyscale);
+	drawSelector (g, ksScaleRect(ks), "SCALE", SCALE_ABBR[scaleIdx], openDropdown==="scale", hoverCfg==="scale", pressedKeyscale);
 
 	drawOctaveSelector(g, cfgRect(l,cfgIndex("oct")));
-	drawSelector (g, cfgRect(l,cfgIndex("voicing")), "VOICING", VOICING_LIST[voicingIdx], openDropdown==="voicing", hoverCfg==="voicing", pressedCfg);
-	drawCfgButton(g, cfgRect(l,cfgIndex("vl")),      vlEnabled?"VOICE LEADING ON":"VOICE LEADING", vlEnabled, hoverCfg==="vl", pressedCfg);
-	var vlLbl = (vlMode==="anchored")?"ANCHOR":(vlMode==="relative")?"RELAT":"PIANO";
-	drawCfgButton(g, cfgRect(l,cfgIndex("vlmode")),  vlLbl, vlMode!=="anchored", hoverCfg==="vlmode", pressedCfg);
+	drawSelector (g, cfgRect(l,cfgIndex("voicing")), "VOICING", VOICING_LIST[voicingIdx], openDropdown==="voicing", hoverCfg==="voicing", pressedVoicing);
+	// VOICE LEADING button
+	var vlRect = cfgRect(l, cfgIndex("vl"));
+	drawCfgButton(g, vlRect, "VOICE LEADING", vlEnabled, hoverCfg==="vl", pressedVL);
+	// Description sous
+	if (vlEnabled) {
+		g.set_source_rgba(0.55, 0.55, 0.60, 0.7);
+		g.set_font_size(7);
+		g.move_to(vlRect[0] + vlRect[2]*0.5 - 15, vlRect[1] + vlRect[3] - 2);
+		g.text_path("smooth");
+		g.fill();
+	}
+
+	// VL MODE button
+	var vlLbl = (vlMode==="anchored")?"ANCHOR":(vlMode==="relative")?"RELATIVE":"PIANO";
+	var vlmRect = cfgRect(l, cfgIndex("vlmode"));
+	drawCfgButton(g, vlmRect, vlLbl, vlMode!=="anchored", hoverCfg==="vlmode", pressedVLMode);
+	// Description sous
+	g.set_source_rgba(0.55, 0.55, 0.60, 0.6);
+	g.set_font_size(7);
+	var subLbl = (vlMode==="anchored")?"reset":(vlMode==="relative")?"follow":"low";
+	var subW = safeTextW(subLbl, 7);
+	g.move_to(vlmRect[0] + vlmRect[2]*0.5 - subW*0.5, vlmRect[1] + vlmRect[3] - 2);
+	g.text_path(subLbl);
+	g.fill();
 }
 
 // Sélecteur octave : -3 -2 -1 0 +1 +2 +3
@@ -398,24 +439,24 @@ function drawOctaveSelector(g, r) {
 		var cellR = [r[0] + i * cellW, r[1], cellW - 1, r[3]];
 		var isActive = (values[i] === octave);
 		var isHoverOct = (Math.abs(hoverOctave - i) < 0.5);
-		var isPressed = (now - pressedCfg) < 150 && hoverCfg === "oct";
+		var isPressed = (now - pressedOct) < 150;
 
 		// Fond
 		if (isActive) {
-			g.set_source_rgba(0.96, 0.80, 0.45, 1.0);   // doré pour actif
+			g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 		} else if (isPressed && isHoverOct) {
-			g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
+			g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
 		} else if (isHoverOct) {
-			g.set_source_rgba(0.20, 0.20, 0.24, 1.0);
+			g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
 		} else {
-			g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+			g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 		}
 		g.rectangle_rounded(cellR[0], cellR[1], cellR[2], cellR[3], 2, 2);
 		g.fill();
 
 		// Label
 		var label = (values[i] > 0 ? "+" : "") + values[i];
-		g.set_source_rgba(isActive ? 0.08 : 0.80, isActive ? 0.08 : 0.80, isActive ? 0.08 : 0.84, 1.0);
+		g.set_source_rgba(isActive ? COLORS.text_dark[0] : COLORS.text_white[0], isActive ? COLORS.text_dark[1] : COLORS.text_white[1], isActive ? COLORS.text_dark[2] : COLORS.text_white[2], 1.0);
 		var tw = safeTextW(label, 8);
 		g.move_to(cellR[0] + (cellR[2] - tw) * 0.5, cellR[1] + cellR[3] * 0.5 + 2);
 		g.text_path(label);
@@ -454,7 +495,7 @@ function drawSyncButton(g, r) {
 	g.fill();
 }
 
-// Sélecteur à menu déroulant (clic = ouvre la liste)
+// Sélecteur à menu déroulant (KEY, SCALE, VOICING)
 function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 	var now = Date.now();
 	var isPressed = (now - pressTime) < 150;
@@ -463,11 +504,11 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 	if (isOpen) {
 		g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
 	} else if (isPressed) {
-		g.set_source_rgba(0.19, 0.19, 0.23, 1.0);
+		g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
 	} else if (isHover) {
-		g.set_source_rgba(0.18, 0.18, 0.22, 1.0);
+		g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
 	} else {
-		g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
@@ -478,20 +519,22 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 		g.stroke();
 	}
 
-	var labelFs = Math.max(7, Math.min(9,  r[3] * 0.30));
-	var valueFs = Math.max(9, Math.min(14, r[3] * 0.46));
-
-	g.set_source_rgba(isOpen?0.75:0.48, isOpen?0.75:0.48, isOpen?0.80:0.54, 1.0);
+	// Label petit en haut (discret)
+	var labelFs = 8;
+	g.set_source_rgba(0.48, 0.48, 0.54, 1.0);
 	g.set_font_size(labelFs);
 	g.move_to(r[0]+6, r[1] + labelFs + 2);
 	g.text_path(label);
 	g.fill();
 
-	var vy = r[1] + r[3] - 5;
-	g.set_source_rgba(0.96,0.86,0.46,1.0);
-	g.set_font_size(valueFs);
-	var vw = safeTextW(value, valueFs);
-	g.move_to(r[0]+(r[2]-vw)*0.5 - 4, vy);
+	// Valeur centré au milieu
+	// KEY/SCALE: texte adaptatif; VOICING: fixe 9px
+	var valFs = (label === "VOICING") ? 9 : Math.max(10, Math.min(13, r[3] * 0.50));
+	g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+	g.set_font_size(valFs);
+	var vw = safeTextW(value, valFs);
+	var vy = (label === "VOICING") ? r[1] + r[3] * 0.5 + 2 : r[1] + r[3] - 5;  // VOICING au milieu, KEY/SCALE en bas
+	g.move_to(r[0]+(r[2]-vw)*0.5, vy);
 	g.text_path(value);
 	g.fill();
 
@@ -554,18 +597,18 @@ function drawCfgButton(g, r, txt, on, isHover, pressTime) {
 
 	// Feedback : ON couleur de base, sinon repos/hover/press
 	if (on) {
-		if (isPressed) g.set_source_rgba(0.76, 0.76, 0.80, 1.0);
-		else if (isHover) g.set_source_rgba(0.90, 0.90, 0.95, 1.0);
-		else g.set_source_rgba(0.86, 0.86, 0.90, 1.0);
+		if (isPressed) g.set_source_rgba(COLORS.gold_active[0]*0.85, COLORS.gold_active[1]*0.85, COLORS.gold_active[2]*0.85, 1.0);
+		else if (isHover) g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);
+		else g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else {
-		if (isPressed) g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
-		else if (isHover) g.set_source_rgba(0.24, 0.24, 0.28, 1.0);
-		else g.set_source_rgba(0.18, 0.18, 0.20, 1.0);
+		if (isPressed) g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
+		else if (isHover) g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
+		else g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	g.set_source_rgba(on?0.10:0.72, on?0.10:0.72, on?0.12:0.75, 1.0);
+	g.set_source_rgba(on ? COLORS.text_dark[0] : 0.72, on ? COLORS.text_dark[1] : 0.72, on ? COLORS.text_dark[2] : 0.75, 1.0);
 	g.set_font_size(9);
 	var tw = safeTextW(txt, 9);
 	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
@@ -575,9 +618,9 @@ function drawCfgButton(g, r, txt, on, isHover, pressTime) {
 
 // ---------- GRILLE 8 colonnes ----------
 function drawGrid(g, l) {
-	// Bandeau des degrés (Roman numeral + fonction côte à côte)
+	// Bandeau des degrés — tous en doré
 	for (var c = 0; c < 7; c++) {
-		g.set_source_rgba(0.80,0.80,0.85,1.0);
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 0.90);
 		g.set_font_size(9);
 		var lbl = DEG_NAMES[c];
 		var func = DEG_FUNCTIONS[c];
@@ -587,8 +630,8 @@ function drawGrid(g, l) {
 		g.text_path(combined);
 		g.fill();
 	}
-	// en-tête BORROWED
-	g.set_source_rgba(0.80,0.55,0.85,1.0);
+	// en-tête BORROWED en violet
+	g.set_source_rgba(COLORS.violet_accent[0], COLORS.violet_accent[1], COLORS.violet_accent[2], 1.0);
 	g.set_font_size(9);
 	var bh = "BORROWED";
 	var bhw = safeTextW(bh, 9);
@@ -618,38 +661,58 @@ function drawGrid(g, l) {
 }
 
 function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
-	// fond
+	// Fond
 	if (!valid) {
-		g.set_source_rgba(0.12,0.12,0.13,1.0);
+		g.set_source_rgba(0.13, 0.13, 0.14, 1.0);
 	} else if (isAct) {
-		g.set_source_rgba(borrowed?0.85:0.92, borrowed?0.55:0.92, borrowed?0.90:0.92, 1.0);
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else if (isHov) {
-		g.set_source_rgba(borrowed?0.32:0.24, borrowed?0.22:0.24, borrowed?0.36:0.26, 1.0);
-	} else if (borrowed) {
-		g.set_source_rgba(0.26,0.16,0.30,1.0);
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
-		g.set_source_rgba(0.19,0.19,0.21,1.0);
+		g.set_source_rgba(COLORS.bg_cell[0], COLORS.bg_cell[1], COLORS.bg_cell[2], 1.0);
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
 	if (!valid) return;
 
-	// texte principal (nom d'accord, ou accord + fonction pour borrowed)
-	if (isAct) g.set_source_rgba(0.08,0.08,0.08,1.0);
-	else       g.set_source_rgba(1.0,1.0,1.0,1.0);  // blanc pur pour plus de contraste
-	var fs = Math.min(15, r[3]*0.6);  // taille plus grande
+	// Bordure : gris normal, dorée si actif (raised button)
+	if (isAct) {
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_line_width(1.5);
+		// shadow simulé (offset 1px noir)
+		g.set_source_rgba(0, 0, 0, 0.18);
+		g.rectangle_rounded(r[0]+1, r[1]+1, r[2], r[3], 3, 3);
+		g.fill();
+		// re-fill fond par-dessus
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.fill();
+		g.set_source_rgba(1.0, 1.0, 1.0, 0.4);
+		g.set_line_width(1.5);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.stroke();
+	} else if (isHov) {
+		g.set_source_rgba(0.55, 0.55, 0.60, 0.5);
+		g.set_line_width(1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.stroke();
+	}
+	// Pas de bordure sur les cases normales — remplacé par le cadre global
+
+	// Texte
+	if (isAct) g.set_source_rgba(COLORS.text_dark[0], COLORS.text_dark[1], COLORS.text_dark[2], 1.0);
+	else       g.set_source_rgba(COLORS.text_white[0], COLORS.text_white[1], COLORS.text_white[2], 1.0);
+	var fs = Math.min(15, r[3]*0.6);
 	g.set_font_size(fs);
 
 	if (borrowed && roman) {
-		// Borrowed : affiche "Label Roman" sur une ligne
 		var combined = label + " " + roman;
 		var cw = safeTextW(combined, fs);
 		g.move_to(r[0]+(r[2]-cw)*0.5, r[1]+r[3]*0.5+fs*0.25);
 		g.text_path(combined);
 		g.fill();
 	} else {
-		// Diatonic : affiche juste le label
 		var tw = safeTextW(label, fs);
 		g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+fs*0.35);
 		g.text_path(label);
@@ -696,7 +759,7 @@ function drawMonitor(g, l) {
 		g.fill();
 	} else {
 		var sorted = activeNotes.slice().sort(function(a,b){return a-b;});
-		g.set_source_rgba(0.55,0.85,0.60,1.0);
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 		g.set_font_size(11);
 		var lineH = 15, listTop = 38;
 		var perCol = Math.max(1, Math.floor((kbY - listTop) / lineH));
@@ -716,7 +779,8 @@ function drawMonitor(g, l) {
 		for (var i=0;i<7;i++){
 			var midi = rng.low + o*12 + WHITE_SEMI[i];
 			var wx = x0 + (o*7+i)*wkW;
-			g.set_source_rgba(isNoteActive(midi)?0.30:0.90, isNoteActive(midi)?0.78:0.90, isNoteActive(midi)?0.40:0.90, 1.0);
+			var wa = isNoteActive(midi);
+			g.set_source_rgba(wa?COLORS.gold_active[0]:0.90, wa?COLORS.gold_active[1]:0.90, wa?COLORS.gold_active[2]:0.90, 1.0);
 			g.rectangle(wx, kbY, wkW-1, KB_H);
 			g.fill();
 		}
@@ -727,7 +791,8 @@ function drawMonitor(g, l) {
 			if (j===2||j===6) continue;
 			var m2 = rng.low + o2*12 + WHITE_SEMI[j]+1;
 			var bx = x0 + (o2*7+j+1)*wkW - bkW*0.5;
-			g.set_source_rgba(isNoteActive(m2)?0.20:0.12, isNoteActive(m2)?0.62:0.12, isNoteActive(m2)?0.30:0.13, 1.0);
+			var ba = isNoteActive(m2);
+			g.set_source_rgba(ba?COLORS.gold_active[0]*0.8:0.12, ba?COLORS.gold_active[1]*0.6:0.12, ba?COLORS.gold_active[2]*0.4:0.13, 1.0);
 			g.rectangle(bx, kbY, bkW, KB_H*0.62);
 			g.fill();
 		}
@@ -737,10 +802,25 @@ function drawMonitor(g, l) {
 
 	// HOLD / LATCH (en bas sous le clavier)
 	var hr = holdRect(l);
-	g.set_source_rgba(latchMode?0.90:0.18, latchMode?0.65:0.18, latchMode?0.10:0.20, 1.0);
+	// HOLD/LATCH : doré + shadow quand ON, gris quand OFF
+	if (latchMode) {
+		// shadow
+		g.set_source_rgba(0, 0, 0, 0.18);
+		g.rectangle_rounded(hr[0]+1, hr[1]+1, hr[2], hr[3], 3, 3);
+		g.fill();
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+	} else {
+		g.set_source_rgba(0.20, 0.20, 0.22, 1.0);
+	}
 	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 	g.fill();
-	g.set_source_rgba(latchMode?0.08:0.75, latchMode?0.08:0.75, latchMode?0.08:0.78, 1.0);
+	if (latchMode) {
+		g.set_source_rgba(1.0, 1.0, 1.0, 0.3);
+		g.set_line_width(1.5);
+		g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
+		g.stroke();
+	}
+	g.set_source_rgba(latchMode ? COLORS.text_dark[0] : 0.70, latchMode ? COLORS.text_dark[1] : 0.70, latchMode ? COLORS.text_dark[2] : 0.73, 1.0);
 	g.set_font_size(9);
 	var ht = latchMode ? "LATCH" : "HOLD";
 	var htw = safeTextW(ht, 9);
@@ -795,6 +875,11 @@ function onidle(x, y, but) {
 	// Hover config buttons + octave selector
 	var newHoverCfg = "";
 	var newHoverOctave = -1;
+	// Hover sur les sous-zones keyscale
+	var ks2 = cfgRect(l, cfgIndex("keyscale"));
+	if (hit(x, y, ksKeyRect(ks2)))   newHoverCfg = "key";
+	if (hit(x, y, ksScaleRect(ks2))) newHoverCfg = "scale";
+
 	["oct", "voicing", "vl", "vlmode"].forEach(function(id) {
 		if (hit(x, y, cfgRect(l, cfgIndex(id)))) {
 			newHoverCfg = id;
@@ -877,7 +962,7 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl) {
 	if (hit(x,y,ksKeyRect(ks)))   { openDropdown = "key";   mgraphics.redraw(); return; }
 	if (hit(x,y,ksScaleRect(ks))) { openDropdown = "scale"; mgraphics.redraw(); return; }
 	if (hit(x,y,cfgRect(l,cfgIndex("oct")))) {
-		pressedCfg = Date.now();
+		pressedOct = Date.now();
 		var octR = cfgRect(l, cfgIndex("oct"));
 		var cellW = octR[2] / 7;
 		var idx = Math.floor((x - octR[0]) / cellW);
@@ -888,9 +973,9 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl) {
 		mgraphics.redraw();
 		return;
 	}
-	if (hit(x,y,cfgRect(l,cfgIndex("voicing")))) { pressedCfg = Date.now(); openDropdown = "voicing"; mgraphics.redraw(); return; }
-	if (hit(x,y,cfgRect(l,cfgIndex("vl"))))      { pressedCfg = Date.now(); vlEnabled = !vlEnabled; outlet(0,"voiceleading", vlEnabled?"on":"off"); mgraphics.redraw(); return; }
-	if (hit(x,y,cfgRect(l,cfgIndex("vlmode")))) { pressedCfg = Date.now();
+	if (hit(x,y,cfgRect(l,cfgIndex("voicing")))) { pressedVoicing = Date.now(); openDropdown = "voicing"; mgraphics.redraw(); return; }
+	if (hit(x,y,cfgRect(l,cfgIndex("vl"))))      { pressedVL = Date.now(); vlEnabled = !vlEnabled; outlet(0,"voiceleading", vlEnabled?"on":"off"); mgraphics.redraw(); return; }
+	if (hit(x,y,cfgRect(l,cfgIndex("vlmode")))) { pressedVLMode = Date.now();
 		vlMode = (vlMode==="anchored")?"relative":(vlMode==="relative")?"piano":"anchored";
 		outlet(0,"vlmode",vlMode); mgraphics.redraw(); return;
 	}

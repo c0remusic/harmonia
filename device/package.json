@@ -1,0 +1,25 @@
+{
+  "name": "@harmonia/device",
+  "version": "1.0.0",
+  "description": "Harmonia Max for Live device - harmonic composition tool",
+  "main": "harmonia_v1.amxd",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "max-for-live",
+    "ableton",
+    "chord-selector",
+    "voice-leading"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "harmonia_v1.amxd",
+    "chord_ui.js",
+    "chord_engine.js",
+    "init_menus.js",
+    "live_key_observer.js",
+    "midi_map.js"
+  ]
+}
