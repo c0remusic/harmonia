@@ -146,6 +146,18 @@
     .support-icon { font-size: 26px; color: var(--blue); margin-bottom: 10px; }
     .card p.txt { font-size: 14.5px; color: var(--muted); line-height: 1.7; max-width: 460px; }
 
+    /* CONTACT & COMMUNITY */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 44px; }
+    .contact-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 40px;
+      background: rgba(255,255,255,0.02); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+      display: flex; flex-direction: column; }
+    .contact-card h3 { font-family: 'DM Serif Display', serif; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .contact-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+    .contact-card .btn-primary, .contact-card .btn-secondary, .contact-card .btn-blue { align-self: flex-start; margin-top: auto; }
+    .discord-icon { width: 40px; height: 40px; color: #8ECCE8; margin-bottom: 16px; }
+    .discord-widget { width: 100%; border: 0; border-radius: 10px; margin-top: 22px; }
+
     /* LEGAL MODAL */
     .modal-overlay { position: fixed; inset: 0; z-index: 200; display: none;
       align-items: center; justify-content: center; padding: 24px;
@@ -190,6 +202,7 @@
       .features-grid { grid-template-columns: 1fr; }
       .voicings-grid { grid-template-columns: repeat(2, 1fr); }
       .legal-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
       .modal { padding: 36px 26px; }
       .card { grid-template-columns: 1fr; padding: 36px 28px; }
       .card-actions { min-width: 0; }
@@ -212,6 +225,7 @@
       <a href="#voicings">Voicings</a>
       <a href="#download">Download</a>
       <a href="#support">Support</a>
+      <a href="#contact">Contact</a>
     </div>
   </nav>
 
@@ -324,6 +338,30 @@
       </div>
       <div class="card-actions">
         <a href="https://paypal.me/harmonia" target="_blank" rel="noopener" class="btn-primary btn-blue">Donate via PayPal</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT & COMMUNITY -->
+  <section class="block" id="contact">
+    <p class="label">Contact &amp; community</p>
+    <p class="heading">Get in touch &amp; join the community</p>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>Contact</h3>
+        <p>A question, a bug, a feature idea? Reach out directly &mdash; feedback shapes where Harmonia goes next.</p>
+        <a href="mailto:[your@email.com]" class="btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.7"/></svg>
+          Email me
+        </a>
+      </div>
+      <div class="contact-card">
+        <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.3 1.4 13.7 13.7 0 0 0-15-.05A14.8 14.8 0 0 1 8.8 3.5L8.55 3A19.7 19.7 0 0 0 3.7 4.4 20.3 20.3 0 0 0 .2 18.1a19.9 19.9 0 0 0 6 3 14.7 14.7 0 0 0 1.27-2.06 12.9 12.9 0 0 1-2-.96l.5-.37a14.2 14.2 0 0 0 12.07 0l.5.37a12.7 12.7 0 0 1-2 .96A14.3 14.3 0 0 0 17.8 21a19.8 19.8 0 0 0 6-3 20.3 20.3 0 0 0-3.5-13.6zM8.02 15.3c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.95 2.41-2.15 2.41zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.94 2.41-2.15 2.41z"/></svg>
+        <h3>Discord</h3>
+        <p>Share presets and progressions, get help, and follow development with other Harmonia users.</p>
+        <a href="[your-discord-invite-url]" target="_blank" rel="noopener" class="btn-primary btn-blue">Join the Discord</a>
+        <!-- Widget: enable "Server Widget" in your Discord server settings, then replace SERVER_ID below -->
+        <iframe class="discord-widget" src="https://discord.com/widget?id=SERVER_ID&theme=dark" height="300" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Discord server"></iframe>
       </div>
     </div>
   </section>
