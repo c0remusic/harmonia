@@ -33,11 +33,11 @@
 
     /* GLOBAL BACKGROUND — grid + glow, fixed behind everything */
     .page-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-    .page-bg .grid { position: absolute; inset: 0; opacity: .9;
-      background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    .page-bg .grid { position: absolute; inset: 0; opacity: 1;
+      background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
       background-size: 56px 56px;
-      -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 28%, #000 35%, transparent 100%);
-      mask-image: radial-gradient(ellipse 85% 65% at 50% 28%, #000 35%, transparent 100%); }
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+      mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%); }
     .page-bg .glow { position: absolute; inset: 0;
       background: radial-gradient(ellipse 50% 45% at 72% 18%, rgba(255,173,86,0.14) 0%, transparent 70%),
                   radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.10) 0%, transparent 65%),
@@ -99,8 +99,8 @@
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
       background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-    .feature { background: rgba(35,35,35,0.55); padding: 36px 32px; transition: background .2s; }
-    .feature:hover { background: rgba(48,48,48,0.7); }
+    .feature { background: rgba(30,30,30,0.4); padding: 36px 32px; transition: background .2s; }
+    .feature:hover { background: rgba(48,48,48,0.55); }
     .ficon { width: 42px; height: 42px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
       font-size: 19px; margin-bottom: 20px; background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.22); color: var(--gold); }
     .ficon.blue { background: var(--blue-dim); border-color: rgba(142,204,232,0.22); color: var(--blue); }
@@ -116,7 +116,7 @@
     .chip .d { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
     /* CARD (download + support) */
-    .card { background: rgba(35,35,35,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    .card { background: rgba(30,30,30,0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--border); border-radius: 14px; padding: 56px;
       display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; position: relative; overflow: hidden; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
