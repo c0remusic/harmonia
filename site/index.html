@@ -68,8 +68,9 @@
       color: var(--muted); font-size: 14px; font-weight: 500; padding: 13px 26px; border-radius: 7px;
       text-decoration: none; background: rgba(255,255,255,0.02); transition: all .2s; cursor: pointer; }
     .btn-secondary:hover { border-color: rgba(255,255,255,0.22); color: var(--white); background: rgba(255,255,255,0.05); }
-    .btn-blue { border-color: rgba(142,204,232,0.35); color: var(--blue); background: var(--blue-dim); }
-    .btn-blue:hover { border-color: var(--blue); color: var(--blue); background: rgba(142,204,232,0.2); }
+    .btn-blue { border: 1px solid rgba(142,204,232,0.35); color: var(--blue); background: var(--blue-dim); }
+    .btn-blue:hover { border-color: var(--blue); color: var(--blue); background: rgba(142,204,232,0.2);
+      transform: translateY(-1px); box-shadow: 0 10px 30px rgba(142,204,232,0.2); }
 
     /* HERO */
     .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column;
@@ -144,10 +145,22 @@
     .support-icon { font-size: 26px; color: var(--blue); margin-bottom: 10px; }
     .card p.txt { font-size: 14.5px; color: var(--muted); line-height: 1.7; max-width: 460px; }
 
+    /* LEGAL */
+    .legal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 40px; }
+    .legal-grid h4 { font-size: 13px; font-weight: 600; color: var(--gold);
+      letter-spacing: .02em; margin-bottom: 8px; }
+    .legal-grid p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .legal-grid a { color: var(--blue); text-decoration: none; }
+    .legal-grid a:hover { text-decoration: underline; }
+    .legal-grid b { color: var(--white); font-weight: 500; }
+
     /* FOOTER */
     footer { border-top: 1px solid var(--border); padding: 30px 48px; display: flex;
       align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     .footer-logo { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--muted); }
+    .footer-links { display: flex; gap: 22px; }
+    .footer-links a { font-size: 12.5px; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: var(--white); }
     .footer-note { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2); }
 
     /* ANIM */
@@ -164,6 +177,7 @@
       .features-head { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       .voicings-grid { grid-template-columns: repeat(2, 1fr); }
+      .legal-grid { grid-template-columns: 1fr; }
       .card { grid-template-columns: 1fr; padding: 36px 28px; }
       .card-actions { min-width: 0; }
     }
@@ -301,8 +315,46 @@
     </div>
   </section>
 
+  <!-- LEGAL -->
+  <section class="block" id="legal">
+    <p class="label">Legal</p>
+    <p class="heading" style="margin-bottom:32px;">Legal notice</p>
+    <div class="legal-grid">
+      <div>
+        <h4>Publisher</h4>
+        <p>Harmonia &mdash; an independent project by <b>[your name / studio]</b>.<br>
+        Contact: <a href="mailto:[your@email.com]">[your@email.com]</a></p>
+      </div>
+      <div>
+        <h4>Hosting</h4>
+        <p>Vercel Inc.<br>340 S Lemon Ave #4133, Walnut, CA 91789, USA<br>
+        <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a></p>
+      </div>
+      <div>
+        <h4>Intellectual property</h4>
+        <p>Harmonia and its source code are released under the <b>[MIT]</b> license. The device and this site are the property of their author unless otherwise stated.</p>
+      </div>
+      <div>
+        <h4>Trademarks</h4>
+        <p>Ableton, Live and Max for Live are trademarks of Ableton AG and Cycling &rsquo;74. Harmonia is an independent tool and is <b>not affiliated with, endorsed by, or sponsored by</b> Ableton AG.</p>
+      </div>
+      <div>
+        <h4>Liability</h4>
+        <p>Harmonia is provided &ldquo;as is&rdquo;, without warranty of any kind. The author cannot be held liable for any damage or data loss arising from its use.</p>
+      </div>
+      <div>
+        <h4>Privacy</h4>
+        <p>This site collects no personal data and sets no tracking cookies. External links (PayPal, GitHub, Vercel) are governed by their own privacy policies.</p>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <span class="footer-logo">Harmonia</span>
+    <span class="footer-links">
+      <a href="#legal">Legal notice</a>
+      <a href="https://github.com/c0remusic/harmonia" target="_blank" rel="noopener">GitHub</a>
+    </span>
     <span class="footer-note">Made with Max for Live &middot; Free &amp; open source</span>
   </footer>
 
