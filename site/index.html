@@ -58,7 +58,7 @@
 
     /* HERO */
     .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column;
-      justify-content: center; padding: 120px 48px 80px; overflow: hidden; }
+      justify-content: center; padding: 120px 0 80px; overflow: hidden; }
     .hero-grid-bg { position: absolute; inset: 0; opacity: .35;
       background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
       background-size: 56px 56px;
@@ -67,7 +67,9 @@
     .hero-glow { position: absolute; inset: 0;
       background: radial-gradient(ellipse 50% 45% at 72% 38%, rgba(255,173,86,0.08) 0%, transparent 70%),
                   radial-gradient(ellipse 40% 40% at 18% 80%, rgba(142,204,232,0.06) 0%, transparent 65%); }
-    .hero-content { position: relative; z-index: 2; max-width: 720px; }
+    .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto;
+      padding: 0 48px; width: 100%; }
+    .hero-inner { max-width: 720px; }
     .eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .16em;
       color: var(--gold); text-transform: uppercase; margin-bottom: 26px; display: flex; align-items: center; gap: 12px; }
     .eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--gold); opacity: .55; }
@@ -132,7 +134,8 @@
     .hero-actions { animation: fadeUp .6s .3s ease both; }
 
     @media (max-width: 920px) {
-      nav, .hero, section.block, footer { padding-left: 24px; padding-right: 24px; }
+      nav, section.block, footer { padding-left: 24px; padding-right: 24px; }
+      .hero-content { padding-left: 24px; padding-right: 24px; }
       .nav-links { display: none; }
       .features-head { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -160,6 +163,7 @@
     <div class="hero-grid-bg"></div>
     <div class="hero-glow"></div>
     <div class="hero-content">
+     <div class="hero-inner">
       <p class="eyebrow">Max for Live &middot; Ableton Live</p>
       <h1>Har<em>monia</em></h1>
       <p class="hero-desc">A harmonic composition tool for fast and musical chord selection, exploration and performance &mdash; directly inside Ableton Live.</p>
@@ -170,6 +174,7 @@
         </a>
         <a href="#features" class="btn-secondary">Explore features</a>
       </div>
+     </div>
     </div>
   </section>
 
