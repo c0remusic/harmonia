@@ -426,28 +426,10 @@ function drawConfig(g, l) {
 	// VOICE LEADING button
 	var vlRect = cfgRect(l, cfgIndex("vl"));
 	drawCfgButton(g, vlRect, "VOICE LEADING", vlEnabled, hoverCfg==="vl", pressedVL);
-	// Description sous
-	if (vlEnabled) {
-		g.set_source_rgba(0.55, 0.55, 0.60, 0.7);
-		g.set_font_size(7);
-		g.move_to(vlRect[0] + vlRect[2]*0.5 - 15, vlRect[1] + vlRect[3] - 2);
-		g.text_path("smooth");
-		g.fill();
-	}
 
-	// VL MODE button (3 states: ANCHOR=gray, RELATIVE=blue, PIANO=gold)
+	// VL MODE button (3 states: ANCHOR=doré, RELATIVE=bleu, PIANO=doré)
 	var vlmRect = cfgRect(l, cfgIndex("vlmode"));
 	drawVLModeButton(g, vlmRect, vlMode, hoverCfg==="vlmode", pressedVLMode);
-	// Description sous (only for RELATIVE et PIANO modes)
-	if (vlMode !== "anchored") {
-		g.set_source_rgba(0.55, 0.55, 0.60, 0.6);
-		g.set_font_size(7);
-		var subLbl = (vlMode==="relative")?"follow":"low";
-		var subW = safeTextW(subLbl, 7);
-		g.move_to(vlmRect[0] + vlmRect[2]*0.5 - subW*0.5, vlmRect[1] + vlmRect[3] - 2);
-		g.text_path(subLbl);
-		g.fill();
-	}
 }
 
 // Sélecteur octave : -3 -2 -1 0 +1 +2 +3
@@ -645,33 +627,29 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	var now = Date.now();
 	var isPressed = (now - pressTime) < 150;
 
-	// Couleur selon le mode : ANCHOR=gris, RELATIVE=bleu, PIANO=doré
-	var br, bg, bb, isActive;
-	if (mode === "anchored") {
-		isActive = false;
-		br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
-	} else if (mode === "relative") {
-		isActive = true;
+	// Couleur selon le mode : tous doré sauf RELATIVE=bleu
+	var br, bg, bb;
+	if (mode === "relative") {
 		br = COLORS.blue_accent[0]; bg = COLORS.blue_accent[1]; bb = COLORS.blue_accent[2];
-	} else { // piano
-		isActive = true;
+	} else { // ANCHOR et PIANO = doré (comme VOICE LEADING)
 		br = COLORS.gold_active[0]; bg = COLORS.gold_active[1]; bb = COLORS.gold_active[2];
 	}
 
 	// Apply hover/press darkening
 	if (isPressed) {
 		br *= 0.85; bg *= 0.85; bb *= 0.85;
-	} else if (isHover && isActive) {
-		br *= 1.1; bg *= 1.1; bb *= 1.1;
+	} else if (isHover) {
+		br *= 1.05; bg *= 1.05; bb *= 1.05;
 	}
 
 	g.set_source_rgba(br, bg, bb, 1.0);
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Texte blanc pour bon contraste sur tous les fonds
+	// Texte: sombre quand coloré (ANCHOR/PIANO doré), blanc sinon
 	var lbl = (mode==="anchored")?"ANCHOR":(mode==="relative")?"RELATIVE":"PIANO";
-	g.set_source_rgba(COLORS.text_white[0], COLORS.text_white[1], COLORS.text_white[2], 1.0);
+	var textColor = (mode === "relative") ? COLORS.text_white : COLORS.text_dark;
+	g.set_source_rgba(textColor[0], textColor[1], textColor[2], 1.0);
 	g.set_font_size(9);
 	var tw = safeTextW(lbl, 9);
 	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
