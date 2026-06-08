@@ -122,10 +122,14 @@
     .feature::after { content: counter(feat, decimal-leading-zero); position: absolute; top: 16px; right: 20px;
       font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted2); }
 
-    /* DEVICE SHOWCASE (annotated screenshot) */
-    .showcase { max-width: 1200px; margin: 0 auto; padding: 10px 48px 40px; }
-    .frame { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06); }
+    /* DEVICE SHOWCASE — annotated diagram (callouts around the frame) */
+    .showcase { max-width: 1340px; margin: 0 auto; padding: 10px 24px 40px; }
+    .annotated { position: relative; padding: 188px 60px; }
+    .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+    .leaders line { stroke-width: 1.5; stroke-dasharray: 4 4; opacity: .8; }
+    .leaders circle { } /* end dots drawn in JS */
+    .frame { position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06); }
     .frame-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg2);
       border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0; }
     .frame-bar .d { width: 10px; height: 10px; border-radius: 50%; }
@@ -133,30 +137,22 @@
     .frame-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-left: 8px; }
     .shot-wrap { position: relative; line-height: 0; }
     .shot-wrap img { width: 100%; display: block; border-radius: 0 0 12px 12px; }
-    .hotspot { position: absolute; transform: translate(-50%,-50%); width: 26px; height: 26px; border-radius: 50%;
+    .spot { position: absolute; transform: translate(-50%,-50%); width: 20px; height: 20px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace;
-      font-size: 11px; font-weight: 500; cursor: pointer; z-index: 3; transition: transform .15s;
-      background: rgba(255,173,86,0.22); border: 1px solid var(--gold); color: var(--gold);
-      box-shadow: 0 0 0 0 rgba(255,173,86,0.5); animation: hs 2.6s infinite; }
-    .hotspot.blue { background: rgba(142,204,232,0.22); border-color: var(--blue); color: var(--blue);
-      box-shadow: 0 0 0 0 rgba(142,204,232,0.5); animation: hsb 2.6s infinite; }
-    .hotspot:hover { transform: translate(-50%,-50%) scale(1.18); }
-    @keyframes hs { 70%{box-shadow:0 0 0 10px rgba(255,173,86,0)} 100%{box-shadow:0 0 0 0 rgba(255,173,86,0)} }
-    @keyframes hsb { 70%{box-shadow:0 0 0 10px rgba(142,204,232,0)} 100%{box-shadow:0 0 0 0 rgba(142,204,232,0)} }
-    .shot-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
-      pointer-events: none; z-index: 8; opacity: 0; transition: opacity .18s; }
-    .shot-lines.show { opacity: 1; }
-    .shot-lines line { stroke-width: 1.5; stroke-dasharray: 4 4; }
-    .shot-tip { position: absolute; width: 230px; background: #1f1f1f; border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 12px; padding: 15px 17px; opacity: 0; pointer-events: none; z-index: 12;
-      transform: translate(-50%,-100%) scale(.96); transform-origin: bottom center; margin-top: -12px;
-      transition: opacity .18s, transform .18s;
-      box-shadow: 0 28px 70px rgba(0,0,0,0.65), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09); }
-    .shot-tip.show { opacity: 1; transform: translate(-50%,-100%) scale(1); }
-    .shot-tip .t { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 5px; }
-    .shot-tip .x { font-size: 12px; color: var(--muted); line-height: 1.55; }
-    .shot-hint { text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2);
-      letter-spacing: .1em; text-transform: uppercase; margin-top: 18px; }
+      font-size: 10px; font-weight: 500; z-index: 4; background: rgba(255,173,86,0.25); border: 1px solid var(--gold);
+      color: var(--gold); box-shadow: 0 0 0 0 rgba(255,173,86,0.5); animation: hs 2.8s infinite; }
+    .spot.blue { background: rgba(142,204,232,0.25); border-color: var(--blue); color: var(--blue);
+      box-shadow: 0 0 0 0 rgba(142,204,232,0.5); animation: hsb 2.8s infinite; }
+    @keyframes hs { 70%{box-shadow:0 0 0 9px rgba(255,173,86,0)} 100%{box-shadow:0 0 0 0 rgba(255,173,86,0)} }
+    @keyframes hsb { 70%{box-shadow:0 0 0 9px rgba(142,204,232,0)} 100%{box-shadow:0 0 0 0 rgba(142,204,232,0)} }
+    .callout { position: absolute; z-index: 3; width: 232px; background: #1e1e1e;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 15px 17px;
+      box-shadow: 0 22px 55px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08); transition: transform .15s, border-color .2s; }
+    .callout:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.22); }
+    .callout .n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: .08em; }
+    .callout.blue .n { color: var(--blue); }
+    .callout .t { font-family: 'DM Serif Display', serif; font-size: 17px; margin: 4px 0 6px; }
+    .callout .x { font-size: 12px; color: var(--muted); line-height: 1.55; }
 
     /* VOICINGS */
     .voicings-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 48px; }
@@ -251,11 +247,11 @@
     @media (max-width: 920px) {
       nav, section.block, footer { padding-left: 24px; padding-right: 24px; }
       .hero-content { padding-left: 24px; padding-right: 24px; }
-      .showcase { padding-left: 24px; padding-right: 24px; }
-      .hotspot, .shot-tip { display: none; }
+      .showcase { padding-left: 16px; padding-right: 16px; }
+      .annotated { padding: 0; }
+      .leaders, .spot, .callout { display: none; }
       .shot-wrap { overflow-x: auto; }
       .shot-wrap img { min-width: 820px; }
-      .shot-hint::before { content: 'Scroll the device sideways — '; }
       .nav-links { display: none; }
       .features-head { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -306,26 +302,35 @@
     </div>
   </section>
 
-  <!-- DEVICE SHOWCASE (annotated screenshot) -->
+  <!-- DEVICE SHOWCASE — annotated diagram -->
   <section class="showcase" id="device">
-    <div class="frame">
-      <div class="frame-bar">
-        <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
-        <span class="frame-title">harmonia_v1 &mdash; E Min</span>
+    <div class="annotated" id="annotated">
+      <svg class="leaders" id="leaders"></svg>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
+          <span class="frame-title">harmonia_v1 &mdash; E Min</span>
+        </div>
+        <div class="shot-wrap" id="shot">
+          <img src="./chord_selector_screenshot.png" alt="Harmonia device running in Ableton Live">
+          <div class="spot"      id="sp1" style="left:45%;top:52%">1</div>
+          <div class="spot blue" id="sp2" style="left:4%;top:82%">2</div>
+          <div class="spot"      id="sp3" style="left:4%;top:56%">3</div>
+          <div class="spot blue" id="sp4" style="left:4.5%;top:18%">4</div>
+          <div class="spot"      id="sp5" style="left:88%;top:18%">5</div>
+          <div class="spot blue" id="sp6" style="left:95.5%;top:80%">6</div>
+        </div>
       </div>
-      <div class="shot-wrap" id="shot">
-        <img src="./chord_selector_screenshot.png" alt="Harmonia device running in Ableton Live">
-        <div class="hotspot blue" style="left:4.5%;top:18%" data-t="Live Scale Sync" data-x="Import the current key &amp; scale from Ableton Live in one click.">4</div>
-        <div class="hotspot"      style="left:4%;top:56%"   data-t="10 Voicings" data-x="Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3.">3</div>
-        <div class="hotspot blue" style="left:4%;top:82%"   data-t="Voice Leading" data-x="3 algorithms with common-tone detection for smooth motion.">2</div>
-        <div class="hotspot"      style="left:45%;top:52%"  data-t="Chord Grid" data-x="7 diatonic degrees &mdash; every valid chord, always visible.">1</div>
-        <div class="hotspot blue" style="left:88%;top:18%"  data-t="Borrowed Chords" data-x="Secondary dominants &amp; modal interchange, right in the grid.">5</div>
-        <div class="hotspot"      style="left:95.5%;top:80%" data-t="MIDI &amp; Hold" data-x="Mini-keyboard feedback and Hold/Latch for live performance.">6</div>
-        <svg class="shot-lines" id="shotLines"><line id="shotLine" x1="0" y1="0" x2="0" y2="0"/></svg>
-        <div class="shot-tip" id="shotTip"><div class="t"></div><div class="x"></div></div>
-      </div>
+
+      <!-- callouts placed around the frame -->
+      <div class="callout"      data-spot="sp4" style="left:0;top:24px"        ><div class="n">04</div><div class="t">Live Scale Sync</div><div class="x">Import the current key &amp; scale from Ableton Live in one click.</div></div>
+      <div class="callout blue" data-spot="sp1" style="left:34%;top:0"          ><div class="n">01</div><div class="t">Chord Grid</div><div class="x">7 diatonic degrees &mdash; every valid chord, always visible.</div></div>
+      <div class="callout"      data-spot="sp5" style="right:0;top:24px"        ><div class="n">05</div><div class="t">Borrowed Chords</div><div class="x">Secondary dominants &amp; modal interchange, right in the grid.</div></div>
+      <div class="callout blue" data-spot="sp3" style="left:0;bottom:24px"      ><div class="n">03</div><div class="t">10 Voicings</div><div class="x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3.</div></div>
+      <div class="callout"      data-spot="sp2" style="left:30%;bottom:0"       ><div class="n">02</div><div class="t">Voice Leading</div><div class="x">3 algorithms with common-tone detection for smooth motion.</div></div>
+      <div class="callout blue" data-spot="sp6" style="right:0;bottom:24px"     ><div class="n">06</div><div class="t">MIDI &amp; Hold</div><div class="x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div>
     </div>
-    <p class="shot-hint">Hover the markers to explore the device</p>
   </section>
 
   <!-- FEATURES -->
@@ -516,34 +521,39 @@
     legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
 
-    // Device showcase hotspots — leader line + pop-out card
-    const shot = document.getElementById('shot');
-    const shotTip = document.getElementById('shotTip');
-    const shotLines = document.getElementById('shotLines');
-    const shotLine = document.getElementById('shotLine');
-    if (shot && shotTip && shotLine) {
-      shot.querySelectorAll('.hotspot').forEach(h => {
-        h.addEventListener('mouseenter', () => {
-          const w = shot.clientWidth, hgt = shot.clientHeight;
-          const mx = w * parseFloat(h.style.left) / 100;
-          const my = hgt * parseFloat(h.style.top) / 100;
-          const cx = Math.max(122, Math.min(w - 122, mx)); // card centre, clamped inside
-          const cardBottomY = -22; // above the frame -> 3D pop-out
-          const col = h.classList.contains('blue') ? '#8ECCE8' : '#FFAD56';
-          shotTip.querySelector('.t').textContent = h.dataset.t;
-          shotTip.querySelector('.x').textContent = h.dataset.x;
-          shotTip.style.left = cx + 'px';
-          shotTip.style.top = '0px';
-          shotTip.style.borderColor = 'rgba(255,255,255,0.14)';
-          shotLine.setAttribute('x1', mx); shotLine.setAttribute('y1', my);
-          shotLine.setAttribute('x2', cx); shotLine.setAttribute('y2', cardBottomY);
-          shotLine.setAttribute('stroke', col);
-          shotTip.classList.add('show');
-          shotLines.classList.add('show');
-        });
-        h.addEventListener('mouseleave', () => { shotTip.classList.remove('show'); shotLines.classList.remove('show'); });
+    // Device showcase — draw leader lines from each callout to its spot
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    function drawLeaders() {
+      const annotated = document.getElementById('annotated');
+      const leaders = document.getElementById('leaders');
+      if (!annotated || !leaders) return;
+      const ar = annotated.getBoundingClientRect();
+      if (ar.width === 0) return;
+      leaders.setAttribute('viewBox', '0 0 ' + ar.width + ' ' + ar.height);
+      leaders.setAttribute('preserveAspectRatio', 'none');
+      leaders.innerHTML = '';
+      document.querySelectorAll('.callout').forEach(c => {
+        const spot = document.getElementById(c.dataset.spot);
+        if (!spot) return;
+        const cr = c.getBoundingClientRect(), sr = spot.getBoundingClientRect();
+        const sx = sr.left + sr.width / 2 - ar.left, sy = sr.top + sr.height / 2 - ar.top;
+        const cx0 = cr.left - ar.left, cy0 = cr.top - ar.top;
+        const ax = Math.max(cx0, Math.min(cx0 + cr.width, sx));   // nearest point on callout edge
+        const ay = Math.max(cy0, Math.min(cy0 + cr.height, sy));
+        const col = c.classList.contains('blue') ? '#8ECCE8' : '#FFAD56';
+        const ln = document.createElementNS(SVGNS, 'line');
+        ln.setAttribute('x1', ax); ln.setAttribute('y1', ay);
+        ln.setAttribute('x2', sx); ln.setAttribute('y2', sy); ln.setAttribute('stroke', col);
+        leaders.appendChild(ln);
+        const dot = document.createElementNS(SVGNS, 'circle');
+        dot.setAttribute('cx', ax); dot.setAttribute('cy', ay); dot.setAttribute('r', '3'); dot.setAttribute('fill', col);
+        leaders.appendChild(dot);
       });
     }
+    window.addEventListener('load', drawLeaders);
+    window.addEventListener('resize', drawLeaders);
+    setTimeout(drawLeaders, 300); setTimeout(drawLeaders, 900);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLeaders);
 
     // Contact form (Formspree AJAX)
     const form = document.getElementById('contact-form');
