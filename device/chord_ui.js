@@ -686,7 +686,7 @@ function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
 	if (!valid) {
 		g.set_source_rgba(0.13, 0.13, 0.14, 1.0);
 	} else if (isAct) {
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
 	} else if (isHov) {
 		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
@@ -697,16 +697,16 @@ function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
 
 	if (!valid) return;
 
-	// Bordure : gris normal, dorée si actif (raised button)
+	// Bordure : gris normal, bleu si actif (raised button)
 	if (isAct) {
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
 		g.set_line_width(1.5);
 		// shadow simulé (offset 1px noir)
 		g.set_source_rgba(0, 0, 0, 0.18);
 		g.rectangle_rounded(r[0]+1, r[1]+1, r[2], r[3], 3, 3);
 		g.fill();
 		// re-fill fond par-dessus
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
 		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 		g.fill();
 		g.set_source_rgba(1.0, 1.0, 1.0, 0.4);
