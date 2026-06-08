@@ -944,17 +944,17 @@ function onidle(x, y, but) {
 
 	// Feedback temporaire SYNC: redraw continu pendant 80ms
 	var now = Date.now();
-	if (syncPressed > 0) {
-		if (now - syncPressed < 80) {
-			// Feedback actif: redraw continuellement
-			mgraphics.redraw();
-			return;  // Skip les autres hovers pendant le feedback
-		} else {
-			// Feedback expiré: une dernière redraw pour la transition
-			mgraphics.redraw();
-			syncPressed = 0;
-			return;  // Skip les autres hovers juste après expiration
-		}
+	var feedbackActive = (syncPressed > 0 && now - syncPressed < 80);
+
+	if (feedbackActive) {
+		// Feedback actif: redraw continuellement
+		mgraphics.redraw();
+		return;  // Skip les autres hovers pendant le feedback
+	} else if (syncPressed > 0 && now - syncPressed >= 80) {
+		// Feedback vient d'expirer: redraw une fois et reset
+		mgraphics.redraw();
+		syncPressed = 0;
+		// Continue pour checker les hovers normalement
 	}
 
 	// Hover SYNC
