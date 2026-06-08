@@ -2,7 +2,7 @@
 
 Max for Live harmonic composition tool — the device itself.
 
-**Latest**: UI Polish Final (2026-06-08) — Colors, harmonization, descriptions added. See `docs/session-log.md`.
+**Latest**: Ableton-Inspired Palette (2026-06-08) — #FFB506 amber, darker greys, WCAG AAA contrast. See `docs/session-log.md`.
 
 ## Files
 
