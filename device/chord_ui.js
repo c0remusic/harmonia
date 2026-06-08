@@ -287,6 +287,14 @@ function paint() {
 	if (!collapsed) drawGrid(g, l);
 	drawMonitor(g, l);
 	drawCollapse(g, l);
+
+	// Overlay: assombrir le reste quand dropdown ouvert
+	if (openDropdown !== "") {
+		g.set_source_rgba(0, 0, 0, 0.4);
+		g.rectangle(0, 0, l.W, l.H);
+		g.fill();
+	}
+
 	drawDropdown(g, l);   // par-dessus tout
 
 	// Redraw continu pour animations (300ms max)
