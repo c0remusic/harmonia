@@ -7,6 +7,7 @@ FUNCTIONS_GUIDE.md
 # Website & legacy (not for this repo)
 website/
 site/
+!site/index.html  # Exception: CSS colors synced with device palette
 push/
 *BACKUP*
 Capture.PNG
