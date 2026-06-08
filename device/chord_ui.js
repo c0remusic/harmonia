@@ -71,6 +71,7 @@ var syncPressed = 0;       // timestamp du clic SYNC (feedback temporaire)
 var hoverCell   = -1;      // index cellule grille survolée (-1 = aucune)
 var hoverCfg    = "";      // ID config survolé ("vl", "vlmode", "oct", "voicing", "")
 var hoverOctave = -1;      // index octave survolé dans le sélecteur (-1 = aucun)
+var hoverHold   = false;   // hover sur le bouton HOLD
 var pressedCell = 0;       // timestamp clic cellule (feedback 150ms)
 // Timestamps individuels pour feedback 150ms par bouton
 var pressedKeyscale = 0;
@@ -822,9 +823,11 @@ function drawMonitor(g, l) {
 	// Same style as drawCfgButton: ON=gold, OFF=bg_cfg, with hover/press feedback
 	if (latchMode) {
 		if (holdPressed) g.set_source_rgba(COLORS.gold_active[0]*0.85, COLORS.gold_active[1]*0.85, COLORS.gold_active[2]*0.85, 1.0);
+		else if (hoverHold) g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);
 		else g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else {
-		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
+		if (hoverHold) g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
+		else g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
 	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 	g.fill();
@@ -922,6 +925,10 @@ function onidle(x, y, but) {
 		}
 	}
 	if (newHoverCell !== hoverCell) { hoverCell = newHoverCell; mgraphics.redraw(); }
+
+	// Hover bouton HOLD
+	var newHoverHold = hit(x, y, holdRect(l));
+	if (newHoverHold !== hoverHold) { hoverHold = newHoverHold; mgraphics.redraw(); }
 
 	if (openDropdown === "") { if (hoverDD !== -1) { hoverDD = -1; mgraphics.redraw(); } return; }
 	var dl = ddLayout(l);
