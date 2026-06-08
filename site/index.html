@@ -143,12 +143,16 @@
     .hotspot:hover { transform: translate(-50%,-50%) scale(1.18); }
     @keyframes hs { 70%{box-shadow:0 0 0 10px rgba(255,173,86,0)} 100%{box-shadow:0 0 0 0 rgba(255,173,86,0)} }
     @keyframes hsb { 70%{box-shadow:0 0 0 10px rgba(142,204,232,0)} 100%{box-shadow:0 0 0 0 rgba(142,204,232,0)} }
-    .shot-tip { position: absolute; width: 220px; background: #1c1c1c; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px; padding: 14px 16px; opacity: 0; pointer-events: none; z-index: 10;
-      transform: translate(-50%,-100%); margin-top: -16px; transition: opacity .18s;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55); }
-    .shot-tip.below { transform: translate(-50%,0); margin-top: 16px; }
-    .shot-tip.show { opacity: 1; }
+    .shot-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+      pointer-events: none; z-index: 8; opacity: 0; transition: opacity .18s; }
+    .shot-lines.show { opacity: 1; }
+    .shot-lines line { stroke-width: 1.5; stroke-dasharray: 4 4; }
+    .shot-tip { position: absolute; width: 230px; background: #1f1f1f; border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px; padding: 15px 17px; opacity: 0; pointer-events: none; z-index: 12;
+      transform: translate(-50%,-100%) scale(.96); transform-origin: bottom center; margin-top: -12px;
+      transition: opacity .18s, transform .18s;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.65), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09); }
+    .shot-tip.show { opacity: 1; transform: translate(-50%,-100%) scale(1); }
     .shot-tip .t { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 5px; }
     .shot-tip .x { font-size: 12px; color: var(--muted); line-height: 1.55; }
     .shot-hint { text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2);
@@ -317,6 +321,7 @@
         <div class="hotspot"      style="left:45%;top:52%"  data-t="Chord Grid" data-x="7 diatonic degrees &mdash; every valid chord, always visible.">1</div>
         <div class="hotspot blue" style="left:88%;top:18%"  data-t="Borrowed Chords" data-x="Secondary dominants &amp; modal interchange, right in the grid.">5</div>
         <div class="hotspot"      style="left:95.5%;top:80%" data-t="MIDI &amp; Hold" data-x="Mini-keyboard feedback and Hold/Latch for live performance.">6</div>
+        <svg class="shot-lines" id="shotLines"><line id="shotLine" x1="0" y1="0" x2="0" y2="0"/></svg>
         <div class="shot-tip" id="shotTip"><div class="t"></div><div class="x"></div></div>
       </div>
     </div>
@@ -511,25 +516,32 @@
     legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
 
-    // Device showcase hotspots
+    // Device showcase hotspots — leader line + pop-out card
     const shot = document.getElementById('shot');
     const shotTip = document.getElementById('shotTip');
-    if (shot && shotTip) {
+    const shotLines = document.getElementById('shotLines');
+    const shotLine = document.getElementById('shotLine');
+    if (shot && shotTip && shotLine) {
       shot.querySelectorAll('.hotspot').forEach(h => {
         h.addEventListener('mouseenter', () => {
+          const w = shot.clientWidth, hgt = shot.clientHeight;
+          const mx = w * parseFloat(h.style.left) / 100;
+          const my = hgt * parseFloat(h.style.top) / 100;
+          const cx = Math.max(122, Math.min(w - 122, mx)); // card centre, clamped inside
+          const cardBottomY = -22; // above the frame -> 3D pop-out
+          const col = h.classList.contains('blue') ? '#8ECCE8' : '#FFAD56';
           shotTip.querySelector('.t').textContent = h.dataset.t;
           shotTip.querySelector('.x').textContent = h.dataset.x;
-          const w = shot.clientWidth;
-          const leftPct = parseFloat(h.style.left);
-          const topPct = parseFloat(h.style.top);
-          let px = w * leftPct / 100;
-          px = Math.max(114, Math.min(w - 114, px));
-          shotTip.style.left = px + 'px';
-          shotTip.style.top = h.style.top;
-          shotTip.classList.toggle('below', topPct < 42);
+          shotTip.style.left = cx + 'px';
+          shotTip.style.top = '0px';
+          shotTip.style.borderColor = 'rgba(255,255,255,0.14)';
+          shotLine.setAttribute('x1', mx); shotLine.setAttribute('y1', my);
+          shotLine.setAttribute('x2', cx); shotLine.setAttribute('y2', cardBottomY);
+          shotLine.setAttribute('stroke', col);
           shotTip.classList.add('show');
+          shotLines.classList.add('show');
         });
-        h.addEventListener('mouseleave', () => shotTip.classList.remove('show'));
+        h.addEventListener('mouseleave', () => { shotTip.classList.remove('show'); shotLines.classList.remove('show'); });
       });
     }
 
