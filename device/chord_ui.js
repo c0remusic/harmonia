@@ -951,10 +951,10 @@ function onidle(x, y, but) {
 		mgraphics.redraw();
 		return;  // Skip les autres hovers pendant le feedback
 	} else if (syncPressed > 0 && now - syncPressed >= 80) {
-		// Feedback vient d'expirer: redraw une fois et reset
-		mgraphics.redraw();
+		// Feedback vient d'expirer: reset PUIS redraw pour afficher le nouveau state
 		syncPressed = 0;
-		// Continue pour checker les hovers normalement
+		mgraphics.redraw();
+		return;  // Force le redraw, pas de check hover supplémentaire maintenant
 	}
 
 	// Hover SYNC
