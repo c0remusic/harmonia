@@ -31,6 +31,19 @@
     }
     a { color: inherit; }
 
+    /* GLOBAL BACKGROUND — grid + glow, fixed behind everything */
+    .page-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .page-bg .grid { position: absolute; inset: 0; opacity: .35;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 56px 56px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 20%, transparent 95%);
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 20%, transparent 95%); }
+    .page-bg .glow { position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 45% at 72% 20%, rgba(255,173,86,0.08) 0%, transparent 70%),
+                  radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.06) 0%, transparent 65%),
+                  radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,173,86,0.05) 0%, transparent 70%); }
+    nav, .hero, section.block, footer { position: relative; z-index: 1; }
+
     /* NAV */
     nav { position: fixed; top: 0; left: 0; right: 0; z-index: 99; padding: 18px 48px;
       display: flex; align-items: center; gap: 12px; border-bottom: 1px solid transparent;
@@ -59,14 +72,6 @@
     /* HERO */
     .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column;
       justify-content: center; padding: 120px 0 80px; overflow: hidden; }
-    .hero-grid-bg { position: absolute; inset: 0; opacity: .35;
-      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 56px 56px;
-      -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 45%, #000 25%, transparent 100%);
-      mask-image: radial-gradient(ellipse 75% 75% at 50% 45%, #000 25%, transparent 100%); }
-    .hero-glow { position: absolute; inset: 0;
-      background: radial-gradient(ellipse 50% 45% at 72% 38%, rgba(255,173,86,0.08) 0%, transparent 70%),
-                  radial-gradient(ellipse 40% 40% at 18% 80%, rgba(142,204,232,0.06) 0%, transparent 65%); }
     .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto;
       padding: 0 48px; width: 100%; }
     .hero-inner { max-width: 720px; }
@@ -147,6 +152,11 @@
 </head>
 <body>
 
+  <div class="page-bg">
+    <div class="grid"></div>
+    <div class="glow"></div>
+  </div>
+
   <nav id="nav">
     <a href="#" class="nav-logo">Harmonia</a>
     <span class="nav-tag">Max for Live</span>
@@ -160,8 +170,6 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-grid-bg"></div>
-    <div class="hero-glow"></div>
     <div class="hero-content">
      <div class="hero-inner">
       <p class="eyebrow">Max for Live &middot; Ableton Live</p>
