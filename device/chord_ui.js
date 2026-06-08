@@ -343,10 +343,10 @@ function drawDropdown(g, l) {
 	var dl  = ddLayout(l);
 	var cur = ddCurrent();
 
-	// fond opaque remplissant la colonne CONFIG
+	// fond opaque remplissant la colonne CONFIG + seamless à droite
 	var ddW = CFG_W;   // largeur complète de la colonne
 	g.set_source_rgba(COLORS.bg_main[0]*0.95, COLORS.bg_main[1]*0.95, COLORS.bg_main[2]*0.95, 0.97);
-	g.rectangle_rounded(0, 0, ddW, l.H, 4, 4);
+	g.rectangle(0, 0, l.W, l.H);   // remplit tout jusqu'au bord droit (seamless)
 	g.fill();
 
 	// titre
