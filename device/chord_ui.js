@@ -475,9 +475,9 @@ function drawSyncButton(g, r) {
 	var isPressed = (now - syncPressed) < 150;   // feedback 150ms
 
 	// Fond : feedback visuel selon état
-	// Quand pressé: inverser les couleurs (fond = doré, texte = sombre)
+	// Quand pressé ET sur le bouton: inverser les couleurs (fond = doré, texte = sombre)
 	var bgColor, textColor;
-	if (isPressed) {
+	if (isPressed && hoverSync) {
 		bgColor = COLORS.gold_active;   // fond devient doré
 		textColor = COLORS.bg_cfg;       // texte devient sombre
 	} else if (hoverSync) {
