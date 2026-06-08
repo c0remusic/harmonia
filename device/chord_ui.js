@@ -813,7 +813,7 @@ function drawMonitor(g, l) {
 
 	// HOLD / LATCH (en bas sous le clavier)
 	var hr = holdRect(l);
-	// HOLD/LATCH : doré + shadow quand ON, gris quand OFF
+	// HOLD/LATCH : doré + shadow quand ON, gris quand OFF (seamless, no text)
 	if (latchMode) {
 		// shadow
 		g.set_source_rgba(0, 0, 0, 0.18);
@@ -821,7 +821,7 @@ function drawMonitor(g, l) {
 		g.fill();
 		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else {
-		g.set_source_rgba(0.20, 0.20, 0.22, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	}
 	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 	g.fill();
@@ -831,13 +831,7 @@ function drawMonitor(g, l) {
 		g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 		g.stroke();
 	}
-	g.set_source_rgba(latchMode ? COLORS.text_dark[0] : 0.70, latchMode ? COLORS.text_dark[1] : 0.70, latchMode ? COLORS.text_dark[2] : 0.73, 1.0);
-	g.set_font_size(9);
-	var ht = latchMode ? "LATCH" : "HOLD";
-	var htw = safeTextW(ht, 9);
-	g.move_to(hr[0]+(hr[2]-htw)*0.5, hr[1]+hr[3]*0.5+3);
-	g.text_path(ht);
-	g.fill();
+	// No text label (seamless like VOICE LEADING / ANCHOR)
 }
 
 function safeTextW(str, fs) {
