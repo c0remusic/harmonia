@@ -343,10 +343,10 @@ function drawDropdown(g, l) {
 	var dl  = ddLayout(l);
 	var cur = ddCurrent();
 
-	// Fond opaque remplissant la colonne CONFIG + seamless à droite
+	// Fond opaque seulement sur la zone CONFIG
 	var ddW = CFG_W;   // largeur complète de la colonne
 	g.set_source_rgba(COLORS.bg_main[0], COLORS.bg_main[1], COLORS.bg_main[2], 1.0);
-	g.rectangle(0, 0, l.W, l.H);   // remplit tout jusqu'au bord droit (seamless)
+	g.rectangle(0, 0, ddW, l.H);   // couvre seulement la colonne CONFIG
 	g.fill();
 
 	// Cadre/bordure autour du menu déroulant (zone CONFIG seulement)
