@@ -280,6 +280,16 @@ function paint() {
 		outlet(0, "requeststate");  // demande au moteur d'envoyer son état
 	}
 
+	// Feedback temporaire SYNC: redraw continu pendant 80ms (même sans mouvement souris)
+	var now = Date.now();
+	if (syncPressed > 0 && now - syncPressed < 80) {
+		mgraphics.redraw();
+	} else if (syncPressed > 0 && now - syncPressed >= 80) {
+		// Feedback expire: reset et redraw une dernière fois
+		syncPressed = 0;
+		mgraphics.redraw();
+	}
+
 	g.set_source_rgba(COLORS.bg_main[0], COLORS.bg_main[1], COLORS.bg_main[2], 1.0);
 	g.rectangle(0, 0, l.W, l.H);
 	g.fill();
