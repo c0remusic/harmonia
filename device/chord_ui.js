@@ -654,9 +654,9 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Texte: sombre quand coloré (ANCHOR/PIANO doré), blanc sinon
+	// Texte: blanc pour ANCHOR (pareil que VOICE LEADING), sombre pour RELATIVE/PIANO
 	var lbl = (mode==="anchored")?"ANCHOR":(mode==="relative")?"RELATIVE":"PIANO";
-	var textColor = (mode === "relative") ? COLORS.text_white : COLORS.text_dark;
+	var textColor = (mode === "anchored") ? COLORS.text_white : COLORS.text_dark;
 	g.set_source_rgba(textColor[0], textColor[1], textColor[2], 1.0);
 	g.set_font_size(9);
 	var tw = safeTextW(lbl, 9);
