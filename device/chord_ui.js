@@ -474,33 +474,25 @@ function drawSyncButton(g, r) {
 	var now = Date.now();
 	var isPressed = (now - syncPressed) < 150;   // feedback 150ms
 
-	// Fond : feedback visuel selon état (cohérent avec autres boutons)
+	// Fond : feedback visuel selon état
+	// Quand pressé: inverser les couleurs (fond = doré, texte = sombre)
+	var bgColor, textColor;
 	if (isPressed) {
-		g.set_source_rgba(COLORS.bg_hover[0]*1.0, COLORS.bg_hover[1]*1.0, COLORS.bg_hover[2]*1.0, 1.0);   // enfoncé : plus sombre
+		bgColor = COLORS.gold_active;   // fond devient doré
+		textColor = COLORS.bg_cfg;       // texte devient sombre
 	} else if (hoverSync) {
-		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);   // hover : éclairé
+		bgColor = COLORS.bg_hover;       // hover : éclairé
+		textColor = COLORS.gold_hover;   // texte plus clair
 	} else {
-		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);   // repos : cohérent
+		bgColor = COLORS.bg_cfg;         // repos : cohérent
+		textColor = COLORS.gold_active;  // texte doré
 	}
+	g.set_source_rgba(bgColor[0], bgColor[1], bgColor[2], 1.0);
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Feedback: bordure dorée quand pressé (feedback visuel distinct)
-	if (isPressed) {
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
-		g.set_line_width(1.5);
-		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
-		g.stroke();
-	}
-
-	// Diapason ASCII : couleur selon état (cohérent avec autres boutons)
-	if (isPressed) {
-		g.set_source_rgba(COLORS.gold_active[0]*0.85, COLORS.gold_active[1]*0.85, COLORS.gold_active[2]*0.85, 1.0);   // enfoncé : plus sombre
-	} else if (hoverSync) {
-		g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);   // hover : plus clair
-	} else {
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);   // repos
-	}
+	// Diapason ASCII : couleur inverse du fond
+	g.set_source_rgba(textColor[0], textColor[1], textColor[2], 1.0);
 	g.set_font_size(11);
 	var tw = 6;
 	g.move_to(r[0] + r[2] * 0.5 - tw * 0.5, r[1] + r[3] * 0.5 + 2);
