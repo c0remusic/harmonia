@@ -290,9 +290,9 @@ function paint() {
 	drawMonitor(g, l);
 	drawCollapse(g, l);
 
-	// Overlay: assombrir le reste quand dropdown ouvert
+	// Overlay: légère teinte sombre quand dropdown ouvert (subtil)
 	if (openDropdown !== "") {
-		g.set_source_rgba(0, 0, 0, 0.4);
+		g.set_source_rgba(0, 0, 0, 0.15);
 		g.rectangle(0, 0, l.W, l.H);
 		g.fill();
 	}
@@ -663,10 +663,9 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Texte
+	// Texte blanc pour bon contraste sur tous les fonds
 	var lbl = (mode==="anchored")?"ANCHOR":(mode==="relative")?"RELATIVE":"PIANO";
-	var textCol = isActive ? COLORS.text_white : [0.72, 0.72, 0.75];
-	g.set_source_rgba(textCol[0], textCol[1], textCol[2], 1.0);
+	g.set_source_rgba(COLORS.text_white[0], COLORS.text_white[1], COLORS.text_white[2], 1.0);
 	g.set_font_size(9);
 	var tw = safeTextW(lbl, 9);
 	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
