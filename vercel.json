@@ -1,10 +1,5 @@
 {
-  "buildCommand": "ls -la site",
-  "outputDirectory": "site",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
+  "public": "site",
+  "buildCommand": "",
+  "outputDirectory": ""
 }
