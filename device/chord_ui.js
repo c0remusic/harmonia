@@ -635,11 +635,13 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	var now = Date.now();
 	var isPressed = (now - pressTime) < 150;
 
-	// Couleur selon le mode : tous doré sauf RELATIVE=bleu
+	// Couleur selon le mode : ANCHOR=gris, RELATIVE=bleu, PIANO=doré
 	var br, bg, bb;
-	if (mode === "relative") {
+	if (mode === "anchored") {
+		br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
+	} else if (mode === "relative") {
 		br = COLORS.blue_accent[0]; bg = COLORS.blue_accent[1]; bb = COLORS.blue_accent[2];
-	} else { // ANCHOR et PIANO = doré (comme VOICE LEADING)
+	} else { // PIANO = doré
 		br = COLORS.gold_active[0]; bg = COLORS.gold_active[1]; bb = COLORS.gold_active[2];
 	}
 
@@ -654,9 +656,9 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Texte: blanc pour ANCHOR (pareil que VOICE LEADING), sombre pour RELATIVE/PIANO
+	// Texte: gris clair pour ANCHOR, blanc pour RELATIVE, dark pour PIANO
 	var lbl = (mode==="anchored")?"ANCHOR":(mode==="relative")?"RELATIVE":"PIANO";
-	var textColor = (mode === "anchored") ? COLORS.text_white : COLORS.text_dark;
+	var textColor = (mode === "anchored") ? COLORS.text_dim : (mode === "relative") ? COLORS.text_white : COLORS.text_dark;
 	g.set_source_rgba(textColor[0], textColor[1], textColor[2], 1.0);
 	g.set_font_size(9);
 	var tw = safeTextW(lbl, 9);
