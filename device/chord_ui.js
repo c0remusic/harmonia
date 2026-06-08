@@ -942,19 +942,19 @@ function onidle(x, y, but) {
 
 	var ks = cfgRect(l, cfgIndex("keyscale"));
 
-	// Feedback temporaire SYNC
+	// Feedback temporaire SYNC: redraw continu pendant 80ms
 	var now = Date.now();
-	var isSyncPressed = (now - syncPressed) < 80;
-
-	// Redraw si feedback temporaire est actif ou vient d'expirer
-	if (isSyncPressed || (syncPressed > 0 && now - syncPressed < 100)) {
-		mgraphics.redraw();
-		if (isSyncPressed) return;  // Skip les autres hovers pendant le feedback
-	}
-
-	// Si feedback vient d'expirer, réinitialiser syncPressed
-	if (!isSyncPressed && syncPressed > 0) {
-		syncPressed = 0;
+	if (syncPressed > 0) {
+		if (now - syncPressed < 80) {
+			// Feedback actif: redraw continuellement
+			mgraphics.redraw();
+			return;  // Skip les autres hovers pendant le feedback
+		} else {
+			// Feedback expiré: une dernière redraw pour la transition
+			mgraphics.redraw();
+			syncPressed = 0;
+			return;  // Skip les autres hovers juste après expiration
+		}
 	}
 
 	// Hover SYNC
@@ -1056,16 +1056,7 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl) {
 
 	// ----- CONFIG : TONALITY [KEY|SCALE|sync] + CHORD STYLE (oct/voicing/vl/vlmode) -----
 	var ks = cfgRect(l, cfgIndex("keyscale"));
-	if (hit(x,y,ksSyncRect(ks)))  {
-		syncPressed = Date.now();
-		outlet(0, "synclive");
-		mgraphics.redraw();
-		// Timer pour redraw après expiration du feedback
-		var feedbackTimer = new Task(function() { mgraphics.redraw(); });
-		feedbackTimer.delay = 90;  // redraw 90ms après le clic (après les 80ms)
-		feedbackTimer.execute();
-		return;
-	}
+	if (hit(x,y,ksSyncRect(ks)))  { syncPressed = Date.now(); outlet(0, "synclive"); mgraphics.redraw(); return; }
 	if (hit(x,y,ksKeyRect(ks)))   { openDropdown = "key";   mgraphics.redraw(); return; }
 	if (hit(x,y,ksScaleRect(ks))) { openDropdown = "scale"; mgraphics.redraw(); return; }
 	if (hit(x,y,cfgRect(l,cfgIndex("oct")))) {
