@@ -418,14 +418,16 @@ function drawConfig(g, l) {
 	var vlLbl = (vlMode==="anchored")?"ANCHOR":(vlMode==="relative")?"RELATIVE":"PIANO";
 	var vlmRect = cfgRect(l, cfgIndex("vlmode"));
 	drawCfgButton(g, vlmRect, vlLbl, vlMode!=="anchored", hoverCfg==="vlmode", pressedVLMode);
-	// Description sous
-	g.set_source_rgba(0.55, 0.55, 0.60, 0.6);
-	g.set_font_size(7);
-	var subLbl = (vlMode==="anchored")?"reset":(vlMode==="relative")?"follow":"low";
-	var subW = safeTextW(subLbl, 7);
-	g.move_to(vlmRect[0] + vlmRect[2]*0.5 - subW*0.5, vlmRect[1] + vlmRect[3] - 2);
-	g.text_path(subLbl);
-	g.fill();
+	// Description sous (only for RELATIVE et PIANO modes)
+	if (vlMode !== "anchored") {
+		g.set_source_rgba(0.55, 0.55, 0.60, 0.6);
+		g.set_font_size(7);
+		var subLbl = (vlMode==="relative")?"follow":"low";
+		var subW = safeTextW(subLbl, 7);
+		g.move_to(vlmRect[0] + vlmRect[2]*0.5 - subW*0.5, vlmRect[1] + vlmRect[3] - 2);
+		g.text_path(subLbl);
+		g.fill();
+	}
 }
 
 // Sélecteur octave : -3 -2 -1 0 +1 +2 +3
