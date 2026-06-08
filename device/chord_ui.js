@@ -476,7 +476,7 @@ function drawOctaveSelector(g, r) {
 // Bouton SYNC avec feedback hover/press
 function drawSyncButton(g, r) {
 	var now = Date.now();
-	var isPressed = (now - syncPressed) < 150;   // feedback 150ms
+	var isPressed = (now - syncPressed) < 80;   // feedback 80ms (court pour pas paraître figé)
 
 	// Fond : feedback visuel selon état
 	// Quand pressé ET sur le bouton: inverser les couleurs (fond = doré, texte = sombre)
