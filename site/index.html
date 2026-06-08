@@ -155,6 +155,15 @@
     .contact-card h3 { font-family: 'DM Serif Display', serif; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 10px; }
     .contact-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
     .contact-card .btn-primary, .contact-card .btn-secondary, .contact-card .btn-blue { align-self: flex-start; margin-top: auto; }
+    .contact-form { display: flex; flex-direction: column; gap: 12px; }
+    .contact-form input, .contact-form textarea { width: 100%; font-family: 'Instrument Sans', sans-serif;
+      font-size: 14px; color: var(--white); background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 14px; transition: border-color .2s, background .2s; }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color: var(--muted2); }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: rgba(255,173,86,0.5); background: rgba(255,255,255,0.06); }
+    .contact-form textarea { resize: vertical; min-height: 110px; }
+    .contact-form button { align-self: flex-start; margin-top: 4px; }
+    .form-status { font-size: 13px; color: var(--blue); min-height: 18px; }
     .discord-icon { width: 40px; height: 40px; color: #8ECCE8; margin-bottom: 16px; }
     .discord-widget { width: 100%; border: 0; border-radius: 10px; margin-top: 22px; }
 
@@ -349,11 +358,18 @@
     <div class="contact-grid">
       <div class="contact-card">
         <h3>Contact</h3>
-        <p>A question, a bug, a feature idea? Reach out directly &mdash; feedback shapes where Harmonia goes next.</p>
-        <a href="mailto:[your@email.com]" class="btn-primary">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.7"/></svg>
-          Email me
-        </a>
+        <p>A question, a bug, a feature idea? Send a message &mdash; feedback shapes where Harmonia goes next.</p>
+        <!-- Replace FORM_ID with your Formspree form id (formspree.io) -->
+        <form class="contact-form" id="contact-form" action="https://formspree.io/f/FORM_ID" method="POST">
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="email" name="email" placeholder="Your email" required>
+          <textarea name="message" placeholder="Your message" required></textarea>
+          <button type="submit" class="btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.7"/></svg>
+            Send message
+          </button>
+          <p class="form-status" id="form-status"></p>
+        </form>
       </div>
       <div class="contact-card">
         <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.3 1.4 13.7 13.7 0 0 0-15-.05A14.8 14.8 0 0 1 8.8 3.5L8.55 3A19.7 19.7 0 0 0 3.7 4.4 20.3 20.3 0 0 0 .2 18.1a19.9 19.9 0 0 0 6 3 14.7 14.7 0 0 0 1.27-2.06 12.9 12.9 0 0 1-2-.96l.5-.37a14.2 14.2 0 0 0 12.07 0l.5.37a12.7 12.7 0 0 1-2 .96A14.3 14.3 0 0 0 17.8 21a19.8 19.8 0 0 0 6-3 20.3 20.3 0 0 0-3.5-13.6zM8.02 15.3c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.95 2.41-2.15 2.41zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.94 2.41-2.15 2.41z"/></svg>
@@ -422,6 +438,24 @@
     document.getElementById('legal-close').addEventListener('click', () => legalModal.classList.remove('open'));
     legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
+
+    // Contact form (Formspree AJAX)
+    const form = document.getElementById('contact-form');
+    const status = document.getElementById('form-status');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.style.color = 'var(--blue)';
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) { form.reset(); status.textContent = 'Thanks! Your message has been sent.'; }
+        else { status.style.color = '#ff8080'; status.textContent = 'Something went wrong. Please try again.'; }
+      } catch (_) {
+        status.style.color = '#ff8080'; status.textContent = 'Network error. Please try again.';
+      }
+    });
   </script>
 </body>
 </html>
