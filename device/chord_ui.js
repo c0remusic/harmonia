@@ -15,7 +15,7 @@ outlets = 2;   // 0 = messages chord_engine, 1 = redimensionnement (→ thispatc
 // =====================================================
 
 var NOTE_NAMES  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-var SCALE_NAMES = ["MAJOR","MINOR","DORIAN","PHRYGIAN","LYDIAN","MIXOLYDIAN","HARM MINOR"];
+var SCALE_NAMES = ["MAJOR","MINOR","DORIAN","PHRYGIAN","LYDIAN","MIXOLYDIAN","H.MINOR"];
 var SCALE_ABBR  = ["MAJ","MIN","DOR","PHR","LYD","MIX","HMI"];
 var DEG_NAMES   = ["I","II","III","IV","V","VI","VII"];
 var DEG_FUNCTIONS = ["TONIC","SUPERTONIC","MEDIANT","SUBDOMINANT","DOMINANT","SUBMEDIANT","LEADING TONE"];
