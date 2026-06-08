@@ -34,7 +34,7 @@ var COLORS = {
 	bg_hover:     [0.24, 0.24, 0.24],       // #3D3D3D — gris plus clair au hover
 	gold_active:  [1.0, 0.710, 0.024],      // #FFB506 — ambre riche Ableton
 	gold_hover:   [1.0, 0.76, 0.074],       // #FFC21D — or plus clair au hover
-	violet_accent:[0.898, 0.722, 0.898],    // #E5B8E5 — violet pâle (7.13:1 contrast AAA)
+	blue_accent:  [0.557, 0.800, 0.910],    // #8ECCE8 — cyan-bleu Ableton (6.8:1 contrast AAA)
 	text_white:   [0.95, 0.95, 0.96],       // blanc cassé
 	text_dim:     [0.55, 0.55, 0.60],       // gris moyen pour labels
 	text_dark:    [0.137, 0.137, 0.137],    // #232323 sombre pour texte sur doré
@@ -631,8 +631,8 @@ function drawGrid(g, l) {
 		g.text_path(combined);
 		g.fill();
 	}
-	// en-tête BORROWED en violet
-	g.set_source_rgba(COLORS.violet_accent[0], COLORS.violet_accent[1], COLORS.violet_accent[2], 1.0);
+	// en-tête BORROWED en bleu cyan
+	g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
 	g.set_font_size(9);
 	var bh = "BORROWED";
 	var bhw = safeTextW(bh, 9);
