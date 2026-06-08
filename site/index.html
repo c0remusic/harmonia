@@ -33,15 +33,15 @@
 
     /* GLOBAL BACKGROUND — grid + glow, fixed behind everything */
     .page-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-    .page-bg .grid { position: absolute; inset: 0; opacity: .35;
-      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    .page-bg .grid { position: absolute; inset: 0; opacity: .9;
+      background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
       background-size: 56px 56px;
-      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 20%, transparent 95%);
-      mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 20%, transparent 95%); }
+      -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 28%, #000 35%, transparent 100%);
+      mask-image: radial-gradient(ellipse 85% 65% at 50% 28%, #000 35%, transparent 100%); }
     .page-bg .glow { position: absolute; inset: 0;
-      background: radial-gradient(ellipse 50% 45% at 72% 20%, rgba(255,173,86,0.08) 0%, transparent 70%),
-                  radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.06) 0%, transparent 65%),
-                  radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,173,86,0.05) 0%, transparent 70%); }
+      background: radial-gradient(ellipse 50% 45% at 72% 18%, rgba(255,173,86,0.14) 0%, transparent 70%),
+                  radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.10) 0%, transparent 65%),
+                  radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,173,86,0.09) 0%, transparent 70%); }
     nav, .hero, section.block, footer { position: relative; z-index: 1; }
 
     /* NAV */
