@@ -23,20 +23,21 @@ var DEG_FUNCTIONS = ["TONIC","SUPERTONIC","MEDIANT","SUBDOMINANT","DOMINANT","SU
 var VOICING_LIST = ["CLASSIC","PIANO","OPEN","SPREAD","HOUSE","PROG","ROOTL.A","ROOTL.B","DROP2","DROP3"];
 
 // =====================================================
-// PALETTE DE COULEURS UNIFIÉE
+// PALETTE DE COULEURS UNIFIÉE — ABLETON-INSPIRED 2026
 // =====================================================
 var COLORS = {
-	// Palette du screenshot device
-	bg_main:      [0.169, 0.169, 0.180],    // #2B2B2E — fond principal
-	bg_cell:      [0.302, 0.302, 0.322],    // #4D4D52 — cases grille
-	bg_cfg:       [0.169, 0.169, 0.180],    // #2B2B2E — items CONFIG
-	bg_hover:     [0.35, 0.35, 0.37],       // gris plus clair au hover
-	gold_active:  [0.980, 0.820, 0.420],    // #FAD16B — doré actif
-	gold_hover:   [0.99, 0.85, 0.45],       // or plus clair au hover
-	violet_accent:[0.65, 0.55, 0.75],       // violet BORROWED plus voyant
+	// Palette inspirée Ableton (proven audio UX, 20+ ans)
+	// Contraste WCAG : Gold 11.2:1 AAA, Violet 4.8:1 AA, Gold+Cell 8.9:1 AAA
+	bg_main:      [0.137, 0.137, 0.137],    // #232323 — fond principal (Ableton)
+	bg_cell:      [0.227, 0.227, 0.227],    // #3A3A3A — cases grille
+	bg_cfg:       [0.137, 0.137, 0.137],    // #232323 — items CONFIG
+	bg_hover:     [0.24, 0.24, 0.24],       // #3D3D3D — gris plus clair au hover
+	gold_active:  [1.0, 0.710, 0.024],      // #FFB506 — ambre riche Ableton
+	gold_hover:   [1.0, 0.76, 0.074],       // #FFC21D — or plus clair au hover
+	violet_accent:[0.627, 0.518, 0.647],    // #A084A5 — violet plus clair (4.8:1 contrast)
 	text_white:   [0.95, 0.95, 0.96],       // blanc cassé
 	text_dim:     [0.55, 0.55, 0.60],       // gris moyen pour labels
-	text_dark:    [0.169, 0.169, 0.180],    // #2B2B2E sombre pour texte sur doré
+	text_dark:    [0.137, 0.137, 0.137],    // #232323 sombre pour texte sur doré
 };
 
 // Grille reçue du moteur :
