@@ -606,8 +606,7 @@ function drawCfgButton(g, r, txt, on, isHover, pressTime) {
 		else if (isHover) g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);
 		else g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 	} else {
-		if (isPressed) g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
-		else if (isHover) g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
+		if (isPressed || isHover) g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 		else g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
