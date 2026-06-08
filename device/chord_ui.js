@@ -357,7 +357,7 @@ function drawDropdown(g, l) {
 			if      (openDropdown === "key" || openDropdown === "voicing")  { br=COLORS.gold_active[0]; bg=COLORS.gold_active[1]; bb=COLORS.gold_active[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
 			else if (openDropdown === "scale")   { br=0.28; bg=0.52; bb=0.90; tr=0.96; tg=0.96; tb=0.96; }
 		} else if (isHov) {
-			br=0.26; bg=0.26; bb=0.30; tr=0.95; tg=0.95; tb=0.98;
+			br=COLORS.bg_hover[0]; bg=COLORS.bg_hover[1]; bb=COLORS.bg_hover[2]; tr=0.95; tg=0.95; tb=0.98;
 		} else {
 			br=0.16; bg=0.16; bb=0.18; tr=0.80; tg=0.80; tb=0.84;
 		}
@@ -446,9 +446,9 @@ function drawOctaveSelector(g, r) {
 		if (isActive) {
 			g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
 		} else if (isPressed && isHoverOct) {
-			g.set_source_rgba(0.22, 0.22, 0.25, 1.0);
+			g.set_source_rgba(COLORS.bg_hover[0]*0.85, COLORS.bg_hover[1]*0.85, COLORS.bg_hover[2]*0.85, 1.0);
 		} else if (isHoverOct) {
-			g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
+			g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 		} else {
 			g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 		}
@@ -472,9 +472,9 @@ function drawSyncButton(g, r) {
 
 	// Fond : feedback visuel selon état
 	if (isPressed) {
-		g.set_source_rgba(0.28, 0.28, 0.32, 1.0);   // enfoncé : sombre
+		g.set_source_rgba(COLORS.bg_hover[0]*1.0, COLORS.bg_hover[1]*1.0, COLORS.bg_hover[2]*1.0, 1.0);   // enfoncé : sombre
 	} else if (hoverSync) {
-		g.set_source_rgba(0.26, 0.26, 0.30, 1.0);   // hover : légèrement éclairé
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);   // hover : légèrement éclairé
 	} else {
 		g.set_source_rgba(0.18, 0.18, 0.20, 1.0);   // repos
 	}
@@ -503,11 +503,11 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 
 	// fond : feedback hover/press
 	if (isOpen) {
-		g.set_source_rgba(0.22, 0.22, 0.26, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0]*0.9, COLORS.bg_hover[1]*0.9, COLORS.bg_hover[2]*0.9, 1.0);
 	} else if (isPressed) {
-		g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else if (isHover) {
-		g.set_source_rgba(0.20, 0.20, 0.23, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
 		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
 	}
@@ -553,11 +553,11 @@ function drawStepper(g, r, label, value, isHover, pressTime) {
 
 	// fond : feedback hover/press
 	if (isPressed) {
-		g.set_source_rgba(0.19, 0.19, 0.23, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0]*0.8, COLORS.bg_hover[1]*0.8, COLORS.bg_hover[2]*0.8, 1.0);
 	} else if (isHover) {
-		g.set_source_rgba(0.18, 0.18, 0.22, 1.0);
+		g.set_source_rgba(COLORS.bg_hover[0]*0.8, COLORS.bg_hover[1]*0.8, COLORS.bg_hover[2]*0.8, 1.0);
 	} else {
-		g.set_source_rgba(0.15, 0.15, 0.17, 1.0);
+		g.set_source_rgba(COLORS.bg_cell[0], COLORS.bg_cell[1], COLORS.bg_cell[2], 1.0);
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
