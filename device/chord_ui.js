@@ -760,7 +760,7 @@ function drawMonitor(g, l) {
 		g.fill();
 	} else {
 		var sorted = activeNotes.slice().sort(function(a,b){return a-b;});
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
 		g.set_font_size(11);
 		var lineH = 15, listTop = 38;
 		var perCol = Math.max(1, Math.floor((kbY - listTop) / lineH));
@@ -781,7 +781,7 @@ function drawMonitor(g, l) {
 			var midi = rng.low + o*12 + WHITE_SEMI[i];
 			var wx = x0 + (o*7+i)*wkW;
 			var wa = isNoteActive(midi);
-			g.set_source_rgba(wa?COLORS.gold_active[0]:0.90, wa?COLORS.gold_active[1]:0.90, wa?COLORS.gold_active[2]:0.90, 1.0);
+			g.set_source_rgba(wa?COLORS.blue_accent[0]:0.90, wa?COLORS.blue_accent[1]:0.90, wa?COLORS.blue_accent[2]:0.90, 1.0);
 			g.rectangle(wx, kbY, wkW-1, KB_H);
 			g.fill();
 		}
@@ -793,7 +793,7 @@ function drawMonitor(g, l) {
 			var m2 = rng.low + o2*12 + WHITE_SEMI[j]+1;
 			var bx = x0 + (o2*7+j+1)*wkW - bkW*0.5;
 			var ba = isNoteActive(m2);
-			g.set_source_rgba(ba?COLORS.gold_active[0]*0.8:0.12, ba?COLORS.gold_active[1]*0.6:0.12, ba?COLORS.gold_active[2]*0.4:0.13, 1.0);
+			g.set_source_rgba(ba?COLORS.blue_accent[0]*0.8:0.12, ba?COLORS.blue_accent[1]*0.6:0.12, ba?COLORS.blue_accent[2]*0.4:0.13, 1.0);
 			g.rectangle(bx, kbY, bkW, KB_H*0.62);
 			g.fill();
 		}
