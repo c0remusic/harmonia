@@ -210,8 +210,8 @@ function L() {
 		contentW = CFG_W + MON_W;
 	} else {
 		mGridR  = gridR;
-		mMonX   = gridR + PAD;
-		mMonW   = W - PAD - (gridR + PAD);
+		mMonX   = gridR;          // Seamless: pas de padding à gauche
+		mMonW   = W - gridR;      // Seamless: utilise tout l'espace à droite
 		contentW = W;
 	}
 
@@ -232,7 +232,7 @@ function collapseRect(l) {
 }
 // HOLD/LATCH : dans le MONITOR (feature de sortie/perf) — en bas sous le clavier
 function holdRect(l) {
-	return [ l.monX, l.H - PAD - HOLD_H, l.monW - 1, HOLD_H ];
+	return [ l.monX, l.H - PAD - HOLD_H, l.monW, HOLD_H ];
 }
 
 // Redimensionne le device via live.thisdevice (outlet 1).
