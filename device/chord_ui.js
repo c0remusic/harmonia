@@ -325,8 +325,8 @@ function ddLayout(l) {
 	var n      = items.length;
 	var x0     = PAD * 2;
 	var y0     = PAD * 2 + 14;   // 14 = hauteur titre
-	var w      = Math.min(CFG_W - PAD * 4, 100);   // largeur réduite pour ne pas bouffe les accords
-	var h      = Math.min(l.H - PAD * 4 - 14, 100);   // hauteur réduite
+	var w      = Math.min(CFG_W - PAD * 4, 100);   // largeur des cellules
+	var h      = Math.min(l.H - PAD * 4 - 14, 100);   // hauteur réduite pour ne pas bouffe la grille
 	var perRow = (openDropdown === "voicing") ? 2 : (openDropdown === "key") ? 3 : 2;
 	var rows   = Math.ceil(n / perRow);
 	var ch     = h / rows;       // hauteur cellule adaptive
@@ -341,9 +341,10 @@ function drawDropdown(g, l) {
 	var dl  = ddLayout(l);
 	var cur = ddCurrent();
 
-	// fond opaque sur toute la zone CONFIG
+	// fond opaque réduit pour ne pas bouffe la grille
+	var ddW = Math.min(CFG_W, 110);   // largeur max du dropdown
 	g.set_source_rgba(COLORS.bg_main[0]*0.95, COLORS.bg_main[1]*0.95, COLORS.bg_main[2]*0.95, 0.97);
-	g.rectangle_rounded(0, 0, CFG_W, l.H, 4, 4);
+	g.rectangle_rounded(0, 0, ddW, l.H, 4, 4);
 	g.fill();
 
 	// titre
