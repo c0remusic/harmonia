@@ -334,7 +334,7 @@ function drawDropdown(g, l) {
 	var cur = ddCurrent();
 
 	// fond opaque sur toute la zone CONFIG
-	g.set_source_rgba(0.07, 0.07, 0.09, 0.97);
+	g.set_source_rgba(COLORS.bg_main[0]*0.95, COLORS.bg_main[1]*0.95, COLORS.bg_main[2]*0.95, 0.97);
 	g.rectangle_rounded(0, 0, CFG_W, l.H, 4, 4);
 	g.fill();
 
@@ -355,11 +355,11 @@ function drawDropdown(g, l) {
 		if (on) {
 			// Doré pour KEY et VOICING (cohérent), bleu pour SCALE
 			if      (openDropdown === "key" || openDropdown === "voicing")  { br=COLORS.gold_active[0]; bg=COLORS.gold_active[1]; bb=COLORS.gold_active[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
-			else if (openDropdown === "scale")   { br=0.28; bg=0.52; bb=0.90; tr=0.96; tg=0.96; tb=0.96; }
+			else if (openDropdown === "scale")   { br=COLORS.blue_accent[0]; bg=COLORS.blue_accent[1]; bb=COLORS.blue_accent[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
 		} else if (isHov) {
 			br=COLORS.bg_hover[0]; bg=COLORS.bg_hover[1]; bb=COLORS.bg_hover[2]; tr=0.95; tg=0.95; tb=0.98;
 		} else {
-			br=0.16; bg=0.16; bb=0.18; tr=0.80; tg=0.80; tb=0.84;
+			br=COLORS.bg_cell[0]; bg=COLORS.bg_cell[1]; bb=COLORS.bg_cell[2]; tr=0.80; tg=0.80; tb=0.84;
 		}
 		g.set_source_rgba(br, bg, bb, 1.0);
 		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
