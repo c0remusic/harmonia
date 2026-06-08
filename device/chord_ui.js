@@ -15,8 +15,8 @@ outlets = 2;   // 0 = messages chord_engine, 1 = redimensionnement (→ thispatc
 // =====================================================
 
 var NOTE_NAMES  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-var SCALE_NAMES = ["Major","Minor","Dorian","Phrygian","Lydian","Mixolydian","Harm Minor"];
-var SCALE_ABBR  = ["Maj","Min","Dor","Phr","Lyd","Mix","HMi"];
+var SCALE_NAMES = ["MAJOR","MINOR","DORIAN","PHRYGIAN","LYDIAN","MIXOLYDIAN","HARM MINOR"];
+var SCALE_ABBR  = ["MAJ","MIN","DOR","PHR","LYD","MIX","HMI"];
 var DEG_NAMES   = ["I","II","III","IV","V","VI","VII"];
 var DEG_FUNCTIONS = ["TONIC","SUPERTONIC","MEDIANT","SUBDOMINANT","DOMINANT","SUBMEDIANT","LEADING TONE"];
 
@@ -484,6 +484,14 @@ function drawSyncButton(g, r) {
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
+
+	// Feedback: bordure dorée quand pressé (feedback visuel distinct)
+	if (isPressed) {
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_line_width(1.5);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+		g.stroke();
+	}
 
 	// Diapason ASCII : couleur selon état (cohérent avec autres boutons)
 	if (isPressed) {
