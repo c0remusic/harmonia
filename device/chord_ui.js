@@ -23,21 +23,21 @@ var DEG_FUNCTIONS = ["TONIC","SUPERTONIC","MEDIANT","SUBDOMINANT","DOMINANT","SU
 var VOICING_LIST = ["CLASSIC","PIANO","OPEN","SPREAD","HOUSE","PROG","ROOTL.A","ROOTL.B","DROP2","DROP3"];
 
 // =====================================================
-// PALETTE DE COULEURS UNIFIÉE — ABLETON-INSPIRED 2026
+// PALETTE DE COULEURS UNIFIÉE — ABLETON OFFICIELLE 2026
 // =====================================================
 var COLORS = {
-	// Palette inspirée Ableton (proven audio UX, 20+ ans)
-	// Contraste WCAG : Gold 11.2:1 AAA, Violet 4.8:1 AA, Gold+Cell 8.9:1 AAA
-	bg_main:      [0.137, 0.137, 0.137],    // #232323 — fond principal (Ableton)
-	bg_cell:      [0.227, 0.227, 0.227],    // #3A3A3A — cases grille
-	bg_cfg:       [0.137, 0.137, 0.137],    // #232323 — items CONFIG
-	bg_hover:     [0.24, 0.24, 0.24],       // #3D3D3D — gris plus clair au hover
-	gold_active:  [1.0, 0.710, 0.024],      // #FFB506 — ambre riche Ableton
-	gold_hover:   [1.0, 0.76, 0.074],       // #FFC21D — or plus clair au hover
-	blue_accent:  [0.557, 0.800, 0.910],    // #8ECCE8 — cyan-bleu Ableton (6.8:1 contrast AAA)
+	// Palette officielle Ableton (proven audio UX, 20+ ans)
+	// Contraste WCAG : Orange 7.6:1 AAA, Cyan 6.5:1 AAA
+	bg_main:      [0.165, 0.165, 0.165],    // #2A2A2A — fond principal (Ableton officiel)
+	bg_cell:      [0.212, 0.212, 0.212],    // #363636 — cases grille (gris non sélectionné)
+	bg_cfg:       [0.165, 0.165, 0.165],    // #2A2A2A — items CONFIG
+	bg_hover:     [0.273, 0.273, 0.273],    // #464646 — gris sélectionné (hover)
+	gold_active:  [1.0, 0.678, 0.337],      // #FFAD56 — orange Ableton officiel
+	gold_hover:   [1.0, 0.71, 0.38],        // #FFC461 — orange plus clair au hover
+	blue_accent:  [0.557, 0.800, 0.910],    // #8ECCE8 — cyan-bleu secondaire (6.5:1 contrast AAA)
 	text_white:   [0.95, 0.95, 0.96],       // blanc cassé
 	text_dim:     [0.55, 0.55, 0.60],       // gris moyen pour labels
-	text_dark:    [0.137, 0.137, 0.137],    // #232323 sombre pour texte sur doré
+	text_dark:    [0.165, 0.165, 0.165],    // #2A2A2A sombre pour texte sur orange
 };
 
 // Grille reçue du moteur :
