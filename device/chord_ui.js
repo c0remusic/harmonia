@@ -926,6 +926,27 @@ function closemenu() {
 
 function onidle(x, y, but) {
 	var l = L();
+
+	// Si dropdown ouvert: désactiver hover sur le reste du device
+	if (openDropdown !== "") {
+		// Réinitialiser les hovers du reste du device
+		var needRedraw = false;
+		if (hoverSync !== false) { hoverSync = false; needRedraw = true; }
+		if (hoverCfg !== "") { hoverCfg = ""; needRedraw = true; }
+		if (hoverOctave !== -1) { hoverOctave = -1; needRedraw = true; }
+		if (hoverCell !== -1) { hoverCell = -1; needRedraw = true; }
+		if (hoverHold !== false) { hoverHold = false; needRedraw = true; }
+		if (hoverCollapse !== false) { hoverCollapse = false; needRedraw = true; }
+
+		// Calculer seulement le hover du dropdown
+		var dl = ddLayout(l);
+		var found = -1;
+		for (var i = 0; i < dl.n; i++) { if (hit(x, y, ddCellRect(dl, i))) { found = i; break; } }
+		if (found !== hoverDD) { hoverDD = found; needRedraw = true; }
+		if (needRedraw) mgraphics.redraw();
+		return;
+	}
+
 	var ks = cfgRect(l, cfgIndex("keyscale"));
 
 	// Hover SYNC
@@ -982,7 +1003,7 @@ function onidle(x, y, but) {
 	var newHoverCollapse = hit(x, y, collapseRect(l));
 	if (newHoverCollapse !== hoverCollapse) { hoverCollapse = newHoverCollapse; mgraphics.redraw(); }
 
-	if (openDropdown === "") { if (hoverDD !== -1) { hoverDD = -1; mgraphics.redraw(); } return; }
+	if (hoverDD !== -1) { hoverDD = -1; mgraphics.redraw(); }
 	var dl = ddLayout(l);
 	var found = -1;
 	for (var i = 0; i < dl.n; i++) { if (hit(x, y, ddCellRect(dl, i))) { found = i; break; } }
