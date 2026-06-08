@@ -503,13 +503,13 @@ function drawSyncButton(g, r) {
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
 
-	// Diapason ASCII : couleur selon état
+	// Diapason ASCII : couleur selon état (cohérent avec autres boutons)
 	if (isPressed) {
-		g.set_source_rgba(0.98, 0.90, 0.50, 1.0);   // enfoncé : plus clair
+		g.set_source_rgba(COLORS.gold_active[0]*0.85, COLORS.gold_active[1]*0.85, COLORS.gold_active[2]*0.85, 1.0);   // enfoncé : plus sombre
 	} else if (hoverSync) {
-		g.set_source_rgba(0.98, 0.85, 0.40, 1.0);   // hover : plus vif
+		g.set_source_rgba(COLORS.gold_hover[0], COLORS.gold_hover[1], COLORS.gold_hover[2], 1.0);   // hover : plus clair
 	} else {
-		g.set_source_rgba(0.96, 0.80, 0.45, 1.0);   // repos
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);   // repos
 	}
 	g.set_font_size(11);
 	var tw = 6;
