@@ -825,7 +825,15 @@ function drawMonitor(g, l) {
 	}
 	g.rectangle_rounded(hr[0], hr[1], hr[2], hr[3], 3, 3);
 	g.fill();
-	// No text label (seamless)
+
+	// Text label: HOLD / LATCH (style like drawCfgButton)
+	g.set_source_rgba(latchMode ? COLORS.text_dark[0] : 0.72, latchMode ? COLORS.text_dark[1] : 0.72, latchMode ? COLORS.text_dark[2] : 0.75, 1.0);
+	g.set_font_size(9);
+	var ht = latchMode ? "LATCH" : "HOLD";
+	var htw = safeTextW(ht, 9);
+	g.move_to(hr[0]+(hr[2]-htw)*0.5, hr[1]+hr[3]*0.5+3);
+	g.text_path(ht);
+	g.fill();
 }
 
 function safeTextW(str, fs) {
