@@ -551,14 +551,14 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 	// g.fill();
 
 	// Valeur centré au milieu
-	// KEY/SCALE: texte adaptatif; VOICING: fixe 9px
+	// KEY/SCALE/VOICING: tous au milieu, tailles adaptées
 	var valFs = (label === "VOICING") ? 9 : Math.max(10, Math.min(13, r[3] * 0.50));
 	// CLASSIC en gris, autres voicings en doré
 	var isClassic = (label === "VOICING" && value === "CLASSIC");
 	g.set_source_rgba(isClassic ? 0.80 : COLORS.gold_active[0], isClassic ? 0.80 : COLORS.gold_active[1], isClassic ? 0.82 : COLORS.gold_active[2], 1.0);
 	g.set_font_size(valFs);
 	var vw = safeTextW(value, valFs);
-	var vy = (label === "VOICING") ? r[1] + r[3] * 0.5 + 2 : r[1] + r[3] - 5;  // VOICING au milieu, KEY/SCALE en bas
+	var vy = r[1] + r[3] * 0.5 + 2;  // Tous centré au milieu
 	g.move_to(r[0]+(r[2]-vw)*0.5, vy);
 	g.text_path(value);
 	g.fill();
