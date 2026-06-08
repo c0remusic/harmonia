@@ -397,8 +397,10 @@ function applyDropdown(i) {
 // Flèche de repli/dépli
 function drawCollapse(g, l) {
 	var r = collapseRect(l);
-	// Fond cohérent avec les autres boutons + hover feedback
-	if (hoverCollapse) {
+	// Fond: bleu quand collapsed, gris sinon (+ hover feedback)
+	if (collapsed) {
+		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
+	} else if (hoverCollapse) {
 		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
 		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
