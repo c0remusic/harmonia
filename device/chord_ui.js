@@ -627,10 +627,11 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	var now = Date.now();
 	var isPressed = (now - pressTime) < 150;
 
-	// Couleur selon le mode : ANCHOR=gris, RELATIVE=bleu, PIANO=doré
+	// Couleur selon le mode : ANCHOR=gris (comme VOICE LEADING OFF), RELATIVE=bleu, PIANO=doré
 	var br, bg, bb;
 	if (mode === "anchored") {
-		br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
+		// Gris cohérent avec VOICE LEADING OFF
+		br = 0.22; bg = 0.22; bb = 0.25;
 	} else if (mode === "relative") {
 		br = COLORS.blue_accent[0]; bg = COLORS.blue_accent[1]; bb = COLORS.blue_accent[2];
 	} else { // PIANO = doré
