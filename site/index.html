@@ -117,6 +117,42 @@
     .ficon.blue { background: var(--blue-dim); border-color: rgba(142,204,232,0.22); color: var(--blue); }
     .feature h3 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 20px; letter-spacing: -0.01em; margin-bottom: 10px; }
     .feature p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .features-grid { counter-reset: feat; }
+    .feature { counter-increment: feat; }
+    .feature::after { content: counter(feat, decimal-leading-zero); position: absolute; top: 16px; right: 20px;
+      font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted2); }
+
+    /* DEVICE SHOWCASE (annotated screenshot) */
+    .showcase { max-width: 1200px; margin: 0 auto; padding: 10px 48px 40px; }
+    .frame { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06); }
+    .frame-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg2);
+      border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0; }
+    .frame-bar .d { width: 10px; height: 10px; border-radius: 50%; }
+    .d-r{background:#ff5f57}.d-y{background:#febc2e}.d-g{background:#28c840}
+    .frame-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-left: 8px; }
+    .shot-wrap { position: relative; line-height: 0; }
+    .shot-wrap img { width: 100%; display: block; border-radius: 0 0 12px 12px; }
+    .hotspot { position: absolute; transform: translate(-50%,-50%); width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace;
+      font-size: 11px; font-weight: 500; cursor: pointer; z-index: 3; transition: transform .15s;
+      background: rgba(255,173,86,0.22); border: 1px solid var(--gold); color: var(--gold);
+      box-shadow: 0 0 0 0 rgba(255,173,86,0.5); animation: hs 2.6s infinite; }
+    .hotspot.blue { background: rgba(142,204,232,0.22); border-color: var(--blue); color: var(--blue);
+      box-shadow: 0 0 0 0 rgba(142,204,232,0.5); animation: hsb 2.6s infinite; }
+    .hotspot:hover { transform: translate(-50%,-50%) scale(1.18); }
+    @keyframes hs { 70%{box-shadow:0 0 0 10px rgba(255,173,86,0)} 100%{box-shadow:0 0 0 0 rgba(255,173,86,0)} }
+    @keyframes hsb { 70%{box-shadow:0 0 0 10px rgba(142,204,232,0)} 100%{box-shadow:0 0 0 0 rgba(142,204,232,0)} }
+    .shot-tip { position: absolute; width: 220px; background: #1c1c1c; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 14px 16px; opacity: 0; pointer-events: none; z-index: 10;
+      transform: translate(-50%,-100%); margin-top: -16px; transition: opacity .18s;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55); }
+    .shot-tip.below { transform: translate(-50%,0); margin-top: 16px; }
+    .shot-tip.show { opacity: 1; }
+    .shot-tip .t { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 5px; }
+    .shot-tip .x { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .shot-hint { text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2);
+      letter-spacing: .1em; text-transform: uppercase; margin-top: 18px; }
 
     /* VOICINGS */
     .voicings-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 48px; }
@@ -211,6 +247,11 @@
     @media (max-width: 920px) {
       nav, section.block, footer { padding-left: 24px; padding-right: 24px; }
       .hero-content { padding-left: 24px; padding-right: 24px; }
+      .showcase { padding-left: 24px; padding-right: 24px; }
+      .hotspot, .shot-tip { display: none; }
+      .shot-wrap { overflow-x: auto; }
+      .shot-wrap img { min-width: 820px; }
+      .shot-hint::before { content: 'Scroll the device sideways — '; }
       .nav-links { display: none; }
       .features-head { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -259,6 +300,27 @@
       </div>
      </div>
     </div>
+  </section>
+
+  <!-- DEVICE SHOWCASE (annotated screenshot) -->
+  <section class="showcase" id="device">
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
+        <span class="frame-title">harmonia_v1 &mdash; E Min</span>
+      </div>
+      <div class="shot-wrap" id="shot">
+        <img src="./chord_selector_screenshot.png" alt="Harmonia device running in Ableton Live">
+        <div class="hotspot blue" style="left:4.5%;top:18%" data-t="Live Scale Sync" data-x="Import the current key &amp; scale from Ableton Live in one click.">4</div>
+        <div class="hotspot"      style="left:4%;top:56%"   data-t="10 Voicings" data-x="Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3.">3</div>
+        <div class="hotspot blue" style="left:4%;top:82%"   data-t="Voice Leading" data-x="3 algorithms with common-tone detection for smooth motion.">2</div>
+        <div class="hotspot"      style="left:45%;top:52%"  data-t="Chord Grid" data-x="7 diatonic degrees &mdash; every valid chord, always visible.">1</div>
+        <div class="hotspot blue" style="left:88%;top:18%"  data-t="Borrowed Chords" data-x="Secondary dominants &amp; modal interchange, right in the grid.">5</div>
+        <div class="hotspot"      style="left:95.5%;top:80%" data-t="MIDI &amp; Hold" data-x="Mini-keyboard feedback and Hold/Latch for live performance.">6</div>
+        <div class="shot-tip" id="shotTip"><div class="t"></div><div class="x"></div></div>
+      </div>
+    </div>
+    <p class="shot-hint">Hover the markers to explore the device</p>
   </section>
 
   <!-- FEATURES -->
@@ -448,6 +510,28 @@
     document.getElementById('legal-close').addEventListener('click', () => legalModal.classList.remove('open'));
     legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
+
+    // Device showcase hotspots
+    const shot = document.getElementById('shot');
+    const shotTip = document.getElementById('shotTip');
+    if (shot && shotTip) {
+      shot.querySelectorAll('.hotspot').forEach(h => {
+        h.addEventListener('mouseenter', () => {
+          shotTip.querySelector('.t').textContent = h.dataset.t;
+          shotTip.querySelector('.x').textContent = h.dataset.x;
+          const w = shot.clientWidth;
+          const leftPct = parseFloat(h.style.left);
+          const topPct = parseFloat(h.style.top);
+          let px = w * leftPct / 100;
+          px = Math.max(114, Math.min(w - 114, px));
+          shotTip.style.left = px + 'px';
+          shotTip.style.top = h.style.top;
+          shotTip.classList.toggle('below', topPct < 42);
+          shotTip.classList.add('show');
+        });
+        h.addEventListener('mouseleave', () => shotTip.classList.remove('show'));
+      });
+    }
 
     // Contact form (Formspree AJAX)
     const form = document.getElementById('contact-form');
