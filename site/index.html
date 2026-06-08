@@ -146,8 +146,19 @@
     .support-icon { font-size: 26px; color: var(--blue); margin-bottom: 10px; }
     .card p.txt { font-size: 14.5px; color: var(--muted); line-height: 1.7; max-width: 460px; }
 
-    /* LEGAL */
-    .legal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 40px; }
+    /* LEGAL MODAL */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; display: none;
+      align-items: center; justify-content: center; padding: 24px;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; animation: fadeUp .25s ease both; }
+    .modal { position: relative; width: 100%; max-width: 780px; max-height: 85vh; overflow-y: auto;
+      background: #1c1c1c; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 44px 48px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55); }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 30px; letter-spacing: -0.02em; margin-bottom: 28px; }
+    .modal-close { position: absolute; top: 18px; right: 20px; background: none; border: none;
+      color: var(--muted); font-size: 28px; line-height: 1; cursor: pointer; transition: color .2s; }
+    .modal-close:hover { color: var(--white); }
+    .legal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 36px; }
     .legal-grid h4 { font-size: 13px; font-weight: 600; color: var(--gold);
       letter-spacing: .02em; margin-bottom: 8px; }
     .legal-grid p { font-size: 13px; color: var(--muted); line-height: 1.7; }
@@ -179,6 +190,7 @@
       .features-grid { grid-template-columns: 1fr; }
       .voicings-grid { grid-template-columns: repeat(2, 1fr); }
       .legal-grid { grid-template-columns: 1fr; }
+      .modal { padding: 36px 26px; }
       .card { grid-template-columns: 1fr; padding: 36px 28px; }
       .card-actions { min-width: 0; }
     }
@@ -316,52 +328,62 @@
     </div>
   </section>
 
-  <!-- LEGAL -->
-  <section class="block" id="legal">
-    <p class="label">Legal</p>
-    <p class="heading" style="margin-bottom:32px;">Legal notice</p>
-    <div class="legal-grid">
-      <div>
-        <h4>Publisher</h4>
-        <p>Harmonia &mdash; an independent project by <b>[your name / studio]</b>.<br>
-        Contact: <a href="mailto:[your@email.com]">[your@email.com]</a></p>
-      </div>
-      <div>
-        <h4>Hosting</h4>
-        <p>Vercel Inc.<br>340 S Lemon Ave #4133, Walnut, CA 91789, USA<br>
-        <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a></p>
-      </div>
-      <div>
-        <h4>Intellectual property</h4>
-        <p>Harmonia and its source code are released under the <b>MIT</b> license. The device and this site are the property of their author unless otherwise stated.</p>
-      </div>
-      <div>
-        <h4>Trademarks</h4>
-        <p>Ableton, Live and Max for Live are trademarks of Ableton AG and Cycling &rsquo;74. Harmonia is an independent tool and is <b>not affiliated with, endorsed by, or sponsored by</b> Ableton AG.</p>
-      </div>
-      <div>
-        <h4>Liability</h4>
-        <p>Harmonia is provided &ldquo;as is&rdquo;, without warranty of any kind. The author cannot be held liable for any damage or data loss arising from its use.</p>
-      </div>
-      <div>
-        <h4>Privacy</h4>
-        <p>This site collects no personal data and sets no tracking cookies. External links (PayPal, GitHub, Vercel) are governed by their own privacy policies.</p>
-      </div>
-    </div>
-  </section>
-
   <footer>
     <span class="footer-logo">Harmonia</span>
     <span class="footer-links">
-      <a href="#legal">Legal notice</a>
+      <a href="#" id="legal-link">Legal notice</a>
       <a href="https://github.com/c0remusic/harmonia" target="_blank" rel="noopener">GitHub</a>
     </span>
     <span class="footer-note">Made with Max for Live &middot; Free &amp; open source</span>
   </footer>
 
+  <!-- LEGAL MODAL -->
+  <div class="modal-overlay" id="legal-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Legal notice">
+      <button class="modal-close" id="legal-close" aria-label="Close">&times;</button>
+      <p class="label">Legal</p>
+      <h2 class="modal-title">Legal notice</h2>
+      <div class="legal-grid">
+        <div>
+          <h4>Publisher</h4>
+          <p>Harmonia &mdash; an independent project by <b>[your name / studio]</b>.<br>
+          Contact: <a href="mailto:[your@email.com]">[your@email.com]</a></p>
+        </div>
+        <div>
+          <h4>Hosting</h4>
+          <p>Vercel Inc.<br>340 S Lemon Ave #4133, Walnut, CA 91789, USA<br>
+          <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a></p>
+        </div>
+        <div>
+          <h4>Intellectual property</h4>
+          <p>Harmonia and its source code are released under the <b>MIT</b> license. The device and this site are the property of their author unless otherwise stated.</p>
+        </div>
+        <div>
+          <h4>Trademarks</h4>
+          <p>Ableton, Live and Max for Live are trademarks of Ableton AG and Cycling &rsquo;74. Harmonia is an independent tool and is <b>not affiliated with, endorsed by, or sponsored by</b> Ableton AG.</p>
+        </div>
+        <div>
+          <h4>Liability</h4>
+          <p>Harmonia is provided &ldquo;as is&rdquo;, without warranty of any kind. The author cannot be held liable for any damage or data loss arising from its use.</p>
+        </div>
+        <div>
+          <h4>Privacy</h4>
+          <p>This site collects no personal data and sets no tracking cookies. External links (PayPal, GitHub, Vercel) are governed by their own privacy policies.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Legal modal
+    const legalModal = document.getElementById('legal-modal');
+    document.getElementById('legal-link').addEventListener('click', (e) => { e.preventDefault(); legalModal.classList.add('open'); });
+    document.getElementById('legal-close').addEventListener('click', () => legalModal.classList.remove('open'));
+    legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
   </script>
 </body>
 </html>
