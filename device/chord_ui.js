@@ -451,9 +451,7 @@ function drawOctaveSelector(g, r) {
 		// Fond
 		if (isActive) {
 			g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
-		} else if (isPressed && isHoverOct) {
-			g.set_source_rgba(COLORS.bg_hover[0]*0.85, COLORS.bg_hover[1]*0.85, COLORS.bg_hover[2]*0.85, 1.0);
-		} else if (isHoverOct) {
+		} else if (isHoverOct || isPressed) {
 			g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 		} else {
 			g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
@@ -560,10 +558,8 @@ function drawStepper(g, r, label, value, isHover, pressTime) {
 	var isPressed = (now - pressTime) < 150;
 
 	// fond : feedback hover/press
-	if (isPressed) {
-		g.set_source_rgba(COLORS.bg_hover[0]*0.8, COLORS.bg_hover[1]*0.8, COLORS.bg_hover[2]*0.8, 1.0);
-	} else if (isHover) {
-		g.set_source_rgba(COLORS.bg_hover[0]*0.8, COLORS.bg_hover[1]*0.8, COLORS.bg_hover[2]*0.8, 1.0);
+	if (isPressed || isHover) {
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
 	} else {
 		g.set_source_rgba(COLORS.bg_cell[0], COLORS.bg_cell[1], COLORS.bg_cell[2], 1.0);
 	}
