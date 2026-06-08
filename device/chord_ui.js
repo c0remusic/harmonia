@@ -71,8 +71,9 @@ var syncPressed = 0;       // timestamp du clic SYNC (feedback temporaire)
 var hoverCell   = -1;      // index cellule grille survolée (-1 = aucune)
 var hoverCfg    = "";      // ID config survolé ("vl", "vlmode", "oct", "voicing", "")
 var hoverOctave = -1;      // index octave survolé dans le sélecteur (-1 = aucun)
-var hoverHold   = false;   // hover sur le bouton HOLD
-var pressedCell = 0;       // timestamp clic cellule (feedback 150ms)
+var hoverHold     = false;   // hover sur le bouton HOLD
+var hoverCollapse = false;   // hover sur le bouton COLLAPSE
+var pressedCell   = 0;       // timestamp clic cellule (feedback 150ms)
 // Timestamps individuels pour feedback 150ms par bouton
 var pressedKeyscale = 0;
 var pressedOct      = 0;
@@ -391,7 +392,12 @@ function applyDropdown(i) {
 // Flèche de repli/dépli
 function drawCollapse(g, l) {
 	var r = collapseRect(l);
-	g.set_source_rgba(0.30,0.30,0.34,1.0);
+	// Fond cohérent avec les autres boutons + hover feedback
+	if (hoverCollapse) {
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
+	} else {
+		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);
+	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 2, 2);
 	g.fill();
 	g.set_source_rgba(0.85,0.85,0.90,1.0);
@@ -482,13 +488,13 @@ function drawSyncButton(g, r) {
 	var now = Date.now();
 	var isPressed = (now - syncPressed) < 150;   // feedback 150ms
 
-	// Fond : feedback visuel selon état
+	// Fond : feedback visuel selon état (cohérent avec autres boutons)
 	if (isPressed) {
-		g.set_source_rgba(COLORS.bg_hover[0]*1.0, COLORS.bg_hover[1]*1.0, COLORS.bg_hover[2]*1.0, 1.0);   // enfoncé : sombre
+		g.set_source_rgba(COLORS.bg_hover[0]*1.0, COLORS.bg_hover[1]*1.0, COLORS.bg_hover[2]*1.0, 1.0);   // enfoncé : plus sombre
 	} else if (hoverSync) {
-		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);   // hover : légèrement éclairé
+		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);   // hover : éclairé
 	} else {
-		g.set_source_rgba(0.18, 0.18, 0.20, 1.0);   // repos
+		g.set_source_rgba(COLORS.bg_cfg[0], COLORS.bg_cfg[1], COLORS.bg_cfg[2], 1.0);   // repos : cohérent
 	}
 	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
 	g.fill();
@@ -929,6 +935,10 @@ function onidle(x, y, but) {
 	// Hover bouton HOLD
 	var newHoverHold = hit(x, y, holdRect(l));
 	if (newHoverHold !== hoverHold) { hoverHold = newHoverHold; mgraphics.redraw(); }
+
+	// Hover bouton COLLAPSE
+	var newHoverCollapse = hit(x, y, collapseRect(l));
+	if (newHoverCollapse !== hoverCollapse) { hoverCollapse = newHoverCollapse; mgraphics.redraw(); }
 
 	if (openDropdown === "") { if (hoverDD !== -1) { hoverDD = -1; mgraphics.redraw(); } return; }
 	var dl = ddLayout(l);
