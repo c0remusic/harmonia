@@ -942,11 +942,19 @@ function onidle(x, y, but) {
 
 	var ks = cfgRect(l, cfgIndex("keyscale"));
 
-	// Feedback temporaire SYNC: redraw continuellement pendant les 80ms
+	// Feedback temporaire SYNC
 	var now = Date.now();
-	if (now - syncPressed < 80) {
+	var isSyncPressed = (now - syncPressed) < 80;
+
+	// Redraw si feedback temporaire est actif ou vient d'expirer
+	if (isSyncPressed || (syncPressed > 0 && now - syncPressed < 100)) {
 		mgraphics.redraw();
-		return;  // Pas de besoin de checker les autres hovers pendant le feedback
+		if (isSyncPressed) return;  // Skip les autres hovers pendant le feedback
+	}
+
+	// Si feedback vient d'expirer, réinitialiser syncPressed
+	if (!isSyncPressed && syncPressed > 0) {
+		syncPressed = 0;
 	}
 
 	// Hover SYNC
