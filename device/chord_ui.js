@@ -632,19 +632,25 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 	// Couleur selon le mode : ANCHOR=gris (comme VOICE LEADING OFF), RELATIVE=bleu, PIANO=doré
 	var br, bg, bb;
 	if (mode === "anchored") {
-		// Gris cohérent avec VOICE LEADING OFF
-		br = 0.22; bg = 0.22; bb = 0.25;
+		// Gris cohérent avec VOICE LEADING OFF: bg_cfg au repos, 0.22,0.22,0.25 au hover/press
+		if (isPressed || isHover) {
+			br = 0.22; bg = 0.22; bb = 0.25;
+		} else {
+			br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
+		}
 	} else if (mode === "relative") {
 		br = COLORS.blue_accent[0]; bg = COLORS.blue_accent[1]; bb = COLORS.blue_accent[2];
 	} else { // PIANO = doré
 		br = COLORS.gold_active[0]; bg = COLORS.gold_active[1]; bb = COLORS.gold_active[2];
 	}
 
-	// Apply hover/press darkening
-	if (isPressed) {
-		br *= 0.85; bg *= 0.85; bb *= 0.85;
-	} else if (isHover) {
-		br *= 1.05; bg *= 1.05; bb *= 1.05;
+	// Apply hover/press darkening (only for RELATIVE and PIANO)
+	if (mode !== "anchored") {
+		if (isPressed) {
+			br *= 0.85; bg *= 0.85; bb *= 0.85;
+		} else if (isHover) {
+			br *= 1.05; bg *= 1.05; bb *= 1.05;
+		}
 	}
 
 	g.set_source_rgba(br, bg, bb, 1.0);
