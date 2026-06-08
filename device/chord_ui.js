@@ -364,9 +364,8 @@ function drawDropdown(g, l) {
 		var br, bg, bb, tr, tg, tb;
 		var isHov = (i === hoverDD && !on);
 		if (on) {
-			// Doré pour KEY et VOICING (cohérent), bleu pour SCALE
-			if      (openDropdown === "key" || openDropdown === "voicing")  { br=COLORS.gold_active[0]; bg=COLORS.gold_active[1]; bb=COLORS.gold_active[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
-			else if (openDropdown === "scale")   { br=COLORS.blue_accent[0]; bg=COLORS.blue_accent[1]; bb=COLORS.blue_accent[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
+			// Doré pour tous les sélecteurs (KEY, SCALE, VOICING) — cohérent
+			if      (openDropdown === "key" || openDropdown === "voicing" || openDropdown === "scale")  { br=COLORS.gold_active[0]; bg=COLORS.gold_active[1]; bb=COLORS.gold_active[2]; tr=COLORS.text_dark[0]; tg=COLORS.text_dark[1]; tb=COLORS.text_dark[2]; }
 		} else if (isHov) {
 			br=COLORS.bg_hover[0]; bg=COLORS.bg_hover[1]; bb=COLORS.bg_hover[2]; tr=0.95; tg=0.95; tb=0.98;
 		} else {
@@ -430,10 +429,9 @@ function drawConfig(g, l) {
 		g.fill();
 	}
 
-	// VL MODE button
-	var vlLbl = (vlMode==="anchored")?"ANCHOR":(vlMode==="relative")?"RELATIVE":"PIANO";
+	// VL MODE button (3 states: ANCHOR=gray, RELATIVE=blue, PIANO=gold)
 	var vlmRect = cfgRect(l, cfgIndex("vlmode"));
-	drawCfgButton(g, vlmRect, vlLbl, vlMode!=="anchored", hoverCfg==="vlmode", pressedVLMode);
+	drawVLModeButton(g, vlmRect, vlMode, hoverCfg==="vlmode", pressedVLMode);
 	// Description sous (only for RELATIVE et PIANO modes)
 	if (vlMode !== "anchored") {
 		g.set_source_rgba(0.55, 0.55, 0.60, 0.6);
@@ -634,6 +632,45 @@ function drawCfgButton(g, r, txt, on, isHover, pressTime) {
 	var tw = safeTextW(txt, 9);
 	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
 	g.text_path(txt);
+	g.fill();
+}
+
+function drawVLModeButton(g, r, mode, isHover, pressTime) {
+	var now = Date.now();
+	var isPressed = (now - pressTime) < 150;
+
+	// Couleur selon le mode : ANCHOR=gris, RELATIVE=bleu, PIANO=doré
+	var br, bg, bb, isActive;
+	if (mode === "anchored") {
+		isActive = false;
+		br = COLORS.bg_cfg[0]; bg = COLORS.bg_cfg[1]; bb = COLORS.bg_cfg[2];
+	} else if (mode === "relative") {
+		isActive = true;
+		br = COLORS.blue_accent[0]; bg = COLORS.blue_accent[1]; bb = COLORS.blue_accent[2];
+	} else { // piano
+		isActive = true;
+		br = COLORS.gold_active[0]; bg = COLORS.gold_active[1]; bb = COLORS.gold_active[2];
+	}
+
+	// Apply hover/press darkening
+	if (isPressed) {
+		br *= 0.85; bg *= 0.85; bb *= 0.85;
+	} else if (isHover && isActive) {
+		br *= 1.1; bg *= 1.1; bb *= 1.1;
+	}
+
+	g.set_source_rgba(br, bg, bb, 1.0);
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+	g.fill();
+
+	// Texte
+	var lbl = (mode==="anchored")?"ANCHOR":(mode==="relative")?"RELATIVE":"PIANO";
+	var textCol = isActive ? COLORS.text_white : [0.72, 0.72, 0.75];
+	g.set_source_rgba(textCol[0], textCol[1], textCol[2], 1.0);
+	g.set_font_size(9);
+	var tw = safeTextW(lbl, 9);
+	g.move_to(r[0]+(r[2]-tw)*0.5, r[1]+r[3]*0.5+3);
+	g.text_path(lbl);
 	g.fill();
 }
 
