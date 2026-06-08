@@ -522,13 +522,13 @@ function drawSelector(g, r, label, value, isOpen, isHover, pressTime) {
 		g.stroke();
 	}
 
-	// Label petit en haut (discret)
-	var labelFs = 8;
-	g.set_source_rgba(0.48, 0.48, 0.54, 1.0);
-	g.set_font_size(labelFs);
-	g.move_to(r[0]+6, r[1] + labelFs + 2);
-	g.text_path(label);
-	g.fill();
+	// Label petit en haut (removed for cleaner UI)
+	// var labelFs = 8;
+	// g.set_source_rgba(0.48, 0.48, 0.54, 1.0);
+	// g.set_font_size(labelFs);
+	// g.move_to(r[0]+6, r[1] + labelFs + 2);
+	// g.text_path(label);
+	// g.fill();
 
 	// Valeur centré au milieu
 	// KEY/SCALE: texte adaptatif; VOICING: fixe 9px
