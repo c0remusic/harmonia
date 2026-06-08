@@ -1056,7 +1056,16 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl) {
 
 	// ----- CONFIG : TONALITY [KEY|SCALE|sync] + CHORD STYLE (oct/voicing/vl/vlmode) -----
 	var ks = cfgRect(l, cfgIndex("keyscale"));
-	if (hit(x,y,ksSyncRect(ks)))  { syncPressed = Date.now(); outlet(0, "synclive"); mgraphics.redraw(); return; }
+	if (hit(x,y,ksSyncRect(ks)))  {
+		syncPressed = Date.now();
+		outlet(0, "synclive");
+		mgraphics.redraw();
+		// Timer pour redraw après expiration du feedback
+		var feedbackTimer = new Task(function() { mgraphics.redraw(); });
+		feedbackTimer.delay = 90;  // redraw 90ms après le clic (après les 80ms)
+		feedbackTimer.execute();
+		return;
+	}
 	if (hit(x,y,ksKeyRect(ks)))   { openDropdown = "key";   mgraphics.redraw(); return; }
 	if (hit(x,y,ksScaleRect(ks))) { openDropdown = "scale"; mgraphics.redraw(); return; }
 	if (hit(x,y,cfgRect(l,cfgIndex("oct")))) {
