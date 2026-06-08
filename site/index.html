@@ -1,46 +1,40 @@
-﻿<!DOCTYPE html>
-<!-- saved from url=(0040)https://harmonia-three-theta.vercel.app/ -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harmonia â€” Max for Live</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com/">
-  <link href="./Harmonia â€” Max for Live_files/css2" rel="stylesheet">
+  <title>Harmonia — Max for Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      /* Ableton Official Palette (2026) — Synced with device */
-      --bg: #2A2A2A; --bg2: #363636; --bg3: #464646;
+      --bg: #2A2A2A;
+      --bg2: #363636;
+      --bg3: #464646;
       --border: rgba(255,255,255,0.07);
-      --gold: #FFAD56; --gold-dim: rgba(255, 173, 86, 0.15);
-      --blue: #8ECCE8; --blue-dim: rgba(142, 204, 232, 0.12);
-      --white: #f0eee8; --muted: rgba(240,238,232,0.45); --muted2: rgba(240,238,232,0.2);
+      --gold: #FFAD56;
+      --gold-dim: rgba(255, 173, 86, 0.15);
+      --blue: #8ECCE8;
+      --blue-dim: rgba(142, 204, 232, 0.12);
+      --white: #f0eee8;
+      --muted: rgba(240,238,232,0.45);
     }
+
     html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--white); font-family: 'Instrument Sans', sans-serif; font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
 
-    /* â•â•â• I18N â€” BULLETPROOF â•â•â•
-       Rule: ALL translatable elements default to display:none.
-       Only lang-active class shows them.
-       Never rely on element-level display to work against this. */
-    .t-en, .t-fr { display: none !important; }
-    body.lang-en .t-en { display: revert !important; }
-    body.lang-fr .t-fr { display: revert !important; }
-    /* For inline spans */
-    span.t-en, span.t-fr { display: none !important; }
-    body.lang-en span.t-en { display: inline !important; }
-    body.lang-fr span.t-fr { display: inline !important; }
-    /* For flex containers */
-    .t-en-flex, .t-fr-flex { display: none !important; }
-    body.lang-en .t-en-flex { display: flex !important; }
-    body.lang-fr .t-fr-flex { display: flex !important; }
-
-    /* â•â•â• LANG TOGGLE â•â•â• */
     .lang-toggle { position: fixed; top: 24px; right: 32px; z-index: 100; display: flex; gap: 2px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 3px; }
     .lang-toggle button { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
     .lang-toggle button.active { background: var(--gold-dim); color: var(--gold); }
 
-    /* â•â•â• NAV â•â•â• */
     nav { position: fixed; top: 0; left: 0; right: 0; z-index: 99; padding: 20px 48px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid transparent; transition: border-color 0.3s, background 0.3s; }
     nav.scrolled { background: rgba(42,42,42,0.92); backdrop-filter: blur(12px); border-color: var(--border); }
     .nav-logo { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--white); text-decoration: none; }
@@ -49,390 +43,129 @@
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--white); }
 
-    /* â•â•â• HERO â•â•â• */
     .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 120px 48px 80px; position: relative; overflow: hidden; }
-    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 70% 40%, rgba(155,127,212,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%); }
-    .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%); opacity: 0.4; }
     .hero-content { position: relative; z-index: 2; max-width: 680px; }
-    .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
-    .hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--gold); opacity: 0.5; }
+    .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; }
     .hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(52px, 7vw, 88px); line-height: 0.95; letter-spacing: -0.02em; margin-bottom: 28px; }
-    .hero-title em { font-style: italic; color: var(--gold); }
-    .hero-desc-text { font-size: 17px; color: var(--muted); max-width: 480px; line-height: 1.7; margin-bottom: 40px; }
+    .hero-desc { font-size: 17px; color: var(--muted); max-width: 480px; line-height: 1.7; margin-bottom: 40px; }
 
-    /* â•â•â• BUTTONS â•â•â• */
-    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: #0e0e10; font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: 14px; padding: 13px 26px; border-radius: 6px; text-decoration: none; transition: all 0.2s; }
-    .btn-primary:hover { background: #d4b565; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.25); }
-    .btn-primary svg { width: 15px; height: 15px; }
-    .btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); color: var(--muted); font-family: 'Instrument Sans', sans-serif; font-weight: 500; font-size: 14px; padding: 13px 26px; border-radius: 6px; text-decoration: none; transition: all 0.2s; background: rgba(255,255,255,0.02); }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: #0e0e10; font-weight: 600; font-size: 14px; padding: 13px 26px; border-radius: 6px; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-primary:hover { background: #d4b565; transform: translateY(-1px); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); color: var(--muted); font-size: 14px; padding: 13px 26px; border-radius: 6px; text-decoration: none; transition: all 0.2s; background: rgba(255,255,255,0.02); }
     .btn-secondary:hover { border-color: rgba(255,255,255,0.2); color: var(--white); background: rgba(255,255,255,0.05); }
-    .btn-donate { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(201,168,76,0.3); color: var(--gold); font-family: 'Instrument Sans', sans-serif; font-weight: 500; font-size: 14px; padding: 13px 26px; border-radius: 6px; text-decoration: none; transition: all 0.2s; background: var(--gold-dim); }
-    .btn-donate:hover { background: rgba(201,168,76,0.25); transform: translateY(-1px); }
 
-    
-    /* â•â•â• SCREENSHOT + CALLOUTS â•â•â• */
-    .screenshot-section { padding: 0 48px 80px; }
-    .screenshot-outer { position: relative; }
-    .screenshot-wrap { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 40px 80px rgba(0,0,0,0.6), 0 0 120px rgba(155,127,212,0.06); }
-    .screenshot-bar { background: var(--bg); padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
-    .bar-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-left: 8px; }
-    .screenshot-img-wrap { position: relative; display: block; }
-    .screenshot-img-wrap img { width: 100%; display: block; }
-
-    /* Zones removed - disabling for deployment test */
-    }
-
-    /* Tooltips removed - testing deployment */
-
-    /* â•â•â• FEATURES â•â•â• */
     .features-section { padding: 80px 48px; }
     .section-header { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 80px; align-items: end; }
     .section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
     .section-heading { font-family: 'DM Serif Display', serif; font-size: clamp(36px, 4vw, 52px); line-height: 1.05; letter-spacing: -0.02em; }
-    .section-desc { font-size: 15px; color: var(--muted); line-height: 1.8; padding-top: 8px; }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
     .feature-card { background: var(--bg2); padding: 36px 32px; transition: background 0.2s; }
     .feature-card:hover { background: var(--bg3); }
     .feature-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--gold); font-size: 18px; }
-    .feature-icon.blue { background: var(--blue-dim); border-color: rgba(142, 204, 232, 0.2); color: var(--blue); }
-    .feature-title-text { font-weight: 600; font-size: 15px; margin-bottom: 10px; color: var(--white); }
-    .feature-desc-text { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+    .feature-title { font-weight: 600; font-size: 15px; margin-bottom: 10px; color: var(--white); }
+    .feature-desc { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
 
-    /* â•â•â• VOICINGS â•â•â• */
-    .voicings-section { padding: 0 48px 120px; }
-    .voicings-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 48px; }
-    .voicing-chip { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 16px; text-align: center; transition: all 0.2s; }
-    .voicing-chip:hover { border-color: rgba(201,168,76,0.3); background: var(--gold-dim); }
-    .voicing-name { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
-    .voicing-desc-text { font-size: 11px; color: var(--muted); line-height: 1.4; }
-
-    /* â•â•â• DOWNLOAD â•â•â• */
-    .download-section { padding: 0 48px 80px; }
-    .download-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 64px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; position: relative; overflow: hidden; }
-    .download-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4; }
-    .download-title-text { font-family: 'DM Serif Display', serif; font-size: 36px; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .download-section { padding: 0 48px 120px; }
+    .download-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 64px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; }
+    .download-title { font-family: 'DM Serif Display', serif; font-size: 36px; letter-spacing: -0.02em; margin-bottom: 12px; }
     .download-req { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); line-height: 1.8; }
-    .download-actions { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
+    .download-req code { color: var(--gold); }
 
-    /* â•â•â• SUPPORT â•â•â• */
-    .support-section { padding: 0 48px 120px; }
-    .support-card { background: var(--bg2); border: 1px solid rgba(201,168,76,0.15); border-radius: 12px; padding: 48px 64px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; position: relative; overflow: hidden; }
-    .support-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent); }
-    .support-icon { font-size: 28px; margin-bottom: 12px; }
-    .support-title-text { font-family: 'DM Serif Display', serif; font-size: 28px; letter-spacing: -0.02em; margin-bottom: 8px; }
-    .support-desc-text { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 480px; }
-
-    /* â•â•â• FOOTER â•â•â• */
     footer { border-top: 1px solid var(--border); padding: 32px 48px; display: flex; align-items: center; justify-content: space-between; }
     .footer-logo { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--muted); }
-    .footer-note { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2); }
 
-    /* â•â•â• ANIMATIONS â•â•â• */
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-    .hero-eyebrow { animation: fadeUp 0.6s ease both; }
-    .hero-title { animation: fadeUp 0.6s 0.1s ease both; }
-    .hero-desc-text { animation: fadeUp 0.6s 0.2s ease both; }
-    .t-en-flex, .t-fr-flex { animation: fadeUp 0.6s 0.3s ease both; }
-    .screenshot-wrap { animation: fadeUp 0.8s 0.4s ease both; }
-
-    /* â•â•â• RESPONSIVE â•â•â• */
     @media (max-width: 900px) {
-      nav, .hero, .screenshot-section, .features-section, .voicings-section, .download-section, .support-section, footer { padding-left: 24px; padding-right: 24px; }
+      nav, .hero, .features-section, .download-section, footer { padding-left: 24px; padding-right: 24px; }
       .features-grid { grid-template-columns: 1fr; }
-      .voicings-grid { grid-template-columns: repeat(2, 1fr); }
-      .download-card, .support-card { grid-template-columns: 1fr; padding: 36px 28px; }
+      .download-card { grid-template-columns: 1fr; padding: 36px 28px; }
       .section-header { grid-template-columns: 1fr; }
       .nav-links { display: none; }
-      .lang-toggle { right: 24px; }
-      .annotations { display: none; }
     }
   </style>
 </head>
 <body class="lang-en">
 
   <div class="lang-toggle">
-    <button class="active" onclick="setLang(&#39;en&#39;)">EN</button>
-    <button onclick="setLang(&#39;fr&#39;)">FR</button>
+    <button class="active" onclick="setLang('en')">EN</button>
+    <button onclick="setLang('fr')">FR</button>
   </div>
 
-  <nav id="nav" class="">
+  <nav id="nav">
     <a href="#" class="nav-logo">Harmonia</a>
     <span class="nav-tag">Max for Live</span>
     <div class="nav-links">
-      <a href="#features"><span class="t-en">Features</span><span class="t-fr">FonctionnalitÃ©s</span></a>
-      <a href="#download"><span class="t-en">Download</span><span class="t-fr">TÃ©lÃ©charger</span></a>
-      <a href="#support"><span class="t-en">Support</span><span class="t-fr">Soutenir</span></a>
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
     </div>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid-bg"></div>
     <div class="hero-content">
-      <p class="hero-eyebrow">Max for Live Â· Ableton Live</p>
-      <h1 class="hero-title">Har<em>monia</em></h1>
-      <p class="hero-desc-text t-en">A harmonic composition tool for fast and musical chord selection, exploration, and performance â€” directly inside Ableton Live.</p>
-      <p class="hero-desc-text t-fr">Un outil de composition harmonique pour sÃ©lectionner, explorer et jouer des accords rapidement et musicalement â€” directement dans Ableton Live.</p>
-      <div class="t-en-flex" style="gap:14px; flex-wrap:wrap;">
-        <a href="#download" class="btn-primary"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9m0 0L4 7m3.5 3L11 7M1 13h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Download free</a>
-        <a href="#device" class="btn-secondary">Explore features</a>
-      </div>
-      <div class="t-fr-flex" style="gap:14px; flex-wrap:wrap;">
-        <a href="#download" class="btn-primary"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9m0 0L4 7 m3.5 3L11 7M1 13h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>TÃ©lÃ©charger gratuitement</a>
-        <a href="#features" class="btn-secondary">Voir les fonctionnalitÃ©s</a>
+      <p class="hero-eyebrow">Max for Live · Ableton Live</p>
+      <h1 class="hero-title">Har<em style="font-style: italic; color: var(--gold);">monia</em></h1>
+      <p class="hero-desc">A harmonic composition tool for fast and musical chord selection, exploration, and performance — directly inside Ableton Live.</p>
+      <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+        <a href="#download" class="btn-primary">Download Free</a>
+        <a href="#features" class="btn-secondary">Explore Features</a>
       </div>
     </div>
   </section>
 
-  <!-- SCREENSHOT + CALLOUTS -->
-  <section class="screenshot-section" id="device">
-    <div class="screenshot-outer">
-      <div class="screenshot-wrap">
-        <div class="screenshot-bar">
-          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-          <span class="bar-title">harmonia_v1 â€” E Min</span>
-        </div>
-        <div class="screenshot-img-wrap">
-          <img src="./chord_selector_screenshot.png" alt="Harmonia Max for Live Device">
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
   <section class="features-section" id="features">
     <div class="section-header">
       <div>
-        <p class="section-label"><span class="t-en">Features</span><span class="t-fr">FonctionnalitÃ©s</span></p>
-        <p class="section-heading t-en">Everything you need,<br>nothing you don't</p>
-        <p class="section-heading t-fr">L'essentiel,<br>rien de superflu</p>
+        <p class="section-label">Features</p>
+        <p class="section-heading">Everything you need, nothing you don't</p>
       </div>
-      <p class="section-desc t-en">Harmonia is not a sequencer. It's a focused, performance-ready harmonic tool â€” built around a single idea: give you instant access to every valid chord for your key and scale.</p>
-      <p class="section-desc t-fr">Harmonia n'est pas un sÃ©quenceur. C'est un outil harmonique centrÃ© sur une idÃ©e : donner un accÃ¨s immÃ©diat Ã  tous les accords valides pour votre tonalitÃ© et votre gamme.</p>
     </div>
     <div class="features-grid">
-
       <div class="feature-card">
-        <div class="feature-icon">â™¯</div>
-        <p class="feature-title-text t-en">Chord Grid</p>
-        <p class="feature-title-text t-fr">Grille d'accords</p>
-        <p class="feature-desc-text t-en">7 diatonic degrees + a dedicated Borrowed column. All valid chords for your key, always visible â€” no hidden pages.</p>
-        <p class="feature-desc-text t-fr">7 degrÃ©s diatoniques + une colonne d'accords empruntÃ©s. Tous les accords valides toujours visibles, sans pages cachÃ©es.</p>
+        <div class="feature-icon">♯</div>
+        <p class="feature-title">Chord Grid</p>
+        <p class="feature-desc">7 diatonic degrees + a dedicated Borrowed column. All valid chords for your key, always visible.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon blue">â†”</div>
-        <p class="feature-title-text">Voice Leading</p>
-        <p class="feature-desc-text t-en">3 algorithms (Anchored, Relative, Piano) with common tone detection and progressive center pull for natural progressions.</p>
-        <p class="feature-desc-text t-fr">3 algorithmes (Anchored, Relative, Piano) avec dÃ©tection de common tones et center pull progressif pour des transitions naturelles.</p>
+        <div class="feature-icon">↓</div>
+        <p class="feature-title">Voice Leading</p>
+        <p class="feature-desc">3 algorithms (Anchored, Relative, Piano) with common tone detection for natural progressions.</p>
       </div>
-
       <div class="feature-card">
-        <div class="feature-icon">â‰¡</div>
-        <p class="feature-title-text t-en">10 Voicings</p>
-        <p class="feature-title-text t-fr">10 voicings</p>
-        <p class="feature-desc-text t-en">Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop2, Drop3 â€” from tight jazz voicings to wide prog textures.</p>
-        <p class="feature-desc-text t-fr">Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop2, Drop3 â€” du jazz serrÃ© aux nappes prog les plus larges.</p>
+        <div class="feature-icon">≡</div>
+        <p class="feature-title">10 Voicings</p>
+        <p class="feature-desc">Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop2, Drop3.</p>
       </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">âŸ³</div>
-        <p class="feature-title-text t-en">Live Scale Sync</p>
-        <p class="feature-title-text t-fr">Sync tonalitÃ© Live</p>
-        <p class="feature-desc-text t-en">Instantly import the current key and scale from Ableton Live â€” stay in sync with your session at all times.</p>
-        <p class="feature-desc-text t-fr">Importez instantanÃ©ment la tonalitÃ© depuis Ableton Live â€” restez en sync avec votre session Ã  tout moment.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon blue">â™­</div>
-        <p class="feature-title-text t-en">Borrowed Chords</p>
-        <p class="feature-title-text t-fr">Accords empruntÃ©s</p>
-        <p class="feature-desc-text t-en">Secondary dominants and modal interchange chords in the main grid â€” always one click away.</p>
-        <p class="feature-desc-text t-fr">Dominantes secondaires et emprunts modaux dans la grille principale â€” toujours accessibles en un clic.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">â—‰</div>
-        <p class="feature-title-text">MIDI &amp; Hold</p>
-        <p class="feature-desc-text t-en">Full keyboard mapping, clickable grid, Hold/Latch mode for performance â€” plus visual keyboard feedback.</p>
-        <p class="feature-desc-text t-fr">Mapping clavier complet, grille cliquable, mode Hold/Latch pour la performance â€” avec retour visuel sur le clavier.</p>
-      </div>
-
     </div>
   </section>
 
-  <!-- VOICINGS -->
-  <section class="voicings-section">
-    <p class="section-label">Voicings</p>
-    <p class="section-heading t-en">10 ways to voice any chord</p>
-    <p class="section-heading t-fr">10 faÃ§ons de disposer chaque accord</p>
-    <div class="voicings-grid">
-      <div class="voicing-chip"><div class="voicing-name">Classic</div><p class="voicing-desc-text t-en">Close position</p><p class="voicing-desc-text t-fr">Position serrÃ©e</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Piano</div><p class="voicing-desc-text t-en">Bass + grouped upper</p><p class="voicing-desc-text t-fr">Basse grave + reste groupÃ©</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Open</div><p class="voicing-desc-text t-en">2nd voice up an octave</p><p class="voicing-desc-text t-fr">2e voix Ã  l'octave</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Spread</div><p class="voicing-desc-text t-en">Wide alternating</p><p class="voicing-desc-text t-fr">Voix alternÃ©es larges</p></div>
-      <div class="voicing-chip"><div class="voicing-name">House</div><p class="voicing-desc-text t-en">Chord + bass doubling</p><p class="voicing-desc-text t-fr">Accord + doublure basse</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Prog</div><p class="voicing-desc-text t-en">Wide prog/techno stab</p><p class="voicing-desc-text t-fr">Nappe prog large</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Rootless A</div><p class="voicing-desc-text t-en">No root Â· 3â€“5â€“7â€“9</p><p class="voicing-desc-text t-fr">Sans fondamentale</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Rootless B</div><p class="voicing-desc-text t-en">No root Â· 7â€“9â€“3â€“5</p><p class="voicing-desc-text t-fr">Sans fondamentale, inversÃ©</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Drop 2</div><p class="voicing-desc-text t-en">2nd from top, â€“8va</p><p class="voicing-desc-text t-fr">2e voix du haut â€“8ve</p></div>
-      <div class="voicing-chip"><div class="voicing-name">Drop 3</div><p class="voicing-desc-text t-en">3rd from top, â€“8va</p><p class="voicing-desc-text t-fr">3e voix du haut â€“8ve</p></div>
-    </div>
-  </section>
-
-  <!-- DOWNLOAD -->
   <section class="download-section" id="download">
     <div class="download-card">
       <div>
-        <p class="download-title-text t-en">Free download</p>
-        <p class="download-title-text t-fr">TÃ©lÃ©chargement gratuit</p>
-        <p class="download-req" style="margin-top:16px">
-          <span class="t-en">Requires</span><span class="t-fr">NÃ©cessite</span>
-          &nbsp;<span style="color:var(--gold)">Ableton Live 11+</span> Â· <span style="color:var(--gold)">Max for Live</span><br>
-          <span class="t-en">Unzip and drop <code style="color:var(--gold)">harmonia_v1.amxd</code> onto a MIDI track before an instrument. Keep all files in the same folder.</span>
-          <span class="t-fr">DÃ©compressez et glissez <code style="color:var(--gold)">harmonia_v1.amxd</code> sur une piste MIDI avant un instrument. Gardez tous les fichiers dans le mÃªme dossier.</span>
+        <p class="download-title">Free Download</p>
+        <p class="download-req" style="margin-top: 16px;">
+          Requires <span style="color: var(--gold);">Ableton Live 11+</span> · <span style="color: var(--gold);">Max for Live</span><br>
+          <span style="font-size: 13px;">Unzip and drop <code>harmonia_v1.amxd</code> onto a MIDI track before an instrument.</span>
         </p>
       </div>
-      <div class="download-actions">
-        <a href="file:///C:/Users/LEETJ/Downloads/harmonia_v1.zip" download="" class="btn-primary">
-          <svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9m0 0L4 7m3.5 3L11 7M1 13h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          <span class="t-en">Download .zip</span><span class="t-fr">TÃ©lÃ©charger .zip</span>
-        </a>
-        <a href="https://github.com/" target="_blank" class="btn-secondary">
-          <svg viewBox="0 0 15 15" width="14" height="14" fill="currentColor"><path d="M7.5 0C3.36 0 0 3.36 0 7.5c0 3.31 2.15 6.12 5.12 7.12.37.07.51-.16.51-.36v-1.27c-2.08.45-2.52-.99-2.52-.99-.34-.86-.83-1.09-.83-1.09-.68-.46.05-.45.05-.45.75.05 1.15.77 1.15.77.67 1.14 1.75.81 2.18.62.07-.48.26-.81.47-1-1.66-.19-3.41-.83-3.41-3.7 0-.82.29-1.49.77-2.01-.08-.19-.33-.95.07-1.98 0 0 .63-.2 2.06.77a7.14 7.14 0 0 1 3.74 0c1.43-.97 2.06-.77 2.06-.77.4 1.03.15 1.79.07 1.98.48.52.77 1.19.77 2.01 0 2.88-1.75 3.51-3.42 3.7.27.23.51.69.51 1.39v2.06c0 .2.13.43.51.36A7.5 7.5 0 0 0 15 7.5C15 3.36 11.64 0 7.5 0z"></path></svg>
-          GitHub
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- SUPPORT -->
-  <section class="support-section" id="support">
-    <div class="support-card">
-      <div>
-        <div class="support-icon">â™¥</div>
-        <p class="support-title-text t-en">Support the project</p>
-        <p class="support-title-text t-fr">Soutenir le projet</p>
-        <p class="support-desc-text t-en" style="margin-top:8px">Harmonia is free and open source. If it's been useful to you, a small donation goes a long way â€” it helps keep the project alive and fund future features.</p>
-        <p class="support-desc-text t-fr" style="margin-top:8px">Harmonia est gratuit et open source. Si il vous a Ã©tÃ© utile, un petit don fait beaucoup â€” il aide Ã  maintenir le projet et Ã  financer les futures fonctionnalitÃ©s.</p>
-      </div>
-      <div>
-        <a href="https://paypal.me/HarmoniaDevice" target="_blank" class="btn-donate">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"></path></svg>
-          <span class="t-en">Donate via PayPal</span><span class="t-fr">Faire un don via PayPal</span>
-        </a>
-      </div>
+      <a href="./harmonia_v1.zip" class="btn-primary">Get Harmonia</a>
     </div>
   </section>
 
   <footer>
-    <span class="footer-logo">Harmonia</span>
-    <span class="footer-note">
-      <span class="t-en">Made with Max for Live Â· Free &amp; open source</span>
-      <span class="t-fr">Fait avec Max for Live Â· Gratuit et open source</span>
-    </span>
+    <div class="footer-logo">Harmonia</div>
+    <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(240,238,232,0.2);">© 2026</div>
   </footer>
 
   <script>
-    // â”€â”€ NAV SCROLL
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
-
-    // â”€â”€ LANG
     function setLang(lang) {
       document.body.className = 'lang-' + lang;
-      document.querySelectorAll('.lang-toggle button').forEach(b =>
-        b.classList.toggle('active', b.textContent === lang.toUpperCase())
-      );
-      renderAnnotations();
+      document.querySelectorAll('.lang-toggle button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
     }
 
-
-    // Zones removed for testing
-    // const CALLOUTS = {
-      en: [
-        null,
-        { num: "01", title: "Sync Ableton", desc: "Import key and scale directly from Ableton Live's current settings." },
-        { num: "02", title: "Key", desc: "Select root note (12 chromatic keys)." },
-        { num: "03", title: "Scale", desc: "Choose scale type: Major, Minor, Dorian, Phrygian, Lydian, Mixolydian, Harmonic Minor." },
-        { num: "04", title: "Octave", desc: "7 presets (-3 to +3). Controls register of all chord output." },
-        { num: "05", title: "Voicing", desc: "10 styles: Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2, Drop 3." },
-        { num: "06", title: "Voice Leading", desc: "Smooth chord transitions with 3 algorithms: Anchor, Relative, Piano." },
-        { num: "07", title: "VL Mode", desc: "Cycle VL algorithms: Anchor (reset), Relative (follow), Piano (low register)." },
-        { num: "08", title: "Chord Grid", desc: "7 diatonic degrees (Iâ€“VII) Ã— 8 chord types. Click to play." },
-        { num: "09", title: "Borrowed Chords", desc: "Modal interchange & secondary dominants â€” always visible, no hidden menus." },
-        { num: "10", title: "Monitor", desc: "Real-time display of current chord notes. Mini keyboard shows active pitches." },
-        { num: "11", title: "Collapse", desc: "Toggle between expanded and compact view modes." },
-        { num: "12", title: "Keyboard", desc: "Mini piano keyboard for visual feedback on active notes." },
-        { num: "13", title: "Hold / Latch", desc: "Sustain chords after release. Toggle for live performance." }
-      ],
-      fr: [
-        null,
-        { num: "01", title: "Sync Ableton", desc: "Importe la tonalitÃ© et la gamme d'Ableton Live." },
-        { num: "02", title: "TonalitÃ©", desc: "SÃ©lectionnez la tonique (12 notes)." },
-        { num: "03", title: "Gamme", desc: "Choisissez : Majeur, Mineur, Dorien, Phrygien, Lydien, Mixolydien, Min. harmonique." },
-        { num: "04", title: "Octave", desc: "7 prÃ©rÃ©glages (-3 Ã  +3). ContrÃ´le le registre des accords." },
-        { num: "05", title: "Voicing", desc: "10 styles : Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2, Drop 3." },
-        { num: "06", title: "Voice Leading", desc: "Transitions fluides avec 3 algorithmes : Anchor, Relative, Piano." },
-        { num: "07", title: "Mode VL", desc: "Cycle entre algorithmes : Anchor (reset), Relative (suivi), Piano (grave)." },
-        { num: "08", title: "Grille d'accords", desc: "7 degrÃ©s (Iâ€“VII) Ã— 8 types d'accord. Cliquez pour jouer." },
-        { num: "09", title: "Accords empruntÃ©s", desc: "Emprunts modaux & dominantes secondaires â€” toujours visibles." },
-        { num: "10", title: "Monitor", desc: "Affichage en temps rÃ©el des notes. Mini clavier avec feedback visuel." },
-        { num: "11", title: "Collapse", desc: "Bascule entre vue expansÃ©e et compacte." },
-        { num: "12", title: "Clavier", desc: "Mini piano pour visualiser les notes actives." },
-        { num: "13", title: "Hold / Latch", desc: "Soutient l'accord aprÃ¨s relÃ¢chement. Toggle pour la performance." }
-      ]
-    };
-
-    function getLang() {
-      return document.body.className.replace('lang-', '');
-    }
-
-    // Zones code removed for testing
-    /*
-    const tooltip = document.getElementById('calloutTooltip');
-    let activeHotspot = null;
-
-    document.querySelectorAll('.zone').forEach(zone => {
-      zone.addEventListener('mouseenter', function(e) {
-        const id = parseInt(this.dataset.id);
-        const lang = getLang();
-        const data = CALLOUTS[lang][id];
-        if (!data) return;
-
-        document.getElementById('calloutNum').textContent = data.num;
-        document.getElementById('calloutTitle').textContent = data.title;
-        document.getElementById('calloutDesc').textContent = data.desc;
-
-        // Position tooltip near zone (fixed positioning)
-        const spotRect = this.getBoundingClientRect();
-        const spotCx = spotRect.left + spotRect.width/2;
-        const spotCy = spotRect.top + spotRect.height/2;
-
-        const tooltipW = 260;
-        let left = spotCx + 16;
-        if (left + tooltipW > window.innerWidth - 16) left = spotCx - tooltipW - 16;
-        tooltip.style.left = left + 'px';
-        tooltip.style.top = (spotCy - 20) + 'px';
-        tooltip.classList.add('visible');
-
-        if (activeHotspot) activeHotspot.classList.remove('active');
-        this.classList.add('active');
-        activeHotspot = this;
-      });
-
-      zone.addEventListener('mouseleave', function() {
-        tooltip.classList.remove('visible');
-        this.classList.remove('active');
-        activeHotspot = null;
-      });
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('nav');
+      nav.classList.toggle('scrolled', window.scrollY > 50);
     });
-    */
-
   </script>
-
-</body></html>
-
+</body>
+</html>
