@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo 'static site - no build'",
+  "buildCommand": "ls -la site",
   "outputDirectory": "site",
   "routes": [
     {

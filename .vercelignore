@@ -1,9 +1,0 @@
-device/
-docs/
-website/
-harmonia_v1.zip
-package.json
-package-lock.json
-.git
-.gitignore
-README.md
