@@ -34,7 +34,7 @@ var COLORS = {
 	bg_hover:     [0.24, 0.24, 0.24],       // #3D3D3D — gris plus clair au hover
 	gold_active:  [1.0, 0.710, 0.024],      // #FFB506 — ambre riche Ableton
 	gold_hover:   [1.0, 0.76, 0.074],       // #FFC21D — or plus clair au hover
-	violet_accent:[0.627, 0.518, 0.647],    // #A084A5 — violet plus clair (4.8:1 contrast)
+	violet_accent:[0.898, 0.722, 0.898],    // #E5B8E5 — violet pâle (7.13:1 contrast AAA)
 	text_white:   [0.95, 0.95, 0.96],       // blanc cassé
 	text_dim:     [0.55, 0.55, 0.60],       // gris moyen pour labels
 	text_dark:    [0.137, 0.137, 0.137],    // #232323 sombre pour texte sur doré
