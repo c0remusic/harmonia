@@ -326,10 +326,10 @@ function ddLayout(l) {
 	var x0     = PAD * 2;
 	var y0     = PAD * 2 + 14;   // 14 = hauteur titre
 	var w      = CFG_W - PAD * 4;   // largeur des cellules remplit la colonne
-	var h      = Math.min(l.H - PAD * 4 - 14, 100);   // hauteur réduite pour ne pas bouffe la grille
+	var h      = Math.min(l.H - PAD * 4 - 14, 160);   // hauteur augmentée pour remplir le menu
 	var perRow = (openDropdown === "voicing") ? 2 : (openDropdown === "key") ? 3 : 2;
 	var rows   = Math.ceil(n / perRow);
-	var ch     = h / rows;       // hauteur cellule adaptive
+	var ch     = Math.max(h / rows, 20);   // hauteur cellule, min 20px
 	return { n:n, items:items, x0:x0, y0:y0, w:w, perRow:perRow, cw:w/perRow, ch:ch };
 }
 function ddCellRect(dl, i) {
