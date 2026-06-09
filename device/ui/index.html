@@ -297,10 +297,9 @@
   body.full .keys          {flex:none;height:52px}
   body.full .chord,body.full .keys{border-radius:7px}
 
-  /* Range d'octaves affiché sous le clavier monitor */
+  /* Range d'octaves affiché sous le clavier monitor (full uniquement) */
   .keys-range{display:none}
-  body.strip .keys-range{display:block;font-size:6px;font-family:var(--mono);color:var(--muted2);letter-spacing:.07em;text-align:center;margin-top:2px;line-height:1}
-  body.full  .keys-range{display:block;font-size:7px;font-family:var(--mono);color:var(--muted2);letter-spacing:.08em;text-align:center;margin-top:3px;line-height:1}
+  body.full .keys-range{display:block;font-size:7px;font-family:var(--mono);color:var(--muted2);letter-spacing:.08em;text-align:center;margin-top:3px;line-height:1}
 </style>
 </head>
 <body class="strip">
@@ -488,14 +487,19 @@
 
   // ── RENDER ──
   function renderOct(){
-    var box=document.getElementById('oct'); box.innerHTML='';
-    [-2,-1,0,1,2].forEach(function(v){
-      var s=el('span',v===state.oct?'on':'',(v>0?'+':'')+v);
-      // onmousedown + preventDefault : évite que le browser capte le focus au clic,
-      // ce qui obligerait à re-cliquer dans la fenêtre pour rejouer une note.
-      s.onmousedown=function(e){ if(e)e.preventDefault(); state.oct=v; renderOct(); send('octave',v); };
-      box.appendChild(s);
-    });
+    var box=document.getElementById('oct');
+    // Construit les spans UNE SEULE FOIS. Détruire et recréer le DOM au mousedown
+    // (innerHTML='') détruit l'élément sous le curseur, ce qui fait perdre l'état
+    // d'interaction au browser — le clic suivant sur une cellule n'est pas capté.
+    if(!box.children.length){
+      [-2,-1,0,1,2].forEach(function(v){
+        var s=el('span','',(v>0?'+':'')+v);
+        s.onmousedown=function(e){ if(e)e.preventDefault(); state.oct=v; renderOct(); send('octave',v); };
+        box.appendChild(s);
+      });
+    }
+    // Met à jour uniquement la classe .on sur l'élément actif.
+    Array.prototype.forEach.call(box.children,function(s,i){ s.className=(i-2)===state.oct?'on':''; });
   }
 
   function renderGrid(){
