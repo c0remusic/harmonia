@@ -1,4 +1,4 @@
-# Harmonia Device
+# Tuple Device
 
 Max for Live harmonic composition tool — the device itself.
 

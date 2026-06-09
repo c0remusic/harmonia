@@ -1,8 +1,8 @@
-# Harmonia
+# Tuple
 
 A Max for Live harmonic composition tool for Ableton Live.
 
-**Harmonia** gives you instant access to every valid chord for your key and scale — organized in a grid, always one click away. It's not a sequencer. It's a tool for exploring, performing and recording chords in real time.
+**Tuple** gives you instant access to every valid chord for your key and scale — organized in a grid, always one click away. It's not a sequencer. It's a tool for exploring, performing and recording chords in real time.
 
 → **[harmonia-three-theta.vercel.app](https://harmonia-three-theta.vercel.app)**
 
@@ -80,7 +80,7 @@ package.json     → Root workspace config
 
 ## Support
 
-Harmonia is free. If it's useful to you, consider a donation:
+Tuple is free. If it's useful to you, consider a donation:
 
 ☕ [paypal.me/HarmoniaDevice](https://paypal.me/HarmoniaDevice)
 

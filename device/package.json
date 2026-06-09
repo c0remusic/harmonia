@@ -1,7 +1,7 @@
 {
-  "name": "@harmonia/device",
+  "name": "@tuple/device",
   "version": "1.0.0",
-  "description": "Harmonia Max for Live device - harmonic composition tool",
+  "description": "Tuple — chord device for Ableton (Max for Live)",
   "main": "harmonia_v1.amxd",
   "scripts": {
     "test": "echo \"No tests yet\""

@@ -1,7 +1,7 @@
 {
-  "name": "harmonia",
+  "name": "tuple",
   "version": "1.0.0",
-  "description": "Max for Live harmonic composition tool",
+  "description": "Tuple — chord device for Ableton (Max for Live)",
   "private": true,
   "workspaces": [
     "device",
@@ -19,7 +19,7 @@
   "keywords": [
     "max-for-live",
     "ableton",
-    "harmonia",
+    "tuple",
     "chord-selector"
   ],
   "author": "",
