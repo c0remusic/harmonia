@@ -106,7 +106,9 @@
     font-weight:600;transition:all .1s;
   }
   .sync:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-  .sync.flash,.toggle.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
+  .sync.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
+  /* OPEN/CLOSE : s'allume franchement en jaune tant qu'on appuie (comme un pad). */
+  .toggle.lit{background:var(--gold);border-color:var(--gold);color:#232323;transition:none}
 
   .oct{display:flex;gap:2px}
   .oct span{
@@ -556,6 +558,7 @@
   function releaseAll(){
     var p=document.getElementsByClassName('pressed');
     while(p.length) p[0].classList.remove('pressed');
+    var tb=document.getElementById('toggleBtn'); if(tb) tb.classList.remove('lit');
     send('release');
   }
 
@@ -664,8 +667,9 @@
 
   document.getElementById('vl').onclick     = function(){ state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onclick = function(){ state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
-  // Feedback doré au clic OPEN/CLOSE DEVICE (sur mousedown → instantané).
-  document.getElementById('toggleBtn').onmousedown = function(){ flash(this); };
+  // Feedback OPEN/CLOSE : s'allume en jaune à l'appui, s'éteint au relâchement
+  // (releaseAll, mouseup global). Pas de timeout → pas de décalage avec l'action.
+  document.getElementById('toggleBtn').onmousedown = function(){ this.classList.add('lit'); };
   document.getElementById('toggleBtn').onclick = function(){
     if(!M){
       // demo: toggle mode locally for browser preview
