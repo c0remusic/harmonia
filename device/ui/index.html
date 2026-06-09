@@ -107,8 +107,10 @@
   }
   .sync:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
   .sync.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
-  /* OPEN/CLOSE : flash doré bref au clic, identique au bouton sync. */
-  .toggle.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
+  /* OPEN/CLOSE : flash doré bref. Background comme sync (gold-dim), border
+     plus opaque que sync (var(--gold) 100%) car le bouton est plus grand —
+     1px à 28% alpha est invisible sur un élément large. */
+  .toggle.flash{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);transition:none}
 
   .oct{display:flex;gap:2px}
   .oct span{
