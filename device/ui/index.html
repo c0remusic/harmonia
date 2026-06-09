@@ -509,6 +509,15 @@
         s.onmousedown=function(e){ if(e)e.preventDefault(); state.oct=v; renderOct(); send('octave',v); };
         box.appendChild(s);
       });
+      // MOLETTE SUR L'OCTAVE : wheel ne déclenche pas WM_SETFOCUS (contrairement
+      // aux clics). Changer l'octave à la molette ne vole pas le focus clavier
+      // d'Ableton → le clavier MIDI continue de fonctionner sans interruption.
+      box.addEventListener('wheel', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var d = e.deltaY > 0 ? -1 : 1;
+        state.oct = Math.max(-2, Math.min(2, state.oct + d));
+        renderOct(); send('octave', state.oct);
+      }, { passive: false });
     }
     // Met à jour uniquement la classe .on sur l'élément actif.
     Array.prototype.forEach.call(box.children,function(s,i){ s.className=(i-2)===state.oct?'on':''; });
