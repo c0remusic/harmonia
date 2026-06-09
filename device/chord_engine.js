@@ -73,10 +73,44 @@ function list() {
 		colorchord: colorchord, octave: octave, rootidx: rootidx, scaleidx: scaleidx,
 		voicingidx: voicingidx, voiceleading: voiceleading, vlmode: vlmode,
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
-		requeststate: requeststate, midinote: midinote, key: key
+		requeststate: requeststate, midinote: midinote, key: key,
+		keynote: keynote, keynoteup: keynoteup
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
+}
+
+// =====================================================
+// CLAVIER ORDINATEUR — via [key] dans le patch Max
+// =====================================================
+// Quand le jweb a le focus OS, Max peut encore intercepter les frappes
+// via [key] (son propre loop d'événements). [key] envoie keynote/keynoteup
+// à cet inlet → même chemin que notein → midinote.
+//
+// Layout piano standard (correspond au "Computer MIDI Keyboard" d'Ableton,
+// base C3 = MIDI 48 = MIDI_BASE) :
+//   rangée basse  : z s x d c v g b h n j m   → C3..B3 (48..59)
+//   rangée haute  : q 2 w 3 e r 5 t 6 y 7 u i → C4..C5 (60..72)
+var KEY_TO_MIDI = {
+    122:48, 115:49, 120:50, 100:51,  99:52, 118:53, 103:54,
+     98:55, 104:56, 110:57, 106:58, 109:59,
+    113:60,  50:61, 119:62,  51:63, 101:64, 114:65,  53:66,
+    116:67,  54:68, 121:69,  55:70, 117:71, 105:72
+};
+var KEY_VEL = 100;
+
+function keynote(ascii) {
+    ascii = parseInt(ascii);
+    var pitch = KEY_TO_MIDI[ascii];
+    if (pitch === undefined) return;
+    if (pitch === activeMidiNote) return;  // dedup : déjà joué via notein
+    midinote(pitch, KEY_VEL);
+}
+
+function keynoteup(ascii) {
+    ascii = parseInt(ascii);
+    var pitch = KEY_TO_MIDI[ascii];
+    if (pitch !== undefined) { midinote(pitch, 0); }
 }
 
 // Absorbeurs d'événements émis par l'objet [jweb] sur son outlet lors du chargement
