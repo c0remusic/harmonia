@@ -82,7 +82,7 @@ package.json     → Root workspace config
 
 Tuple is free. If it's useful to you, consider a donation:
 
-☕ [paypal.me/HarmoniaDevice](https://paypal.me/HarmoniaDevice)
+☕ [paypal.me/c0remusic](https://www.paypal.com/paypalme/c0remusic)
 
 ---
 
