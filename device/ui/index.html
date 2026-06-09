@@ -294,6 +294,11 @@
   body.full .chord .ns     {font-size:11px;letter-spacing:.06em;color:var(--muted2);font-family:var(--mono)}
   body.full .keys          {flex:none;height:52px}
   body.full .chord,body.full .keys{border-radius:7px}
+
+  /* Range d'octaves affiché sous le clavier monitor */
+  .keys-range{display:none}
+  body.strip .keys-range{display:block;font-size:6px;font-family:var(--mono);color:var(--muted2);letter-spacing:.07em;text-align:center;margin-top:2px;line-height:1}
+  body.full  .keys-range{display:block;font-size:7px;font-family:var(--mono);color:var(--muted2);letter-spacing:.08em;text-align:center;margin-top:3px;line-height:1}
 </style>
 </head>
 <body class="strip">
@@ -352,6 +357,7 @@
         <span class="ns" id="noteNames"></span>
       </div>
       <div class="keys" id="keys"></div>
+      <div class="keys-range" id="keysRange"></div>
     </div>
 
   </div>
@@ -393,6 +399,9 @@
   function buildPiano(start, octs){
     start = (start !== undefined) ? start : PIANO_DEFAULT_START;
     octs  = (octs  !== undefined) ? octs  : PIANO_DEFAULT_OCTS;
+    // Affiche le range sous le clavier (ex. "C3 · B4")
+    var lbl=document.getElementById('keysRange');
+    if(lbl) lbl.textContent=midiToName(start)+' · '+midiToName(start+octs*12-1);
     var box=document.getElementById('keys'); box.innerHTML='';
     var tot=W_SEMI.length*octs;
     for(var oct=0;oct<octs;oct++){
@@ -480,7 +489,9 @@
     var box=document.getElementById('oct'); box.innerHTML='';
     [-2,-1,0,1,2].forEach(function(v){
       var s=el('span',v===state.oct?'on':'',(v>0?'+':'')+v);
-      s.onclick=function(){ state.oct=v; renderOct(); send('octave',v); };
+      // onmousedown + preventDefault : évite que le browser capte le focus au clic,
+      // ce qui obligerait à re-cliquer dans la fenêtre pour rejouer une note.
+      s.onmousedown=function(e){ if(e)e.preventDefault(); state.oct=v; renderOct(); send('octave',v); };
       box.appendChild(s);
     });
   }
@@ -687,8 +698,8 @@
     });
   };
 
-  document.getElementById('vl').onclick     = function(){ state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
-  document.getElementById('vlmode').onclick = function(){ state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
+  document.getElementById('vl').onmousedown     = function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
+  document.getElementById('vlmode').onmousedown = function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
   // Feedback OPEN/CLOSE : flash doré bref au mousedown, identique au sync.
   document.getElementById('toggleBtn').onmousedown = function(){ flash(this); };
   document.getElementById('toggleBtn').onclick = function(){
@@ -714,6 +725,7 @@
   // 📌 Always-on-top toggle (full window only). ON par défaut (le patch ouvre la
   // fenêtre au-dessus). OFF = la fenêtre cède aux autres applis quand on les sélectionne.
   var onTop=true;
+  document.getElementById('ontopBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
   document.getElementById('ontopBtn').onclick = function(){
     onTop=!onTop;
     this.classList.toggle('on',onTop);   // libellé constant, l'état = surbrillance
