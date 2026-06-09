@@ -780,6 +780,35 @@
   }
   function demoHandle(a){ /* no-op — toggle handled in onclick */ }
 
+  // ── CLAVIER ORDINATEUR ──
+  // Quand on clique le device, la WebView jweb vole le focus OS → Ableton ne
+  // reçoit plus les touches, mais CETTE page si. On écoute donc keydown/keyup
+  // ici et on renvoie midinote au moteur (même chemin que notein → midinote).
+  // Mapping par e.code (position physique) → indépendant AZERTY/QWERTY.
+  // Layout piano standard, base C3 = 48 (= MIDI_BASE moteur).
+  var KB_MAP = {
+    KeyZ:48, KeyS:49, KeyX:50, KeyD:51, KeyC:52, KeyV:53, KeyG:54,
+    KeyB:55, KeyH:56, KeyN:57, KeyJ:58, KeyM:59,
+    KeyQ:60, Digit2:61, KeyW:62, Digit3:63, KeyE:64, KeyR:65, Digit5:66,
+    KeyT:67, Digit6:68, KeyY:69, Digit7:70, KeyU:71, KeyI:72
+  };
+  var _kbDown = {};
+  document.addEventListener('keydown', function(e){
+    var p = KB_MAP[e.code];
+    if(p === undefined) return;
+    e.preventDefault();
+    if(e.repeat || _kbDown[e.code]) return;   // ignore l'auto-répétition
+    _kbDown[e.code] = true;
+    send('midinote', p, 100);
+  });
+  document.addEventListener('keyup', function(e){
+    var p = KB_MAP[e.code];
+    if(p === undefined) return;
+    e.preventDefault();
+    _kbDown[e.code] = false;
+    send('midinote', p, 0);
+  });
+
   // ── BOOT ──
   buildPiano();
   if(location.search.indexOf('full')!==-1) setMode('full');
