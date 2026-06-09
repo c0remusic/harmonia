@@ -261,6 +261,49 @@ function cfgIndex(id) { for (var i=0;i<CFG_ITEMS.length;i++) if (CFG_ITEMS[i]===
 // DESSIN
 // =====================================================
 
+// Fond modernisé : base sombre + dégradé doux + halos doré/cyan (alignés sur le site)
+// Dégradé vertical LISSE (interpolation fine, anti-banding)
+function vGrad(g, x, y, w, h, c0, c1, N) {
+	N = N || 140;
+	var step = h / N;
+	for (var i = 0; i < N; i++) {
+		var t = i / (N - 1);
+		g.set_source_rgba(
+			c0[0] + (c1[0] - c0[0]) * t,
+			c0[1] + (c1[1] - c0[1]) * t,
+			c0[2] + (c1[2] - c0[2]) * t, 1.0);
+		g.rectangle(x, y + i * step, w, step + 1.0);   // +1 chevauchement -> pas de couture
+		g.fill();
+	}
+}
+
+// Halo radial doux : beaucoup de cercles, alpha minuscule -> falloff lisse
+function softGlow(g, cx, cy, rMax, col, peak, N) {
+	N = N || 22;
+	for (var i = N - 1; i >= 0; i--) {
+		var t = i / (N - 1);                 // 1 (bord) -> 0 (centre)
+		g.set_source_rgba(col[0], col[1], col[2], peak * (1 - t) / N * 3);
+		g.arc(cx, cy, rMax * (0.15 + 0.85 * t), 0, Math.PI * 2);
+		g.fill();
+	}
+}
+
+function drawModernBg(g, l) {
+	// Base : dégradé vertical lisse (haut un peu plus clair)
+	vGrad(g, 0, 0, l.W, l.H, [0.125, 0.125, 0.135], [0.068, 0.068, 0.076], 140);
+
+	// Halos radiaux doux, centrés hors-cadre
+	softGlow(g, l.W * 0.06, -l.H * 0.1, l.W * 0.55, [1.0, 0.678, 0.337], 0.16, 26);
+	softGlow(g, l.W * 0.97, l.H * 1.05, l.W * 0.5, [0.557, 0.800, 0.910], 0.14, 26);
+
+	// Vignette : assombrir progressivement les bords (profondeur)
+	for (var v = 0; v < 14; v++) {
+		g.set_source_rgba(0, 0, 0, 0.018);
+		g.rectangle(v, v, l.W - v * 2, l.H - v * 2);
+		g.stroke();
+	}
+}
+
 function paint() {
 	var g = mgraphics;
 	var l = L();
@@ -281,9 +324,7 @@ function paint() {
 		mgraphics.redraw();
 	}
 
-	g.set_source_rgba(COLORS.bg_main[0], COLORS.bg_main[1], COLORS.bg_main[2], 1.0);
-	g.rectangle(0, 0, l.W, l.H);
-	g.fill();
+	drawModernBg(g, l);
 	g.select_font_face("Arial");
 
 	drawConfig(g, l);
@@ -670,16 +711,28 @@ function drawVLModeButton(g, r, mode, isHover, pressTime) {
 
 // ---------- GRILLE 8 colonnes ----------
 function drawGrid(g, l) {
-	// Bandeau des degrés — tous en doré
+	// Bandeau des degrés — chiffre romain doré + fonction en gris discret
 	for (var c = 0; c < 7; c++) {
-		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 0.90);
-		g.set_font_size(9);
 		var lbl = DEG_NAMES[c];
 		var func = DEG_FUNCTIONS[c];
-		var combined = lbl + " " + func;
-		var cw = safeTextW(combined, 9);
-		g.move_to(l.gridX + c*l.colW + (l.colW-cw)*0.5, l.gridTop-4);
-		g.text_path(combined);
+		g.set_font_size(9);
+		var wRom = safeTextW(lbl, 9);
+		var wFun = safeTextW(func, 8);
+		var gap = 5;
+		var totalW = wRom + gap + wFun;
+		var x0 = l.gridX + c*l.colW + (l.colW - totalW)*0.5;
+		var yT = l.gridTop - 5;
+		// romain en doré
+		g.set_source_rgba(COLORS.gold_active[0], COLORS.gold_active[1], COLORS.gold_active[2], 1.0);
+		g.set_font_size(9);
+		g.move_to(x0, yT);
+		g.text_path(lbl);
+		g.fill();
+		// fonction en gris discret
+		g.set_source_rgba(0.62, 0.62, 0.66, 1.0);
+		g.set_font_size(8);
+		g.move_to(x0 + wRom + gap, yT);
+		g.text_path(func);
 		g.fill();
 	}
 	// en-tête BORROWED en bleu cyan
@@ -713,49 +766,58 @@ function drawGrid(g, l) {
 }
 
 function drawCell(g, r, valid, label, isAct, borrowed, roman, isHov) {
-	// Fond
+	var rad = 5;
+	var acc = borrowed ? COLORS.gold_active : COLORS.blue_accent;   // accent par colonne (comme le site)
+
 	if (!valid) {
-		g.set_source_rgba(0.13, 0.13, 0.14, 1.0);
-	} else if (isAct) {
-		if (isHov) {
-			// Case active + hover: bleu plus clair
-			g.set_source_rgba(COLORS.blue_accent[0]*1.15, COLORS.blue_accent[1]*1.15, COLORS.blue_accent[2]*1.15, 1.0);
-		} else {
-			g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
-		}
-	} else if (isHov) {
-		g.set_source_rgba(COLORS.bg_hover[0], COLORS.bg_hover[1], COLORS.bg_hover[2], 1.0);
-	} else {
-		g.set_source_rgba(COLORS.bg_cell[0], COLORS.bg_cell[1], COLORS.bg_cell[2], 1.0);
+		g.set_source_rgba(0.10, 0.10, 0.11, 0.6);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], rad, rad);
+		g.fill();
+		return;
 	}
-	g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
+
+	// Ombre portée douce (profondeur)
+	g.set_source_rgba(0, 0, 0, 0.30);
+	g.rectangle_rounded(r[0], r[1]+1.5, r[2], r[3], rad, rad);
 	g.fill();
 
-	if (!valid) return;
-
-	// Bordure : gris normal, bleu si actif (raised button)
+	// Glow d'accent derrière la case active
 	if (isAct) {
-		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
-		g.set_line_width(1.5);
-		// shadow simulé (offset 1px noir)
-		g.set_source_rgba(0, 0, 0, 0.18);
-		g.rectangle_rounded(r[0]+1, r[1]+1, r[2], r[3], 3, 3);
+		g.set_source_rgba(acc[0], acc[1], acc[2], 0.30);
+		g.rectangle_rounded(r[0]-2, r[1]-2, r[2]+4, r[3]+4, rad+2, rad+2);
 		g.fill();
-		// re-fill fond par-dessus
-		g.set_source_rgba(COLORS.blue_accent[0], COLORS.blue_accent[1], COLORS.blue_accent[2], 1.0);
-		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
-		g.fill();
-		g.set_source_rgba(1.0, 1.0, 1.0, 0.4);
-		g.set_line_width(1.5);
-		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
-		g.stroke();
-	} else if (isHov) {
-		g.set_source_rgba(0.55, 0.55, 0.60, 0.5);
-		g.set_line_width(1.0);
-		g.rectangle_rounded(r[0], r[1], r[2], r[3], 3, 3);
-		g.stroke();
 	}
-	// Pas de bordure sur les cases normales — remplacé par le cadre global
+
+	// SURFACE solide (panneau défini) — base sombre puis léger éclairage haut->bas
+	if (isAct) {
+		g.set_source_rgba(acc[0], acc[1], acc[2], 1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], rad, rad);
+		g.fill();
+	} else {
+		// base
+		var base = isHov ? 0.255 : 0.205;
+		g.set_source_rgba(base, base, base+0.012, 1.0);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3], rad, rad);
+		g.fill();
+		// éclairage haut (gradient simulé : bande claire en haut)
+		g.set_source_rgba(1, 1, 1, isHov ? 0.05 : 0.035);
+		g.rectangle_rounded(r[0], r[1], r[2], r[3]*0.5, rad, rad);
+		g.fill();
+	}
+
+	// Liseré
+	if (isAct)      { g.set_source_rgba(1, 1, 1, 0.45);  g.set_line_width(1.3); }
+	else if (isHov) { g.set_source_rgba(acc[0], acc[1], acc[2], 0.55); g.set_line_width(1.0); }
+	else            { g.set_source_rgba(1, 1, 1, 0.10);  g.set_line_width(1.0); }
+	g.rectangle_rounded(r[0], r[1], r[2], r[3], rad, rad);
+	g.stroke();
+
+	// Reflet supérieur (highlight fin)
+	g.set_source_rgba(1, 1, 1, isAct ? 0.35 : 0.10);
+	g.set_line_width(1.0);
+	g.move_to(r[0]+rad, r[1]+0.7);
+	g.line_to(r[0]+r[2]-rad, r[1]+0.7);
+	g.stroke();
 
 	// Texte
 	if (isAct) g.set_source_rgba(COLORS.text_dark[0], COLORS.text_dark[1], COLORS.text_dark[2], 1.0);

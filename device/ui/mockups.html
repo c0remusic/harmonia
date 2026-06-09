@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuple UI (jweb)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#FFdc82; --gold-dim:rgba(255,220,130,.11); --gold-bd:rgba(255,220,130,.28);
+    --blue:#8ECCE8; --blue-dim:rgba(142,204,232,.12); --blue-bd:rgba(142,204,232,.32);
+    --purple:#C4A0F0; --purple-dim:rgba(196,160,240,.12); --purple-bd:rgba(196,160,240,.3);
+    --txt:#ede9e0; --muted:rgba(237,233,224,.45); --muted2:rgba(237,233,224,.22);
+    --cell:rgba(255,255,255,.04); --cell-bd:rgba(255,255,255,.07);
+    --sans:'Space Grotesk',system-ui,-apple-system,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --serif:'DM Serif Display',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
+  html{height:100%}
+  body::before{
+    content:'';position:fixed;top:0;left:10px;right:10px;height:1px;z-index:999;pointer-events:none;
+    background:linear-gradient(90deg, transparent 0%, rgba(255,220,130,.28) 25%, rgba(255,220,130,.16) 55%, rgba(142,204,232,.18) 82%, transparent 100%);
+  }
+  body.full::before{height:2px;opacity:.75}
+  body{width:100vw;height:100vh;overflow:hidden;
+    font-family:var(--sans);
+    color:var(--txt);
+    background-color:#111010;
+  }
+
+  /* Valeurs en mono */
+  .cell,.csel .cv,.chord .cn,.chord .ns,.oct span,.head .r,.dd-cell{font-family:var(--mono)}
+
+  /* ── LAYOUT ── */
+  .bar{display:flex;height:100%;position:relative}
+
+  /* ── CONFIG ── */
+  .config{
+    width:144px;flex:0 0 144px;
+    display:flex;flex-direction:column;gap:5px;
+    padding:7px 8px;
+  }
+  .vsep{
+    flex:none;width:1px;margin:8px 0;
+    background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.12) 30%, rgba(255,255,255,.12) 70%, transparent 100%);
+  }
+  body.strip .vsep-l{display:none}  /* pas de séparateur gauche en strip (grille cachée) */
+  .lbl{font-size:8px;letter-spacing:.13em;color:var(--muted2);text-transform:uppercase;margin-bottom:2px}
+  .row{display:flex;gap:5px}
+
+  /* ── CUSTOM SELECT ── */
+  .csel{
+    flex:1;background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    padding:5px 8px;cursor:pointer;
+    display:flex;align-items:center;gap:4px;
+    transition:background .1s,border-color .1s;
+  }
+  .csel .cl{font-size:9px;letter-spacing:.07em;color:var(--muted);flex-shrink:0;font-weight:500}
+  .csel .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto}
+  .csel::after{content:'▾';color:var(--muted2);font-size:8px;flex-shrink:0;margin-left:3px}
+  .csel:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
+
+  /* ── DROPDOWN OVERLAY ── */
+  .dd-ov{
+    position:absolute;left:0;top:0;bottom:0;width:144px;
+    background-color:#161616;
+    background-image:
+      radial-gradient(ellipse 80% 120% at 20% 50%, rgba(255,173,86,.045) 0%, transparent 70%),
+      radial-gradient(ellipse 70% 100% at 80% 60%, rgba(142,204,232,.03) 0%, transparent 65%),
+      linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+    background-size:100% 100%, 100% 100%, 24px 24px, 24px 24px;
+    z-index:50;
+    display:none;flex-direction:column;
+    padding:8px;gap:8px;
+    border-right:1px solid rgba(255,255,255,.06);
+  }
+  body.strip .dd-ov{width:205px}
+  .dd-ov.open{display:flex}
+  .dd-title{font-size:8px;letter-spacing:.13em;color:var(--muted2);text-transform:uppercase}
+  .dd-grid{display:grid;gap:4px;flex:1;align-content:start}
+  .dd-cell{
+    background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    padding:5px 4px;cursor:pointer;text-align:center;font-size:9px;
+    color:var(--muted);letter-spacing:.03em;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .07s,color .07s,border-color .07s;
+  }
+  .dd-cell:hover{background-color:rgba(255,255,255,.09);color:var(--txt);border-color:rgba(255,255,255,.15)}
+  .dd-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+
+  /* ── GENERIC CONTROLS ── */
+  .sel{
+    flex:1;background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    padding:5px 8px;cursor:pointer;font-size:11px;font-weight:500;
+    display:flex;justify-content:space-between;align-items:center;
+    transition:background .1s,border-color .1s;
+  }
+  .sel:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
+  .sel .v{color:var(--gold);font-size:10px}
+
+  .sync{
+    width:26px;flex:0 0 26px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;background:var(--purple-dim);border:1px solid var(--purple-bd);
+    border-radius:5px;color:var(--purple);font-size:11px;letter-spacing:-.5px;
+    font-weight:600;transition:all .1s;
+  }
+  .sync:hover{background-color:rgba(196,160,240,.22)}
+  .sync.flash{background:var(--purple);color:#1a1220}
+
+  .oct{display:flex;gap:2px}
+  .oct span{
+    flex:1;text-align:center;font-size:10px;
+    padding:5px 0;border-radius:4px;cursor:pointer;
+    background:var(--cell);border:1px solid var(--cell-bd);color:var(--muted);
+    transition:all .1s;
+  }
+  .oct span:hover{background-color:rgba(255,255,255,.08)}
+  .oct span.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+
+  .btn{
+    background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    padding:6px 8px;cursor:pointer;
+    font-size:9px;letter-spacing:.06em;font-weight:500;
+    color:var(--muted);text-align:center;transition:all .1s;
+  }
+  .btn:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
+  .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
+  .btn.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bd)}
+
+  /* ── GRID ── */
+  .grid{flex:1;display:flex;gap:4px;padding:7px 6px;min-width:0}
+  .col{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .head{
+    font-size:8.5px;text-align:center;padding-bottom:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .head .r{color:var(--gold)} .head .f{color:var(--muted2)}
+  .col.bor .head{color:var(--blue)}
+  .cell{
+    position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+    border-radius:5px;padding:0 3px;flex:1;max-height:28px;min-height:18px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;text-align:center;color:rgba(237,233,224,.65);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;
+    transition:background .1s,border-color .1s,color .1s;
+  }
+  .cell:hover{background-color:rgba(255,255,255,.09);border-color:rgba(255,255,255,.14);color:var(--txt)}
+  .cell.active{
+    background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600;
+  }
+  .cell.pressed{
+    background-color:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);
+    transform:translateY(1px);
+  }
+
+  /* ── MONITOR ── */
+  .mon{
+    width:110px;flex:0 0 110px;
+    display:flex;flex-direction:column;gap:5px;
+    padding:7px 8px;position:relative;
+  }
+  .chord{
+    background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    padding:4px 6px;display:flex;flex-direction:column;gap:2px;
+    align-items:flex-start;justify-content:center;min-height:30px;
+  }
+  .chord .cn{color:var(--gold);font-weight:700;font-size:12px;letter-spacing:.01em}
+  .chord .ns{color:var(--blue);font-size:9px;letter-spacing:.03em}
+
+  /* ── PIANO ── */
+  .keys{
+    border-radius:5px;overflow:hidden;
+    border:1px solid var(--cell-bd);background:#0d0c0c;
+    position:relative;flex-shrink:0;
+  }
+  .wk{
+    position:absolute;top:0;bottom:0;
+    background:rgba(255,255,255,.2);
+    border-right:1px solid rgba(0,0,0,.4);
+    border-radius:0 0 3px 3px;
+    transition:background .08s;
+  }
+  .wk.lit{background:var(--blue);opacity:.85}
+  .bk{
+    position:absolute;top:0;height:62%;
+    background:#181820;
+    border:1px solid rgba(0,0,0,.5);border-top:none;
+    border-radius:0 0 2px 2px;z-index:1;
+    transition:background .08s;
+  }
+  .bk.lit{background:var(--blue);opacity:.9}
+
+  /* ── TOGGLE ── */
+  .toggle{
+    flex:none;height:28px;border-radius:5px;cursor:pointer;
+    background:var(--cell);border:1px solid rgba(255,255,255,.12);
+    color:rgba(237,233,224,.4);font-size:10px;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .1s;
+  }
+  .toggle:hover{filter:brightness(1.15)}
+  .toggle.is-open {color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bd)}
+  .toggle.is-close{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
+
+  /* 📌 always-on-top toggle — only shown in the full window */
+  .ontop{display:none}
+  body.full .ontop{
+    display:flex;align-items:center;justify-content:center;flex:none;height:24px;margin-top:6px;
+    border-radius:5px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--cell);border:1px solid rgba(255,255,255,.12);color:rgba(237,233,224,.38);transition:all .1s;
+  }
+  body.full .ontop:hover{filter:brightness(1.15)}
+  body.full .ontop.on{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bd)}
+
+  /* ── STRIP MODE ── */
+  body.strip .grid{display:none}
+  body.strip .brand{display:block;font-family:var(--serif);font-size:11px;color:var(--gold);line-height:1;margin-bottom:2px}
+  body.strip{background-color:#111010}
+
+  body.strip .config{width:205px;flex:0 0 205px;padding:6px;gap:4px;justify-content:center}
+  body.strip .mon   {flex:1;padding:13px 6px 6px;display:flex;flex-direction:column;gap:0;justify-content:space-between}
+  body.strip .lbl   {display:none}
+  body.strip .zone  {display:contents}
+  body.strip .sep   {flex:none;height:1px;margin:3px 0;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.18) 25%, rgba(255,255,255,.18) 75%, transparent 100%)}
+
+  /* Strip — key row */
+  body.strip .row          {height:22px;flex:none;display:flex;gap:6px}
+  body.strip .row .csel    {flex:1;height:100%;padding:0 7px;font-size:10px}
+  body.strip .row .sync    {flex:0 0 22px;height:100%;font-size:10px}
+
+  /* Strip — octave */
+  body.strip .oct          {height:20px;flex:none;display:flex;gap:4px}
+  body.strip .oct span     {padding:0;font-size:8px;display:flex;align-items:center;justify-content:center}
+
+  /* Strip — voicing zone */
+  body.strip #voicing      {flex:none;height:20px;padding:0 7px;font-size:10px}
+  body.strip #vl           {flex:none;height:20px;padding:0;font-size:8.5px;display:flex;align-items:center;justify-content:center}
+  body.strip #vlmode       {flex:none;height:20px;padding:0;font-size:8.5px;display:flex;align-items:center;justify-content:center}
+
+  /* Strip — monitor */
+  body.strip .toggle       {height:36px}
+  body.strip .mon-spacer   {display:none}
+  body.strip .chord        {flex:none;height:36px;min-height:0;padding:6px 12px;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px}
+  body.strip .chord .cn    {font-size:11px;font-weight:700;letter-spacing:.01em;line-height:1.1}
+  body.strip .chord .ns    {font-size:9px;letter-spacing:.05em;color:var(--blue)}
+  body.strip .keys         {flex:none;height:36px}
+
+  /* ── FULL MODE ── */
+  body.full .config        {width:260px;flex:0 0 260px;padding:18px 14px;gap:0;justify-content:flex-start}
+  body.full .config,body.full .mon{background:rgba(255,255,255,.016)}
+  .brand{display:none}
+  body.full .brand{display:block;font-family:var(--serif);font-size:22px;color:var(--gold);line-height:1;margin-bottom:16px;letter-spacing:.01em}
+  body.full .zone          {display:flex;flex-direction:column;gap:10px}
+  body.full .lbl           {display:block;font-size:9px;letter-spacing:.15em;margin-bottom:4px}
+  body.full .sep           {flex:none;height:1px;margin:16px 0;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.12) 25%, rgba(255,255,255,.12) 75%, transparent 100%)}
+
+  body.full .row           {height:32px;flex:none;display:flex;gap:8px}
+  body.full .row .csel     {flex:1;height:100%;padding:0 10px;font-size:11px}
+  body.full .row .sync     {flex:0 0 32px;height:100%;font-size:13px}
+
+  body.full .oct           {height:28px;flex:none;display:flex;gap:4px}
+  body.full .oct span      {font-size:11px;padding:0;display:flex;align-items:center;justify-content:center}
+
+  body.full #voicing       {flex:none;height:32px;padding:0 10px;font-size:11px}
+  body.full #vl            {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
+  body.full #vlmode        {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
+
+  body.full .dd-ov         {width:260px}
+  body.full .grid          {padding:18px 14px;gap:5px}
+  body.full .col           {gap:4px}
+  body.full .cell          {flex:0 0 30px;height:30px;max-height:30px;font-size:11px;letter-spacing:-.02em;padding:0 2px}
+  body.full .head          {display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:30px;gap:2px;white-space:normal;line-height:1.1;padding-bottom:6px;letter-spacing:.04em}
+  body.full .head .r       {font-size:11px;font-weight:600}
+  body.full .head .f       {font-size:8.5px}
+
+  body.full .mon           {width:190px;flex:0 0 190px;padding:18px 14px;gap:10px}
+  body.full .mon-spacer    {display:none}
+  body.full .toggle        {height:36px;margin-top:0}
+  body.full .chord         {flex:1;height:auto;min-height:0;padding:16px 16px;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px}
+  body.full .chord .cn     {font-size:26px;font-weight:700;letter-spacing:.01em;line-height:1}
+  body.full .chord .ns     {font-size:12px;letter-spacing:.06em;color:var(--muted)}
+  body.full .keys          {flex:none;height:80px}
+  body.full .chord,body.full .keys{border-radius:7px}
+</style>
+</head>
+<body class="strip">
+  <div class="bar">
+
+    <!-- CONFIG -->
+    <div class="config">
+
+      <div class="brand">Tuple</div>
+
+      <!-- Zone KEY -->
+      <div class="zone">
+        <div class="lbl">Key</div>
+        <div class="row">
+          <div class="csel" id="key" style="flex:1"><span class="cl">KEY</span><span class="cv" id="keyV">E</span></div>
+          <div class="csel" id="scale" style="flex:2"><span class="cl">SCALE</span><span class="cv" id="scaleV">Minor</span></div>
+          <div class="sync" id="sync">♭<span style="font-size:.72em;vertical-align:super;line-height:0;margin-left:1px">♯</span></div>
+        </div>
+        <div class="oct" id="oct"></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Zone VOICING -->
+      <div class="zone">
+        <div class="lbl">Voicing</div>
+        <div class="csel" id="voicing"><span class="cl">VOICING</span><span class="cv" id="voicingV">Classic</span></div>
+        <div class="btn blue" id="vlmode">ANCHOR</div>
+        <div class="btn" id="vl">VOICE LEADING</div>
+      </div>
+
+    </div>
+
+    <!-- DROPDOWN OVERLAY (couvre la colonne config) -->
+    <div class="dd-ov" id="ddOv">
+      <div class="dd-title" id="ddTitle"></div>
+      <div class="dd-grid" id="ddGrid"></div>
+    </div>
+
+    <!-- GRID (hidden in strip mode) -->
+    <div class="vsep vsep-l"></div>
+    <div class="grid" id="grid"></div>
+
+    <div class="vsep"></div>
+
+    <!-- MONITOR -->
+    <div class="mon">
+      <div class="toggle is-open" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
+      <div class="ontop on" id="ontopBtn" title="Garder la fenêtre au-dessus des autres">ALWAYS ON TOP</div>
+      <div class="mon-spacer"></div>
+      <div class="chord" id="chord">
+        <span class="cn" id="chordName">—</span>
+        <span class="ns" id="noteNames"></span>
+      </div>
+      <div class="keys" id="keys"></div>
+    </div>
+
+  </div>
+
+<script>
+  // ── STATE ──
+  var DEG      = [['I','Tonic'],['II','Supertonic'],['III','Mediant'],['IV','Subdominant'],['V','Dominant'],['VI','Submediant'],['VII','Leading']];
+  var KEYS     = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var SCALES   = ['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min'];
+  var VOICINGS = ['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3'];
+  var VLMODES  = ['ANCHOR','RELATIVE','PIANO'];
+  var VLMODE_MSG = ['anchored','relative','piano'];
+
+  var cols = [[],[],[],[],[],[],[]];
+  var bor  = [];
+  var tmpCols = null, tmpBor = null;
+  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0 };
+  var activeCol = -1, activeRow = -1, activeChordName = '';
+  var mode = 'strip';
+  var windowOpen = false;
+
+  var M = (typeof window.max !== 'undefined') ? window.max : null;
+
+  // ── UTILS ──
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+  function midiToName(n){return KEYS[n%12]+(Math.floor(n/12)-1);}
+
+  // ── PIANO ──
+  var PIANO_START = 48;
+  var PIANO_OCTS  = 2;
+  var W_SEMI  = [0,2,4,5,7,9,11];
+  var B_SEMI  = [1,3,6,8,10];
+  var B_AFTER = [0,1,3,4,5];
+
+  function buildPiano(){
+    var box=document.getElementById('keys'); box.innerHTML='';
+    var tot=W_SEMI.length*PIANO_OCTS;
+    for(var oct=0;oct<PIANO_OCTS;oct++){
+      var base=PIANO_START+oct*12;
+      W_SEMI.forEach(function(s,wi){
+        var d=document.createElement('div');
+        d.className='wk'; d.dataset.midi=base+s;
+        d.style.left=((oct*7+wi)/tot*100)+'%';
+        d.style.width=(100/tot)+'%';
+        box.appendChild(d);
+      });
+      B_AFTER.forEach(function(after,bi){
+        var d=document.createElement('div');
+        d.className='bk'; d.dataset.midi=base+B_SEMI[bi];
+        d.style.left=((oct*7+after+0.65)/tot*100)+'%';
+        d.style.width=(0.6/tot*100)+'%';
+        box.appendChild(d);
+      });
+    }
+  }
+
+  function updatePiano(midiArr){
+    var active={};
+    midiArr.forEach(function(n){ active[n]=true; });
+    var box=document.getElementById('keys');
+    Array.prototype.forEach.call(box.children,function(k){
+      var m=parseInt(k.dataset.midi);
+      if(active[m]) k.classList.add('lit'); else k.classList.remove('lit');
+    });
+  }
+
+  // ── DROPDOWN ──
+  var _dropOpen = null;
+
+  function closeDrop(){
+    document.getElementById('ddOv').classList.remove('open');
+    _dropOpen = null;
+  }
+
+  function openDrop(id, title, arr, curIdx, ncols, onSel){
+    if(_dropOpen===id){ closeDrop(); return; }
+    closeDrop();
+    var ov=document.getElementById('ddOv');
+    document.getElementById('ddTitle').textContent=title;
+    var grid=document.getElementById('ddGrid');
+    grid.style.gridTemplateColumns='repeat('+ncols+',1fr)';
+    grid.innerHTML='';
+    arr.forEach(function(name,i){
+      var c=document.createElement('div');
+      c.className='dd-cell'+(i===curIdx?' on':'');
+      c.textContent=name;
+      c.addEventListener('mousedown',function(e){
+        e.preventDefault(); e.stopPropagation();
+        onSel(i,name); closeDrop();
+      });
+      grid.appendChild(c);
+    });
+    _dropOpen=id;
+    ov.classList.add('open');
+  }
+
+  document.addEventListener('mousedown',function(e){
+    if(!_dropOpen) return;
+    var ov=document.getElementById('ddOv');
+    if(!ov.contains(e.target)) closeDrop();
+  });
+
+  // Relâchement n'importe où = fin de l'appui momentané sur une case.
+  document.addEventListener('mouseup', releaseAll);
+
+  // ── RENDER ──
+  function renderOct(){
+    var box=document.getElementById('oct'); box.innerHTML='';
+    [-2,-1,0,1,2].forEach(function(v){
+      var s=el('span',v===state.oct?'on':'',(v>0?'+':'')+v);
+      s.onclick=function(){ state.oct=v; renderOct(); send('octave',v); };
+      box.appendChild(s);
+    });
+  }
+
+  function renderGrid(){
+    var g=document.getElementById('grid'); g.innerHTML='';
+    for(var c=0;c<7;c++){
+      var col=el('div','col');
+      var h=el('div','head');
+      h.innerHTML='<span class="r">'+DEG[c][0]+'</span> <span class="f">'+DEG[c][1]+'</span>';
+      col.appendChild(h);
+      (cols[c]||[]).forEach(function(cell,row){
+        var d=el('div','cell'+((activeCol===c&&activeRow===row)?' active':''),cell.label);
+        d.setAttribute('data-col',c); d.setAttribute('data-row',row);
+        (function(cc,rr,dd){ dd.onmousedown=function(e){ if(e&&e.preventDefault)e.preventDefault(); pressCell(cc,rr,dd); }; })(c,row,d);
+        col.appendChild(d);
+      });
+      g.appendChild(col);
+    }
+    var bc=el('div','col bor');
+    var bh=el('div','head'); bh.innerHTML='<span class="r">♭</span> <span class="f">Borrowed</span>'; bc.appendChild(bh);
+    bor.forEach(function(cell,i){
+      var lab=cell.label;  /* pas de roman dans la case → homogène avec les degrés */
+      var d=el('div','cell'+((activeCol===7&&activeRow===i)?' active':''),lab);
+      d.setAttribute('data-col',7); d.setAttribute('data-row',i);
+      (function(ii,dd){ dd.onmousedown=function(e){ if(e&&e.preventDefault)e.preventDefault(); pressCell(7,ii,dd); }; })(i,d);
+      bc.appendChild(d);
+    });
+    g.appendChild(bc);
+  }
+
+  // Met à jour le highlight de l'accord actif SANS reconstruire le DOM.
+  // (Reconstruire toute la grille à chaque clic laisse le :hover collé dans le
+  //  webview jweb → la case paraît "rester enfoncée". On ne touche que .active.)
+  function updateActive(){
+    var cells=document.getElementById('grid').getElementsByClassName('cell');
+    for(var i=0;i<cells.length;i++){
+      var cc=parseInt(cells[i].getAttribute('data-col'));
+      var rr=parseInt(cells[i].getAttribute('data-row'));
+      // classList (pas className=) pour ne pas écraser l'état momentané .pressed
+      if(cc===activeCol&&rr===activeRow) cells[i].classList.add('active');
+      else cells[i].classList.remove('active');
+    }
+  }
+
+  function renderConfig(){
+    document.getElementById('keyV').textContent     = KEYS[state.root]||'C';
+    document.getElementById('scaleV').textContent   = SCALES[state.scaleIdx]||'Minor';
+    document.getElementById('voicingV').textContent = VOICINGS[state.voicingIdx]||'Classic';
+    var vl=document.getElementById('vl');
+    vl.className='btn'+(state.vl?' blue':'');
+    var vm=document.getElementById('vlmode');
+    vm.className='btn'+(state.vlmodeIdx===0?'':' gold');
+    vm.textContent=VLMODES[state.vlmodeIdx];
+    renderOct();
+  }
+
+  function renderNotes(arr){
+    var midi=(arr||[]).map(Number).filter(function(n){ return !isNaN(n)&&n>=0&&n<128; });
+    document.getElementById('chordName').textContent = activeChordName||'—';
+    document.getElementById('noteNames').textContent = midi.map(midiToName).join(' · ');
+    updatePiano(midi);
+  }
+
+  // ── ACTIONS ──
+  // Appui (mousedown) : joue l'accord + état "enfoncé". Momentané.
+  function pressCell(c,r,node){
+    activeCol=c; activeRow=r;
+    if(c===7){
+      var b=bor[r];
+      activeChordName=b?b.label:'';
+      if(b) send('colorchord',b.semis,b.type);
+    } else {
+      var cell=cols[c]&&cols[c][r];
+      activeChordName=cell?cell.label:'';
+      if(cell&&cell.fn) send(cell.fn,c);
+    }
+    if(node) node.classList.add('pressed');
+    updateActive();
+  }
+  // Relâchement (mouseup global) : coupe le son et retire l'état "enfoncé".
+  function releaseAll(){
+    var p=document.getElementsByClassName('pressed');
+    while(p.length) p[0].classList.remove('pressed');
+    send('release');
+  }
+
+  function flashSync(){
+    var s=document.getElementById('sync');
+    s.classList.add('flash');
+    setTimeout(function(){s.classList.remove('flash');},120);
+  }
+
+  // Bouton OPEN/CLOSE : texte + couleur d'état (OPEN = bleu, CLOSE = orange).
+  function setToggle(isClose){
+    var t=document.getElementById('toggleBtn');
+    t.textContent=isClose?'CLOSE':'OPEN DEVICE';
+    t.classList.toggle('is-close',isClose);
+    t.classList.toggle('is-open',!isClose);
+  }
+
+  function setMode(m){
+    mode=m;
+    document.body.className=m;
+    setToggle(m==='full');
+    if(m==='full'){
+      renderGrid();
+      // NB : les requêtes requeststate/requestgrid partent au BOOT, après bind(),
+      // sinon la réponse arrive avant que les handlers soient en place (grille vide).
+    }
+  }
+
+  // ── OUTGOING ──
+  function send(){
+    var a=Array.prototype.slice.call(arguments);
+    if(M){
+      if(a.length===1) M.outlet(a[0]);
+      else if(a.length===2) M.outlet(a[0],a[1]);
+      else if(a.length===3) M.outlet(a[0],a[1],a[2]);
+      else if(a.length===4) M.outlet(a[0],a[1],a[2],a[3]);
+      else M.outlet.apply(M,a);
+    } else { console.log('[demo]',a.join(' ')); demoHandle(a); }
+  }
+
+  // ── INCOMING ──
+  function bind(){
+    if(!M) return;
+    M.bindInlet('gridclear', function(){ tmpCols=[[],[],[],[],[],[],[]]; tmpBor=[]; });
+    M.bindInlet('gridcell',  function(col,fn,label){ if(tmpCols) tmpCols[col].push({label:String(label),fn:String(fn)}); });
+    M.bindInlet('gridbor',   function(i,label,semis,type,roman){ if(tmpBor) tmpBor.push({label:String(label),roman:roman?String(roman):'',semis:parseInt(semis),type:String(type)}); });
+    M.bindInlet('griddone',  function(){ if(tmpCols){cols=tmpCols;bor=tmpBor;tmpCols=null;tmpBor=null;renderGrid();} });
+    M.bindInlet('root',      function(v){ state.root=parseInt(v); renderConfig(); });
+    M.bindInlet('scale',     function(v){ state.scaleIdx=parseInt(v); renderConfig(); });
+    M.bindInlet('octave',    function(v){ state.oct=parseInt(v); renderConfig(); });
+    M.bindInlet('voicing',   function(v){ var n=parseInt(v); if(!isNaN(n)) state.voicingIdx=n; renderConfig(); });
+    M.bindInlet('vl',        function(v){ state.vl=(parseInt(v)===1); renderConfig(); });
+    M.bindInlet('vlmode',    function(v){ var i=VLMODE_MSG.indexOf(String(v).toLowerCase()); if(i>=0) state.vlmodeIdx=i; renderConfig(); });
+    M.bindInlet('active',    function(fn,degree){
+      var col=parseInt(degree);
+      if(!isNaN(col)){
+        activeCol=col;
+        var fnStr=String(fn);
+        if(fnStr==='color'){
+          if(bor[col]) activeChordName=bor[col].label;
+        } else {
+          var arr=cols[col]||[];
+          for(var r=0;r<arr.length;r++){
+            if(arr[r].fn===fnStr){ activeRow=r; activeChordName=arr[r].label; break; }
+          }
+        }
+      }
+      updateActive();
+    });
+    M.bindInlet('notes',     function(){ renderNotes(Array.prototype.slice.call(arguments)); });
+    M.bindInlet('clearnotes',function(){ activeCol=-1;activeRow=-1;activeChordName=''; renderNotes([]); updateActive(); });
+    M.bindInlet('sync',      function(){ flashSync(); });
+    M.bindInlet('mode',      function(m){ setMode(String(m)); });
+    // Resynchronise le bouton du strip quand la fenêtre est fermée/ouverte ailleurs
+    // (ex. bouton CLOSE de la grande fenêtre). Le X Windows n'émet rien → non couvert.
+    M.bindInlet('windowstate',function(v){
+      windowOpen=(parseInt(v)===1);
+      if(mode==='strip') setToggle(windowOpen);
+    });
+  }
+
+  // ── CONTROLS ──
+  document.getElementById('sync').onclick = function(){ flashSync(); send('synclive'); };
+
+  document.getElementById('key').onclick = function(e){
+    e.stopPropagation();
+    openDrop('key','KEY',KEYS,state.root,3,function(i,name){
+      state.root=i; document.getElementById('keyV').textContent=name; send('rootidx',i);
+    });
+  };
+  document.getElementById('scale').onclick = function(e){
+    e.stopPropagation();
+    openDrop('scale','SCALE',SCALES,state.scaleIdx,2,function(i,name){
+      state.scaleIdx=i; document.getElementById('scaleV').textContent=name; send('scaleidx',i);
+    });
+  };
+  document.getElementById('voicing').onclick = function(e){
+    e.stopPropagation();
+    openDrop('voicing','VOICING',VOICINGS,state.voicingIdx,2,function(i,name){
+      state.voicingIdx=i; document.getElementById('voicingV').textContent=name; send('voicingidx',i);
+    });
+  };
+
+  document.getElementById('vl').onclick     = function(){ state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
+  document.getElementById('vlmode').onclick = function(){ state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
+  document.getElementById('toggleBtn').onclick = function(){
+    if(!M){
+      // demo: toggle mode locally for browser preview
+      var next=(mode==='strip')?'full':'strip';
+      setMode(next);
+      return;
+    }
+    if(mode==='strip'){
+      // Toggle : ouvre si fermé, ferme si ouvert. windowOpen est resynchronisé
+      // par le retour 'windowstate' du patch (ex. fermeture via le bouton CLOSE
+      // de la grande fenêtre). Seul le X Windows échappe à cette synchro.
+      windowOpen=!windowOpen;
+      setToggle(windowOpen);
+      send('openwindow',windowOpen?'full':'strip');
+    } else {
+      // full jweb: CLOSE button just tells Max to close the window
+      send('openwindow','strip');
+    }
+  };
+
+  // 📌 Always-on-top toggle (full window only). ON par défaut (le patch ouvre la
+  // fenêtre au-dessus). OFF = la fenêtre cède aux autres applis quand on les sélectionne.
+  var onTop=true;
+  document.getElementById('ontopBtn').onclick = function(){
+    onTop=!onTop;
+    this.classList.toggle('on',onTop);   // libellé constant, l'état = surbrillance
+    send('ontop', onTop?1:0);
+  };
+
+  // ── DEMO ──
+  var DEMO = {
+    cols:[
+      ['Em','Em7','Em9','Esus4','Esus2','Emadd9','E7sus4'],
+      ['F#dim','F#ø7'],
+      ['G','GM7','GM9','Gsus4','Gsus2','Gadd9','G6','G6/9'],
+      ['Am','Am7','Am9','Asus4','Asus2','Amadd9','Am6','Am6/9'],
+      ['Bm','Bm7','Bsus4','B7sus4'],
+      ['C','CM7','CM9','Csus2','Cadd9','C6','C6/9'],
+      ['D','D7','D9','Dsus4','Dsus2','Dadd9','D6','D7sus4','D6/9']
+    ],
+    bor:[['B','V'],['D#dim7','vii°'],['A','IV'],['F','bII'],['F#7','V/V'],['E7','V/iv'],['G7','V/VI']]
+  };
+  function loadDemo(){
+    cols=DEMO.cols.map(function(a){return a.map(function(l){return {label:l};});});
+    bor=DEMO.bor.map(function(p){return {label:p[0],roman:p[1]};});
+    activeCol=0; activeRow=0; activeChordName='Em7';
+    renderConfig(); renderGrid(); renderNotes([52,55,59,62]);
+  }
+  function demoHandle(a){ /* no-op — toggle handled in onclick */ }
+
+  // ── BOOT ──
+  buildPiano();
+  if(location.search.indexOf('full')!==-1) setMode('full');
+  if(M){
+    bind(); renderConfig(); renderNotes([]);
+    send('requeststate'); send('requestgrid');   // une seule fois, APRÈS bind()
+  }
+  else  { loadDemo(); }
+</script>
+</body>
+</html>

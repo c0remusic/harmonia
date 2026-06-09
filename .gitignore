@@ -12,6 +12,7 @@ website/
 # the !site/... exceptions and made Vercel drop the whole site/ folder.
 push/
 *BACKUP*
+*.bak
 Capture.PNG
 
 # Screenshots/Media
