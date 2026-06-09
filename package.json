@@ -1,0 +1,27 @@
+{
+  "name": "harmonia",
+  "version": "1.0.0",
+  "description": "Max for Live harmonic composition tool",
+  "private": true,
+  "workspaces": [
+    "device",
+    "website"
+  ],
+  "scripts": {
+    "dev": "npm run -w website dev",
+    "build": "npm run -w website build",
+    "start": "npm run -w website start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/c0remusic/harmonia"
+  },
+  "keywords": [
+    "max-for-live",
+    "ableton",
+    "harmonia",
+    "chord-selector"
+  ],
+  "author": "",
+  "license": "MIT"
+}
