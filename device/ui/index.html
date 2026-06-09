@@ -476,10 +476,16 @@
   }
 
   // FOCUS CLAVIER : empêche le WebView de voler le focus clavier d'Ableton.
-  // Sans ça, chaque clic dans l'UI coupe l'entrée MIDI keyboard. preventDefault
-  // sur mousedown (phase capture = avant tout handler) interdit au WebView de
-  // demander le focus clavier à l'OS. Les handlers custom s'exécutent normalement.
-  document.addEventListener('mousedown', function(e){ e.preventDefault(); }, true);
+  // Sans ça, cliquer un élément sans preventDefault coupe l'entrée MIDI keyboard.
+  // Les chord cells avaient déjà preventDefault — les octave spans l'avaient pas.
+  // Solution : preventDefault global (capture) + window.blur() en backup
+  // pour les WebViews Windows qui ignorent preventDefault.
+  // Les handlers custom (pressCell, renderOct, dropdowns) s'exécutent normalement.
+  document.addEventListener('mousedown', function(e){
+    e.preventDefault();
+    // Backup : libère explicitement le focus clavier du WebView vers l'hôte.
+    setTimeout(function(){ try{ window.blur(); }catch(_){} }, 0);
+  }, true);
 
   document.addEventListener('mousedown',function(e){
     if(!_dropOpen) return;
