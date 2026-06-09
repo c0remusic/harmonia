@@ -16,7 +16,7 @@
     --cell:rgba(255,255,255,.055); --cell-bd:rgba(255,255,255,.10);
     --sans:'Inter',system-ui,-apple-system,sans-serif;
     --mono:'JetBrains Mono',ui-monospace,monospace;
-    --serif:'DM Serif Display',Georgia,serif;
+    --display:'Unbounded',var(--sans);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
   html{height:100%}
@@ -106,7 +106,7 @@
     font-weight:600;transition:all .1s;
   }
   .sync:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-  .sync.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
+  .sync.flash,.toggle.flash{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);transition:none}
 
   .oct{display:flex;gap:2px}
   .oct span{
@@ -220,7 +220,7 @@
 
   /* ── STRIP MODE ── */
   body.strip .grid{display:none}
-  body.strip .brand{display:block;font-family:'Unbounded',var(--sans);font-weight:700;font-size:10px;color:var(--gold);line-height:1;letter-spacing:.01em;margin-bottom:6px}
+  body.strip .brand{display:block;font-family:var(--display);font-weight:700;font-size:10px;color:var(--gold);line-height:1;letter-spacing:.01em;margin-bottom:6px}
   body.strip{background-color:#232323}
 
   body.strip .config{width:205px;flex:0 0 205px;padding:8px 6px 6px;gap:5px;justify-content:flex-start;background:rgba(255,255,255,.016)}
@@ -245,7 +245,6 @@
 
   /* Strip — monitor */
   body.strip .toggle       {height:46px;margin-top:15px}
-  body.strip .mon-spacer   {display:none}
   body.strip .chord        {flex:none;height:36px;min-height:0;padding:0;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;background:transparent;border:none}
   body.strip .chord .deg   {display:flex;gap:3px}
   body.strip .chord .deg .r{font-size:8px}
@@ -258,7 +257,7 @@
   body.full .config        {width:260px;flex:0 0 260px;padding:18px 14px;gap:12px;justify-content:flex-start}
   body.full .config,body.full .mon{background:rgba(255,255,255,.016)}
   .brand{display:none}
-  body.full .brand{display:block;font-family:'Unbounded',var(--sans);font-weight:700;font-size:18px;color:var(--gold);line-height:1;margin-bottom:0;letter-spacing:.01em}
+  body.full .brand{display:block;font-family:var(--display);font-weight:700;font-size:18px;color:var(--gold);line-height:1;margin-bottom:0;letter-spacing:.01em}
   body.full .zone          {display:flex;flex-direction:column;gap:10px}
   body.full .lbl           {display:block;font-size:9px;letter-spacing:.15em;margin-bottom:4px}
   body.full .sep           {flex:none;height:1px;margin:16px 0;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.12) 25%, rgba(255,255,255,.12) 75%, transparent 100%)}
@@ -283,7 +282,6 @@
   body.full .head .f       {font-size:8.5px}
 
   body.full .mon           {width:190px;flex:0 0 190px;padding:18px 14px;gap:6px}
-  body.full .mon-spacer    {display:none}
   body.full .cfg-spacer    {display:block;flex:1;min-height:0}
   body.full .toggle        {height:70px;margin-top:55px}
   body.full .chord         {flex:1;height:auto;min-height:0;padding:0 0 18px;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:6px;background:transparent;border:none}
@@ -345,8 +343,7 @@
 
     <!-- MONITOR -->
     <div class="mon">
-      <div class="toggle is-open" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
-      <div class="mon-spacer"></div>
+      <div class="toggle" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
       <div class="chord" id="chord">
         <span class="deg" id="degDisplay"></span>
         <span class="cn" id="chordName">—</span>
@@ -379,6 +376,8 @@
   // ── UTILS ──
   function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
   function midiToName(n){return KEYS[n%12]+(Math.floor(n/12)-1);}
+  // Libellé de degré : [chiffre romain, nom de fonction]. Col 7 = emprunt. Source unique.
+  function degOf(c){ return c===7 ? ['♭','Borrowed'] : DEG[c]; }
 
   // ── PIANO ──
   var PIANO_START = 48;
@@ -472,8 +471,8 @@
     var g=document.getElementById('grid'); g.innerHTML='';
     for(var c=0;c<7;c++){
       var col=el('div','col');
-      var h=el('div','head');
-      h.innerHTML='<span class="r">'+DEG[c][0]+'</span> <span class="f">'+DEG[c][1]+'</span>';
+      var h=el('div','head'); var hd=degOf(c);
+      h.innerHTML='<span class="r">'+hd[0]+'</span> <span class="f">'+hd[1]+'</span>';
       col.appendChild(h);
       (cols[c]||[]).forEach(function(cell,row){
         var d=el('div','cell'+((activeCol===c&&activeRow===row)?' active':''),cell.label);
@@ -484,7 +483,7 @@
       g.appendChild(col);
     }
     var bc=el('div','col bor');
-    var bh=el('div','head'); bh.innerHTML='<span class="r">♭</span> <span class="f">Borrowed</span>'; bc.appendChild(bh);
+    var bh=el('div','head'); var bd=degOf(7); bh.innerHTML='<span class="r">'+bd[0]+'</span> <span class="f">'+bd[1]+'</span>'; bc.appendChild(bh);
     bor.forEach(function(cell,i){
       var lab=cell.label;  /* pas de roman dans la case → homogène avec les degrés */
       var d=el('div','cell'+((activeCol===7&&activeRow===i)?' active':''),lab);
@@ -528,10 +527,8 @@
     var degEl=document.getElementById('degDisplay');
     if(degEl){
       if(activeChordName && activeCol>=0){
-        var r,f;
-        if(activeCol===7){r='♭';f='Borrowed';}
-        else{r=DEG[activeCol][0];f=DEG[activeCol][1];}
-        degEl.innerHTML='<span class="r">'+r+'</span><span class="f">'+f+'</span>';
+        var d=degOf(activeCol);
+        degEl.innerHTML='<span class="r">'+d[0]+'</span><span class="f">'+d[1]+'</span>';
       } else {
         degEl.innerHTML='';
       }
@@ -563,18 +560,15 @@
   }
 
   var syncClickPending=false;
-  function flashSync(){
-    var s=document.getElementById('sync');
-    s.classList.add('flash');
-    setTimeout(function(){s.classList.remove('flash');},180);
+  // Flash doré bref (feedback de clic). transition:none sur .flash → instantané.
+  function flash(el){
+    el.classList.add('flash');
+    setTimeout(function(){el.classList.remove('flash');},180);
   }
 
-  // Bouton OPEN/CLOSE : texte + couleur d'état (OPEN = bleu, CLOSE = orange).
+  // Bouton OPEN/CLOSE : le libellé porte l'état.
   function setToggle(isClose){
-    var t=document.getElementById('toggleBtn');
-    t.textContent=isClose?'CLOSE':'OPEN DEVICE';
-    t.classList.toggle('is-close',isClose);
-    t.classList.toggle('is-open',!isClose);
+    document.getElementById('toggleBtn').textContent=isClose?'CLOSE':'OPEN DEVICE';
   }
 
   function setMode(m){
@@ -631,7 +625,7 @@
     });
     M.bindInlet('notes',     function(){ renderNotes(Array.prototype.slice.call(arguments)); });
     M.bindInlet('clearnotes',function(){ activeCol=-1;activeRow=-1;activeChordName=''; renderNotes([]); updateActive(); });
-    M.bindInlet('sync',      function(){ if(!syncClickPending) flashSync(); });
+    M.bindInlet('sync',      function(){ if(!syncClickPending) flash(document.getElementById('sync')); });
     M.bindInlet('mode',      function(m){ setMode(String(m)); });
     // Resynchronise le bouton du strip quand la fenêtre est fermée/ouverte ailleurs
     // (ex. bouton CLOSE de la grande fenêtre). Le X Windows n'émet rien → non couvert.
@@ -642,10 +636,11 @@
   }
 
   // ── CONTROLS ──
-  document.getElementById('sync').onclick = function(){
+  // mousedown (pas click) → feedback + action au moment de l'appui, sans latence.
+  document.getElementById('sync').onmousedown = function(){
     syncClickPending=true;
     setTimeout(function(){ syncClickPending=false; },400);
-    flashSync(); send('synclive');
+    flash(this); send('synclive');
   };
 
   document.getElementById('key').onclick = function(e){
@@ -669,6 +664,8 @@
 
   document.getElementById('vl').onclick     = function(){ state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onclick = function(){ state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
+  // Feedback doré au clic OPEN/CLOSE DEVICE (sur mousedown → instantané).
+  document.getElementById('toggleBtn').onmousedown = function(){ flash(this); };
   document.getElementById('toggleBtn').onclick = function(){
     if(!M){
       // demo: toggle mode locally for browser preview
