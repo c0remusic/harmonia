@@ -100,7 +100,18 @@ function key(k) {
 	}
 }
 
-// Relaie la tonalité courante :
+// Relaie uniquement l'état de config (octave, voicing, vl, vlmode) SANS rebuild de grille.
+// À appeler quand seuls ces paramètres changent — la grille ne dépend pas d'eux.
+function pushConfigState() {
+	outlet(7, "octave", currentOctave);
+	var vi = VOICING_NAMES.indexOf(currentVoicing);
+	if (vi >= 0) outlet(7, "voicing", vi);
+	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
+	outlet(7, "vlmode", vlMode);
+}
+
+// Relaie l'état complet (tonalité + config) ET rebuilde la grille.
+// À appeler uniquement quand root ou scale change — pas pour octave/voicing/vl/vlmode.
 //  - au jsui via outlet 7 (déjà câblé) → readout + grille
 //  - à midi_map / push2 via messnamed → r root_idx / r scale_idx
 //    (aucun câblage requis : touche les receive par leur nom)
@@ -109,12 +120,7 @@ function pushUIState() {
 	var si = SCALE_NAMES_ARR.indexOf(scaleName);
 	if (si >= 0) outlet(7, "scale", si);
 
-	// État complet pour le jweb (octave / voicing / voice leading / vlmode)
-	outlet(7, "octave", currentOctave);
-	var vi = VOICING_NAMES.indexOf(currentVoicing);
-	if (vi >= 0) outlet(7, "voicing", vi);
-	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
-	outlet(7, "vlmode", vlMode);
+	pushConfigState();
 
 	try {
 		messnamed("root_idx", root);
@@ -186,12 +192,12 @@ function harmminor()  { setscale("harmminor"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
-	pushUIState();   // rediffuse l'état aux 2 fenêtres
+	pushConfigState();   // pas de rebuild grille : l'octave n'affecte pas les cellules
 }
 
 function voicing(v) {
 	currentVoicing = String(v);
-	pushUIState();   // rediffuse l'état aux 2 fenêtres
+	pushConfigState();   // pas de rebuild grille : le voicing n'affecte pas les cellules
 }
 
 // Reçoit un index int (0-5) depuis live.menu
@@ -199,7 +205,7 @@ var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
 	lockedVoicing = null;  // Reset lock quand on change de voicing
-	pushUIState();   // rediffuse l'état aux 2 fenêtres
+	pushConfigState();   // pas de rebuild grille
 }
 
 function voiceleading(v) {
@@ -209,7 +215,7 @@ function voiceleading(v) {
 	// Repart à zéro à chaque activation/désactivation
 	previousChord = null;
 	voicingCache = {};
-	pushUIState();   // rediffuse l'état aux 2 fenêtres
+	pushConfigState();   // pas de rebuild grille
 }
 
 function resetvoiceleading() {
@@ -224,7 +230,7 @@ function vlmode(m) {
 	previousChord = null;
 	voicingCache = {};
 	relativeCounter = 0;
-	pushUIState();   // rediffuse l'état aux 2 fenêtres
+	pushConfigState();   // pas de rebuild grille
 }
 
 // =====================================================
