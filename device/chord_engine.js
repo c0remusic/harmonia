@@ -56,6 +56,38 @@ function msg_int(v) {
 	}
 }
 
+// Adaptateur d'entrée jweb. Un [jweb] qui fait window.max.outlet('nine', 5)
+// n'émet PAS un message-sélecteur "nine 5" mais une LISTE [nine, 5]. Max appelle
+// donc list() au lieu de nine(). On redispatch ici le 1er élément (sélecteur) vers
+// la vraie fonction du moteur. Aucune logique harmonique ici — pur routage.
+// (Les messages à 1 seul argument — requestgrid, requeststate, synclive — arrivent
+//  bien comme messages-sélecteurs natifs et n'ont pas besoin de cet adaptateur.)
+function list() {
+	var a = Array.prototype.slice.call(arguments);
+	var sel = String(a[0]);
+	var rest = a.slice(1);
+	var D = {
+		triad: triad, seven: seven, nine: nine, add9: add9, sus2: sus2, sus4: sus4,
+		six: six, sixnine: sixnine, sevensus4: sevensus4, mmaj7: mmaj7,
+		sevenflat9: sevenflat9, sevensharp9: sevensharp9, m7s5: m7s5,
+		colorchord: colorchord, octave: octave, rootidx: rootidx, scaleidx: scaleidx,
+		voicingidx: voicingidx, voiceleading: voiceleading, vlmode: vlmode,
+		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
+		requeststate: requeststate, midinote: midinote, key: key
+	};
+	if (D[sel]) { D[sel].apply(null, rest); }
+	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
+}
+
+// Absorbeurs d'événements émis par l'objet [jweb] sur son outlet lors du chargement
+// de page (onloadstart, url <url>, title <titre>, onloadend...). Ils n'ont aucun sens
+// pour le moteur : on les avale pour ne pas polluer la console Max.
+function onbeforeload() {}
+function onloadstart()  {}
+function onloadend()    {}
+function url()          {}
+function title()        {}
+
 // =====================================================
 // CONFIG
 // =====================================================
@@ -76,6 +108,13 @@ function pushUIState() {
 	outlet(7, "root", root);
 	var si = SCALE_NAMES_ARR.indexOf(scaleName);
 	if (si >= 0) outlet(7, "scale", si);
+
+	// État complet pour le jweb (octave / voicing / voice leading / vlmode)
+	outlet(7, "octave", currentOctave);
+	var vi = VOICING_NAMES.indexOf(currentVoicing);
+	if (vi >= 0) outlet(7, "voicing", vi);
+	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
+	outlet(7, "vlmode", vlMode);
 
 	try {
 		messnamed("root_idx", root);
@@ -147,10 +186,12 @@ function harmminor()  { setscale("harmminor"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
+	pushUIState();   // rediffuse l'état aux 2 fenêtres
 }
 
 function voicing(v) {
 	currentVoicing = String(v);
+	pushUIState();   // rediffuse l'état aux 2 fenêtres
 }
 
 // Reçoit un index int (0-5) depuis live.menu
@@ -158,13 +199,17 @@ var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
 	lockedVoicing = null;  // Reset lock quand on change de voicing
+	pushUIState();   // rediffuse l'état aux 2 fenêtres
 }
 
 function voiceleading(v) {
-	voiceLeadingEnabled = (String(v) === "on");
+	// Accepte "on"/"off" (toggle jsui) ET 1/0 (toggle jweb)
+	var s = String(v).toLowerCase();
+	voiceLeadingEnabled = (s === "on" || s === "1" || s === "true");
 	// Repart à zéro à chaque activation/désactivation
 	previousChord = null;
 	voicingCache = {};
+	pushUIState();   // rediffuse l'état aux 2 fenêtres
 }
 
 function resetvoiceleading() {
@@ -179,6 +224,7 @@ function vlmode(m) {
 	previousChord = null;
 	voicingCache = {};
 	relativeCounter = 0;
+	pushUIState();   // rediffuse l'état aux 2 fenêtres
 }
 
 // =====================================================
