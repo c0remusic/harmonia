@@ -70,4 +70,4 @@ To build the `.amxd` file:
 1. Open in Max
 2. File → Export Code Objects → tuple.amxd
 
-Upload to [releases](https://github.com/c0remusic/harmonia/releases).
+Upload to [releases](https://github.com/c0remusic/tuple/releases).
