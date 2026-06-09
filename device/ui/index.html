@@ -457,6 +457,7 @@
   });
 
   // Relâchement n'importe où = fin de l'appui momentané sur une case.
+  // NB : on écoute mouseup sur document ; releaseAll est défini plus bas.
   document.addEventListener('mouseup', releaseAll);
 
   // ── RENDER ──
@@ -554,12 +555,15 @@
     if(node) node.classList.add('pressed');
     updateActive();
   }
-  // Relâchement (mouseup global) : coupe le son et retire l'état "enfoncé".
+  // Relâchement (mouseup global) : retire l'état "enfoncé" et coupe le son
+  // SEULEMENT si une case était réellement tenue. Ainsi, cliquer sur OPEN DEVICE
+  // n'envoie pas 'release' à Max et ne coupe pas l'accord en cours.
   function releaseAll(){
     var p=document.getElementsByClassName('pressed');
+    var hadChord = p.length > 0;
     while(p.length) p[0].classList.remove('pressed');
     var tb=document.getElementById('toggleBtn'); if(tb) tb.classList.remove('lit');
-    send('release');
+    if(hadChord) send('release');
   }
 
   var syncClickPending=false;
