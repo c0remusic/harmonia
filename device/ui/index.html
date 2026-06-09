@@ -382,17 +382,21 @@
   function degOf(c){ return c===7 ? ['♭','Borrowed'] : DEG[c]; }
 
   // ── PIANO ──
-  var PIANO_START = 48;
-  var PIANO_OCTS  = 2;
+  var PIANO_DEFAULT_START = 48;  // C3 par défaut (aucune note active)
+  var PIANO_DEFAULT_OCTS  = 2;
   var W_SEMI  = [0,2,4,5,7,9,11];
   var B_SEMI  = [1,3,6,8,10];
   var B_AFTER = [0,1,3,4,5];
 
-  function buildPiano(){
+  // Construit le clavier pour le range [start, start + octs*12[.
+  // Les touches sont en % → la largeur s'adapte automatiquement au nombre d'octaves.
+  function buildPiano(start, octs){
+    start = (start !== undefined) ? start : PIANO_DEFAULT_START;
+    octs  = (octs  !== undefined) ? octs  : PIANO_DEFAULT_OCTS;
     var box=document.getElementById('keys'); box.innerHTML='';
-    var tot=W_SEMI.length*PIANO_OCTS;
-    for(var oct=0;oct<PIANO_OCTS;oct++){
-      var base=PIANO_START+oct*12;
+    var tot=W_SEMI.length*octs;
+    for(var oct=0;oct<octs;oct++){
+      var base=start+oct*12;
       W_SEMI.forEach(function(s,wi){
         var d=document.createElement('div');
         d.className='wk'; d.dataset.midi=base+s;
@@ -408,6 +412,17 @@
         box.appendChild(d);
       });
     }
+  }
+
+  // Calcule le range d'octaves minimal couvrant toutes les notes.
+  // Minimum 2 octaves. Commence au début de l'octave de la note la plus basse.
+  function pianoRangeFor(midiArr){
+    if(!midiArr||!midiArr.length) return {start:PIANO_DEFAULT_START,octs:PIANO_DEFAULT_OCTS};
+    var mn=Math.min.apply(null,midiArr);
+    var mx=Math.max.apply(null,midiArr);
+    var loOct=Math.floor(mn/12);
+    var hiOct=Math.floor(mx/12);
+    return { start: loOct*12, octs: Math.max(2, hiOct-loOct+1) };
   }
 
   function updatePiano(midiArr){
@@ -536,6 +551,10 @@
         degEl.innerHTML='';
       }
     }
+    // Reconstruit le clavier sur le range exact des notes actives.
+    // Sans notes : range par défaut (C3-B4).
+    var r=pianoRangeFor(midi);
+    buildPiano(r.start, r.octs);
     updatePiano(midi);
   }
 
