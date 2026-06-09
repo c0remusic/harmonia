@@ -14,7 +14,7 @@ A Max for Live harmonic composition tool for Ableton Live.
 
 1. Download the latest `.amxd` from [Releases](https://github.com/c0remusic/harmonia/releases)
 2. Unzip and keep all files in the same folder
-3. Drag `harmonia_v1.amxd` onto a **MIDI track** in Ableton Live, **before an instrument**
+3. Drag `tuple.amxd` onto a **MIDI track** in Ableton Live, **before an instrument**
 
 **Requires**: Ableton Live 11+ with Max for Live
 

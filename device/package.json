@@ -2,7 +2,7 @@
   "name": "@tuple/device",
   "version": "1.0.0",
   "description": "Tuple — chord device for Ableton (Max for Live)",
-  "main": "harmonia_v1.amxd",
+  "main": "tuple.amxd",
   "scripts": {
     "test": "echo \"No tests yet\""
   },
@@ -15,7 +15,7 @@
   "author": "",
   "license": "MIT",
   "files": [
-    "harmonia_v1.amxd",
+    "tuple.amxd",
     "chord_ui.js",
     "chord_engine.js",
     "init_menus.js",

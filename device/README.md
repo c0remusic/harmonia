@@ -8,7 +8,7 @@ Max for Live harmonic composition tool — the device itself.
 
 | File | Purpose |
 |------|---------|
-| `harmonia_v1.amxd` | Compiled Max device (binary) |
+| `tuple.amxd` | Compiled Max device (binary) |
 | `chord_engine.js` | **Source of truth** — all harmonic logic |
 | `chord_ui.js` | UI rendering & user interaction |
 | `init_menus.js` | Menu initialization (KEY, SCALE, VOICING) |
@@ -68,6 +68,6 @@ Edit `chord_engine.js` or `chord_ui.js`, save, and Max will auto-reload (autowat
 
 To build the `.amxd` file:
 1. Open in Max
-2. File → Export Code Objects → harmonia_v1.amxd
+2. File → Export Code Objects → tuple.amxd
 
 Upload to [releases](https://github.com/c0remusic/harmonia/releases).
