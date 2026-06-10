@@ -18,7 +18,6 @@ autowatch = 1;
 inlets  = 1;
 outlets = 1;
 
-var LOGPATH = "C:/TupleUI/push_spike.log";   // debug temporaire (à retirer avant release)
 var USE_CS  = 1;                              // CS1 pilote le Push
 var OFFIDX = 0;
 // On reprogramme 8 entrées de palette (slots 1..8) avec les RGB EXACTS de l'UI,
@@ -52,22 +51,20 @@ var REC = false, lastNotes = [], writePos = 0, entries = [], theClip = null;
 
 function noop() {}
 
-// ---- LOG -------------------------------------------------------------
-var logbuf = [];
-function L(s) { post("PSPK: " + s + "\n"); logbuf.push(s); }
-function flush() { try { var f = new File(LOGPATH, "write"); f.writestring(logbuf.join("\r\n") + "\r\n"); f.eof = f.position; f.close(); } catch (e) { post("PSPK: log err " + e + "\n"); } }
+// ---- LOG (console Max uniquement ; le logger fichier a été retiré) ----
+function L(s) { post("PSPK: " + s + "\n"); }
+function flush() {}   // no-op conservé pour ne pas toucher tous les appels
 
 // =====================================================================
 // TOGGLE
 // =====================================================================
 function pushmode(v) { if (parseInt(v)) enable(); else disable(); }
-function go() { enable(); }      // alias pour test manuel dans l'éditeur
 function bang() { /* pas d'auto-grab */ }
 function notifydeleted() { disable(); }   // release si le device est supprimé/rechargé
 
 function enable() {
 	if (enabled) return;
-	logbuf = []; pressed = {}; pressedPitch = {};
+	pressed = {}; pressedPitch = {};
 	L("===== PUSH MODE ON =====");
 	var found = [];
 	for (var i = 0; i < 20; i++) {
@@ -79,6 +76,10 @@ function enable() {
 	}
 	if (found.length === 0) { L("aucun Push (Control Surface)"); flush(); return; }
 	theCS = found[Math.min(USE_CS, found.length - 1)];
+	// [DIAG écran Push] liste des contrôles dispo du CS (pour le futur mapping
+	// encodeurs/boutons d'écran — voir docs/decisions.md § Push display)
+	try { var allnm = theCS.call("get_control_names");
+		L("CS controls: " + ((allnm instanceof Array) ? allnm.join(" ") : allnm)); } catch (e) {}
 	var ret; try { ret = theCS.call("get_control", "Button_Matrix"); } catch (e) { L("get_control ERR " + e); flush(); return; }
 	theMid = (ret instanceof Array) ? ret[ret.length - 1] : ret;
 	theMatrix = new LiveAPI(onMatrix); theMatrix.id = theMid;

@@ -10,7 +10,7 @@ if not exist node_modules (
 )
 
 REM Tuer toute instance deja en cours (evite deux bots qui se battent = crash).
-powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -like '*tuple-bot*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"
+powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -like '*tuple-bot*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
 
 echo ================================================
 echo   Tuple Bot - demarrage

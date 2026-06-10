@@ -30,6 +30,7 @@ export async function execute(interaction) {
         `${EMOJI.rules}\`/setup\` — *(staff only)* post or update channel content`,
         `${EMOJI.infos}\`/rolemenu\` — *(staff only)* post the self-assign role menu`,
         `${EMOJI.bug_reports}\`/cleanup\` — *(staff only)* delete the bot's recent messages here`,
+        `${EMOJI.infos}\`/commandpanel\` — *(staff only)* post a pinned list of commands`,
       ].join("\n")
     )
     .setFooter({ text: "Need a human? Ask in #general-help" });

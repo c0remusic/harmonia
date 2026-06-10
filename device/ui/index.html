@@ -131,6 +131,10 @@
   .btn:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
   .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
   .btn.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bd)}
+  /* état actif d'un toggle (PUSH, ALWAYS ON TOP) — surbrillance dorée homogène */
+  .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
+  /* pousse Device + CLOSE en bas de la colonne monitor (réserve le milieu) */
+  .mon-spacer{flex:1;min-height:0}
 
   /* ── GRID ── */
   .grid{flex:1;display:flex;gap:4px;padding:7px 6px;min-width:0}
@@ -210,20 +214,25 @@
   }
   .toggle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
 
-  /* 📌 always-on-top toggle — only shown in the full window */
-  .ontop{display:none}
   .cfg-spacer{display:none}
-  body.full .ontop{
-    display:flex;align-items:center;justify-content:center;flex:none;height:28px;
-    border-radius:5px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-    background:var(--cell);border:1px solid rgba(255,255,255,.12);color:rgba(237,233,224,.38);transition:all .1s;
-    margin-top:0;
-  }
-  body.full .ontop:hover{filter:brightness(1.15)}
-  body.full .ontop.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
+  /* DEVICE group (Push · Layout) — full uniquement, colonne droite. Caché en strip. */
+  .devgrp{display:none}
+  body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;
+    border-top:1px solid rgba(255,255,255,.10);padding-top:12px;margin-top:10px}
+  /* boutons Device/Window = même hauteur standard (32px) que les autres contrôles full */
+  body.full .devgrp .btn,body.full .wingrp .btn{height:32px;padding:0 10px;display:flex;align-items:center;justify-content:center;font-size:10px}
+  body.full .devgrp .lbl,body.full .wingrp .lbl{display:block;font-size:9px;letter-spacing:.15em;font-weight:600;
+    color:rgba(255,220,130,.3);text-transform:uppercase;margin-bottom:2px}
+  /* WINDOW group (Always on top · Open/Close) — séparateur dédié en full ;
+     en strip seul le CTA OPEN DEVICE reste visible (label + ontop cachés). */
+  .wingrp{display:flex;flex-direction:column;gap:8px;flex:none}
+  body.full .wingrp{border-top:1px solid rgba(255,255,255,.10);padding-top:12px;margin-top:2px}
+  body.strip #ontopBtn{display:none}
 
   /* ── STRIP MODE ── */
   body.strip .grid{display:none}
+  /* PUSH/COULEURS/ALWAYS ON TOP vivent dans le groupe .devgrp (colonne droite),
+     full uniquement → cachés en strip via .devgrp (réglé plus bas). */
   body.strip .brand{display:block;font-family:var(--display);font-weight:700;font-size:10px;color:var(--gold);line-height:1;letter-spacing:.01em;margin-bottom:6px}
   body.strip{background-color:#232323}
 
@@ -233,13 +242,13 @@
   body.strip .zone  {display:contents}
   body.strip .sep   {flex:none;height:1px;margin:3px 0;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.10) 25%, rgba(255,255,255,.10) 75%, transparent 100%)}
 
-  /* Strip — key row */
-  body.strip .row          {height:22px;flex:none;display:flex;gap:6px}
+  /* Strip — key row (20px = hauteur STANDARD de tous les contrôles du strip) */
+  body.strip .row          {height:20px;flex:none;display:flex;gap:5px}
   body.strip .row .csel    {flex:1;height:100%;padding:0 7px;font-size:10px}
-  body.strip .row .sync    {flex:0 0 22px;height:100%;font-size:10px}
+  body.strip .row .sync    {flex:0 0 20px;height:100%;font-size:10px}
 
   /* Strip — octave */
-  body.strip .oct          {height:20px;flex:none;display:flex;gap:4px}
+  body.strip .oct          {height:20px;flex:none;display:flex;gap:5px}
   body.strip .oct span     {padding:0;font-size:8px;display:flex;align-items:center;justify-content:center}
 
   /* Strip — voicing zone */
@@ -248,7 +257,7 @@
   body.strip #vlmode       {flex:none;height:20px;padding:0;font-size:8.5px;display:flex;align-items:center;justify-content:center}
 
   /* Strip — monitor */
-  body.strip .toggle       {height:46px;margin-top:15px}
+  body.strip .toggle       {height:46px;margin-top:0}
   body.strip .chord        {flex:none;height:36px;min-height:0;padding:0;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;background:transparent;border:none}
   body.strip .chord .deg   {display:flex;gap:3px}
   body.strip .chord .deg .r{font-size:8px}
@@ -258,7 +267,8 @@
   body.strip .keys         {flex:none;height:36px}
 
   /* ── FULL MODE ── */
-  body.full .config        {width:260px;flex:0 0 260px;padding:18px 14px;gap:12px;justify-content:flex-start}
+  /* colonnes gauche/droite de MÊME largeur (230px) */
+  body.full .config        {width:230px;flex:0 0 230px;padding:18px 14px;gap:12px;justify-content:flex-start}
   body.full .config,body.full .mon{background:rgba(255,255,255,.016)}
   .brand{display:none}
   body.full .brand{display:block;font-family:var(--display);font-weight:700;font-size:18px;color:var(--gold);line-height:1;margin-bottom:0;letter-spacing:.01em}
@@ -266,29 +276,31 @@
   body.full .lbl           {display:block;font-size:9px;letter-spacing:.15em;margin-bottom:4px}
   body.full .sep           {flex:none;height:1px;margin:16px 0;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.12) 25%, rgba(255,255,255,.12) 75%, transparent 100%)}
 
+  /* Full : 32px = hauteur STANDARD de tous les contrôles ; gaps uniformes 8px */
   body.full .row           {height:32px;flex:none;display:flex;gap:8px}
   body.full .row .csel     {flex:1;height:100%;padding:0 10px;font-size:11px}
   body.full .row .sync     {flex:0 0 32px;height:100%;font-size:13px}
 
-  body.full .oct           {height:28px;flex:none;display:flex;gap:4px}
+  body.full .oct           {height:32px;flex:none;display:flex;gap:8px}
   body.full .oct span      {font-size:11px;padding:0;display:flex;align-items:center;justify-content:center}
 
   body.full #voicing       {flex:none;height:32px;padding:0 10px;font-size:11px}
   body.full #vl            {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
   body.full #vlmode        {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
 
-  body.full .dd-ov         {width:260px}
+  body.full .dd-ov         {width:230px}
   body.full .grid          {padding:18px 14px;gap:5px}
   body.full .col           {gap:4px}
+  /* cellules à hauteur FIXE (l'utilisateur a refusé la grille étirée) */
   body.full .cell          {flex:0 0 30px;height:30px;max-height:30px;font-size:11px;letter-spacing:-.02em;padding:0 2px}
   body.full .head          {display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:30px;gap:2px;white-space:normal;line-height:1.1;padding-bottom:6px;letter-spacing:.04em}
   body.full .head .r       {font-size:11px;font-weight:600}
   body.full .head .f       {font-size:8.5px}
 
-  body.full .mon           {width:190px;flex:0 0 190px;padding:18px 14px;gap:6px}
+  body.full .mon           {width:230px;flex:0 0 230px;padding:18px 14px;gap:6px}
   body.full .cfg-spacer    {display:block;flex:1;min-height:0}
-  body.full .toggle        {height:70px;margin-top:55px}
-  body.full .chord         {flex:1;height:auto;min-height:0;padding:0 0 18px;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:6px;background:transparent;border:none}
+  body.full .toggle        {height:46px;margin-top:0}   /* CTA = 46px, identique au strip */
+  body.full .chord         {flex:none;height:auto;min-height:0;padding:0;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;background:transparent;border:none}
   body.full .chord .deg    {display:flex;gap:5px}
   body.full .chord .deg .r {font-size:13px}
   body.full .chord .deg .f {font-size:9px}
@@ -333,10 +345,6 @@
 
       <div class="cfg-spacer"></div>
 
-      <div class="ontop on" id="ontopBtn" title="Garder la fenêtre au-dessus des autres">ALWAYS ON TOP</div>
-      <div class="btn" id="pushBtn" title="Contrôle de la grille d'accords sur Push 2">PUSH</div>
-      <div class="btn" id="colorBtn" title="Logique de couleur des degrés">COULEURS · Spectre</div>
-
     </div>
 
     <!-- DROPDOWN OVERLAY (couvre la colonne config) -->
@@ -353,7 +361,7 @@
 
     <!-- MONITOR -->
     <div class="mon">
-      <div class="toggle" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
+      <!-- MONITOR en haut -->
       <div class="chord" id="chord">
         <span class="deg" id="degDisplay"></span>
         <span class="cn" id="chordName">—</span>
@@ -361,6 +369,23 @@
       </div>
       <div class="keys" id="keys"></div>
       <div class="keys-range" id="keysRange"></div>
+
+      <!-- Espace réservé (section MIDI/Expression à venir, si on la met ici) -->
+      <div class="mon-spacer"></div>
+
+      <!-- DEVICE (fenêtre full uniquement) : réglages non-harmoniques -->
+      <div class="devgrp">
+        <div class="lbl">Device</div>
+        <div class="btn" id="pushBtn" title="Chord grid on Push 2 pads">PUSH</div>
+        <div class="btn" id="colorBtn" title="Degree color logic">LAYOUT · Spectrum</div>
+      </div>
+
+      <!-- WINDOW : gestion de la fenêtre (séparée du groupe Device) -->
+      <div class="wingrp">
+        <div class="lbl">Window</div>
+        <div class="btn on" id="ontopBtn" title="Keep this window above others">ALWAYS ON TOP</div>
+        <div class="toggle" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
+      </div>
     </div>
 
   </div>
@@ -385,7 +410,7 @@
     //     IV,V=cyan (1) · II=vert (2) · VI=jaune (3) · III=orange (4) · VII=rouge (5).
     ['#4F86C8','#55B05A','#D8923C','#3FA8C0','#3FA8C0','#C8BE50','#D05050']
   ];
-  var SCHEME_NAMES = ['Spectre','Fonction','Tension','Quintes','Qualité'];
+  var SCHEME_NAMES = ['Spectrum','Function','Tension','Fifths','Quality'];
   var colorScheme = 0;
   var BORCOLOR = '#CDADDC';   // violet emprunts (toutes logiques)
   // Qualité (chaud/froid) : 0 majeur=chaud · 1 mineur=froid · 2 dim · 3 aug. Reçu du moteur.
@@ -803,7 +828,7 @@
   document.getElementById('colorBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick = function(){
     colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
-    this.textContent='COULEURS · '+SCHEME_NAMES[colorScheme];
+    this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme];
     applyScheme();
     send('colorscheme', colorScheme);
   };
