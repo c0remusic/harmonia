@@ -335,6 +335,7 @@
 
       <div class="ontop on" id="ontopBtn" title="Garder la fenêtre au-dessus des autres">ALWAYS ON TOP</div>
       <div class="btn" id="pushBtn" title="Contrôle de la grille d'accords sur Push 2">PUSH</div>
+      <div class="btn" id="colorBtn" title="Logique de couleur des degrés">COULEURS · Spectre</div>
 
     </div>
 
@@ -372,6 +373,24 @@
   var VOICINGS = ['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3'];
   var VLMODES  = ['ANCHOR','RELATIVE','PIANO'];
   var VLMODE_MSG = ['anchored','relative','piano'];
+  // Couleur par degré — légende écran ↔ pads Push. Plusieurs logiques, cyclables.
+  var SCHEMES = [
+    // 0 — Spectre (actuel)
+    ['#D98C7A','#D9A96B','#CBC56E','#8AC08A','#6FBFB8','#6FA0D9','#8C8FD0'],
+    // 1 — Fonction tonale : T(I,III,VI)=vert · S(II,IV)=bleu · D(V,VII)=chaud
+    ['#7FB87F','#6FA0D9','#5E9E6E','#5079C0','#E0A06B','#A6D2A0','#D97070'],
+    // 2 — Tension : I=BLEU (tonique/maison) · iii,vi=vert (stables) · tendus jaune→orange→rouge
+    //     selon le niveau : ii,IV=jaune (léger) · V=orange (fort) · vii°=rouge (max).
+    ['#4F86C8','#C8BE50','#55B05A','#C8BE50','#D8923C','#55B05A','#D05050']
+  ];
+  var SCHEME_NAMES = ['Spectre','Fonction','Tension','Qualité'];
+  var colorScheme = 0;
+  var BORCOLOR = '#CDADDC';   // violet emprunts (toutes logiques)
+  // Qualité (chaud/froid) : 0 majeur=chaud · 1 mineur=froid · 2 dim · 3 aug. Reçu du moteur.
+  var QUALHEX = ['#D8923C','#4F86C8','#C85555','#C8BE50'];
+  var degQual = [0,0,0,0,0,0,0];
+  function degColorFor(c){ return (colorScheme < 3) ? SCHEMES[colorScheme][c] : (QUALHEX[degQual[c]] || QUALHEX[0]); }
+  function borColorFor(){ return BORCOLOR; }   // emprunts en violet (toutes logiques)
 
   var cols = [[],[],[],[],[],[],[]];
   var bor  = [];
@@ -530,6 +549,7 @@
       var col=el('div','col');
       var h=el('div','head'); var hd=degOf(c);
       h.innerHTML='<span class="r">'+hd[0]+'</span> <span class="f">'+hd[1]+'</span>';
+      h.style.borderBottom='2px solid '+degColorFor(c); h.style.paddingBottom='2px';
       col.appendChild(h);
       (cols[c]||[]).forEach(function(cell,row){
         var d=el('div','cell'+((activeCol===c&&activeRow===row)?' active':''),cell.label);
@@ -540,7 +560,7 @@
       g.appendChild(col);
     }
     var bc=el('div','col bor');
-    var bh=el('div','head'); var bd=degOf(7); bh.innerHTML='<span class="r">'+bd[0]+'</span> <span class="f">'+bd[1]+'</span>'; bc.appendChild(bh);
+    var bh=el('div','head'); var bd=degOf(7); bh.innerHTML='<span class="r">'+bd[0]+'</span> <span class="f">'+bd[1]+'</span>'; bh.style.borderBottom='2px solid '+borColorFor(); bh.style.paddingBottom='2px'; bc.appendChild(bh);
     bor.forEach(function(cell,i){
       var lab=cell.label;  /* pas de roman dans la case → homogène avec les degrés */
       var d=el('div','cell'+((activeCol===7&&activeRow===i)?' active':''),lab);
@@ -549,6 +569,12 @@
       bc.appendChild(d);
     });
     g.appendChild(bc);
+  }
+
+  // Applique le schéma de couleur courant aux en-têtes (sans reconstruire la grille).
+  function applyScheme(){
+    var heads=document.getElementById('grid').getElementsByClassName('head');
+    for(var i=0;i<heads.length;i++){ heads[i].style.borderBottom='2px solid '+((i<7)?degColorFor(i):borColorFor()); }
   }
 
   // Met à jour le highlight de l'accord actif SANS reconstruire le DOM.
@@ -665,6 +691,7 @@
     M.bindInlet('gridcell',  function(col,fn,label){ if(tmpCols) tmpCols[col].push({label:String(label),fn:String(fn)}); });
     M.bindInlet('gridbor',   function(i,label,semis,type,roman){ if(tmpBor) tmpBor.push({label:String(label),roman:roman?String(roman):'',semis:parseInt(semis),type:String(type)}); });
     M.bindInlet('griddone',  function(){ if(tmpCols){cols=tmpCols;bor=tmpBor;tmpCols=null;tmpBor=null;renderGrid();} });
+    M.bindInlet('qualities', function(){ degQual=Array.prototype.slice.call(arguments).map(Number); if(colorScheme===3) applyScheme(); });
     M.bindInlet('root',      function(v){ state.root=parseInt(v); renderConfig(); });
     M.bindInlet('scale',     function(v){ state.scaleIdx=parseInt(v); renderConfig(); });
     M.bindInlet('octave',    function(v){ state.oct=parseInt(v); renderConfig(); });
@@ -768,6 +795,15 @@
     this.classList.toggle('on',pushOn);
     this.textContent = pushOn ? 'PUSH ON' : 'PUSH';
     send('pushmode', pushOn?1:0);
+  };
+
+  // Cycler de logique couleur : Spectre / Fonction tonale / Cycle des quintes (légende UI).
+  document.getElementById('colorBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
+  document.getElementById('colorBtn').onclick = function(){
+    colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
+    this.textContent='COULEURS · '+SCHEME_NAMES[colorScheme];
+    applyScheme();
+    send('colorscheme', colorScheme);
   };
 
   // ── DEMO ──

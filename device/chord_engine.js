@@ -74,7 +74,8 @@ function list() {
 		voicingidx: voicingidx, voiceleading: voiceleading, vlmode: vlmode,
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
-		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode
+		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
+		colorscheme: colorscheme
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
@@ -426,6 +427,16 @@ var flatGrid = [];
 var gCols = [[],[],[],[],[],[],[]];
 var gBor  = [];
 
+// Qualité du triade diatonique par degré : 0=majeur 1=mineur 2=diminué 3=augmenté.
+function chordQuality(d) {
+	function semi(step) { return scale[step % 7] + 12 * Math.floor(step / 7); }
+	var root = semi(d), third = semi(d + 2) - root, fifth = semi(d + 4) - root;
+	if (third === 3 && fifth === 6) return 2;
+	if (third === 4 && fifth === 8) return 3;
+	if (third === 3) return 1;
+	return 0;
+}
+
 // Diffuse toute la grille à l'UI ET au Push (outlet 7) + reconstruit flatGrid/gCols/gBor
 function broadcastGrid() {
 	flatGrid = [];
@@ -453,6 +464,9 @@ function broadcastGrid() {
 		flatGrid.push({ kind:"b", semis:c.semis, type:c.type });
 		gBor.push({ semis:c.semis, type:c.type });
 	}
+	var quals = [];
+	for (var qd = 0; qd < 7; qd++) quals.push(chordQuality(qd));
+	outlet(7, ["qualities"].concat(quals));
 	outlet(7, "griddone");
 }
 
@@ -483,6 +497,9 @@ function padvel(v) { currentVelocity = parseInt(v); }
 
 // Relais du toggle Push mode (UI jweb → module Push, via la sortie 7 déjà câblée).
 function pushmode(v) { outlet(7, "pushmode", parseInt(v)); }
+
+// Relais du schéma de couleur (cycler UI → module Push).
+function colorscheme(v) { outlet(7, "colorscheme", parseInt(v)); }
 
 // =====================================================
 // ENTRÉE CLAVIER MIDI → case de la grille (Phase 2)

@@ -20,9 +20,27 @@ outlets = 1;
 
 var LOGPATH = "C:/TupleUI/push_spike.log";   // debug temporaire (à retirer avant release)
 var USE_CS  = 1;                              // CS1 pilote le Push
-var OFFCOL  = 0, BORCOL = 41, DEGCOL = [5, 9, 13, 21, 37, 45, 49];
+var OFFIDX = 0;
+// On reprogramme 8 entrées de palette (slots 1..8) avec les RGB EXACTS de l'UI,
+// puis on allume les pads avec ces index → couleurs identiques à l'écran.
+var DEGIDX = [1, 2, 3, 4, 5, 6, 7], BORIDX = 8;
+var PUSH_RGB = [
+	// 0 Spectre — VIF : I rouge · II orange · III jaune · IV vert · V sarcelle · VI cyan · VII bleu · emprunt VIOLET
+	[[230,40,40],[255,125,0],[230,205,0],[40,195,40],[0,195,150],[0,170,225],[55,90,240],[170,50,230]],
+	// 1 Fonction — groupes francs : T=vert (I,III,VI) · S=bleu (II,IV) · D=rouge (V,VII) · emprunt=violet
+	[[40,195,40],[40,120,235],[40,195,40],[40,120,235],[235,45,45],[40,195,40],[235,45,45],[170,50,230]],
+	// 2 Tension : I=BLEU (maison) · iii,vi=vert (stables) · tendus jaune→orange→rouge :
+	//   ii,IV=jaune · V=orange · vii°=rouge. (emprunt = violet)
+	[[50,120,235],[235,215,0],[55,195,75],[235,215,0],[255,140,0],[55,195,75],[230,50,50],[170,50,230]]
+];
+var scheme = 0;
+var NSCHEMES = 4;   // Spectre, Fonction, Quintes, Qualité
+// Qualité (chaud/froid) : 0 majeur=chaud · 1 mineur=froid · 2 dim · 3 aug. Reçu du moteur (sortie 7).
+var QUAL_RGB = [[255,140,0],[40,130,230],[220,55,55],[230,200,0]];
+var degQual = [0,0,0,0,0,0,0];
 
 var enabled   = false;
+var gridTask  = null;            // Task persistant (sinon GC -> ne fire pas)
 var theCS = null, theMatrix = null, theMid = null;
 var pressed = {}, pressedPitch = {};
 var colLen = [0,0,0,0,0,0,0], borLen = 0, colTmp = null, borTmp = 0;
@@ -62,13 +80,16 @@ function enable() {
 	var ret; try { ret = theCS.call("get_control", "Button_Matrix"); } catch (e) { L("get_control ERR " + e); flush(); return; }
 	theMid = (ret instanceof Array) ? ret[ret.length - 1] : ret;
 	theMatrix = new LiveAPI(onMatrix); theMatrix.id = theMid;
+	try { theCS.call("release_control", "id", theMid); } catch (e) {}   // défensif : clear un grab fantôme (reload précédent)
 	try { theCS.call("grab_control", "id", theMid); } catch (e) { L("grab ERR " + e); }
 	try { theMatrix.property = "value"; } catch (e) {}
 	enabled = true;
-	var t = new Task(doInit, this); t.schedule(300);   // laisse le grab se poser, puis dessine la grille
-	L("CS grabbé, grille dans 300ms."); flush();
+	applyPalette();   // reprogramme la palette aux RGB de l'UI
+	if (gridTask) { try { gridTask.cancel(); } catch (e) {} }
+	gridTask = new Task(doInit, this); gridTask.schedule(300);   // Task persistant
+	L("grab envoyé (CS id=" + theCS.id + " matrix=" + theMid + "), grille dans 300ms."); flush();
 }
-function doInit() { if (enabled) outlet(0, "requestgrid"); }   // -> moteur rediffuse -> griddone -> refreshGrid
+function doInit() { L("doInit: requestgrid"); flush(); if (enabled) outlet(0, "requestgrid"); }   // -> moteur rediffuse -> griddone -> refreshGrid
 
 function disable() {
 	if (!enabled) return;
@@ -85,16 +106,37 @@ function notes() { var p = arrayfromargs(arguments); lastNotes = []; for (var i 
 function gridclear() { colTmp = [0,0,0,0,0,0,0]; borTmp = 0; }
 function gridcell(col) { if (colTmp) colTmp[parseInt(col)]++; }
 function gridbor() { borTmp++; }
-function griddone() { if (colTmp) { colLen = colTmp; borLen = borTmp; colTmp = null; } if (enabled) refreshGrid(); }
+function griddone() { if (colTmp) { colLen = colTmp; borLen = borTmp; colTmp = null; } L("griddone colLen=[" + colLen.join(",") + "] bor=" + borLen + " enabled=" + enabled); if (enabled) refreshGrid(); }
 function anything() {}   // absorbe active/clearnotes/root/scale/octave/voicing/...
+function colorscheme(v) { scheme = parseInt(v) % NSCHEMES; L("colorscheme=" + scheme); if (enabled) { applyPalette(); refreshGrid(); } flush(); }
+function qualities() { var q = arrayfromargs(arguments); degQual = []; for (var i = 0; i < q.length; i++) degQual.push(parseInt(q[i])); if (scheme === 3 && enabled) { applyPalette(); refreshGrid(); } }
+
+// Réécrit les RGB des slots de palette via SysEx Push 2 (cmd 0x03), puis on allume avec ces index.
+function setPaletteRGB(idx, c) {
+	if (!theCS) return;
+	var r = c[0], g = c[1], b = c[2];
+	try { theCS.call("send_midi", 240, 0, 33, 29, 1, 1, 3, idx, r & 127, (r >> 7) & 1, g & 127, (g >> 7) & 1, b & 127, (b >> 7) & 1, 0, 0, 247); }
+	catch (e) { L("send_midi ERR " + e); }
+}
+function applyPalette() {
+	if (!theCS) return;
+	for (var i = 0; i < 7; i++) {
+		var rgb = (scheme < 3) ? PUSH_RGB[scheme][i] : QUAL_RGB[degQual[i] || 0];
+		setPaletteRGB(DEGIDX[i], rgb);
+	}
+	setPaletteRGB(BORIDX, [170, 50, 230]);   // emprunt violet (toutes logiques)
+	L("palette RGB appliquée (scheme " + scheme + ")"); flush();
+}
 
 function refreshGrid() {
-	if (!enabled || !theMatrix) return;
+	if (!enabled || !theMatrix) { L("refreshGrid SKIP enabled=" + enabled + " matrix=" + (theMatrix != null)); flush(); return; }
+	var n = 0, firstErr = "";
 	for (var c = 0; c < 8; c++) for (var r = 0; r < 8; r++) {
 		var on = (c < 7) ? (r < colLen[c]) : (r < borLen);
-		var col = on ? ((c < 7) ? DEGCOL[c] : BORCOL) : OFFCOL;
-		try { theMatrix.call("send_value", c, r, col); } catch (e) {}
+		var idx = on ? ((c < 7) ? DEGIDX[c] : BORIDX) : OFFIDX;
+		try { theMatrix.call("send_value", c, r, idx); if (on) n++; } catch (e) { if (!firstErr) firstErr = String(e); }
 	}
+	L("refreshGrid: " + n + " cases allumées" + (firstErr ? " ERR:" + firstErr : "")); flush();
 }
 
 // =====================================================================
@@ -113,6 +155,7 @@ function onMatrix(args) {
 	if (vel > 0) {
 		if (pressed[key]) return; pressed[key] = true;
 		var pitch = 48 + padIndex(col, row); pressedPitch[key] = pitch;
+		L("PRESS col=" + col + " row=" + row + " vel=" + vel + " -> midinote " + pitch); flush();
 		outlet(0, "midinote", pitch, vel);
 		if (REC) writeChord();
 	} else {

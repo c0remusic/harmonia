@@ -29,5 +29,6 @@ function gridclear() { }
 function gridcell()  { }
 function gridbor()   { }
 function griddone()  { }
+function qualities() { }
 
 post("MIDI MAP (relais) LOADED\n");
