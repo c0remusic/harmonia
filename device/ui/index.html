@@ -375,21 +375,23 @@
   var VLMODE_MSG = ['anchored','relative','piano'];
   // Couleur par degré — légende écran ↔ pads Push. Plusieurs logiques, cyclables.
   var SCHEMES = [
-    // 0 — Spectre (actuel)
-    ['#D98C7A','#D9A96B','#CBC56E','#8AC08A','#6FBFB8','#6FA0D9','#8C8FD0'],
-    // 1 — Fonction tonale : T(I,III,VI)=vert · S(II,IV)=bleu · D(V,VII)=chaud
-    ['#7FB87F','#6FA0D9','#5E9E6E','#5079C0','#E0A06B','#A6D2A0','#D97070'],
-    // 2 — Tension : I=BLEU (tonique/maison) · iii,vi=vert (stables) · tendus jaune→orange→rouge
-    //     selon le niveau : ii,IV=jaune (léger) · V=orange (fort) · vii°=rouge (max).
-    ['#4F86C8','#C8BE50','#55B05A','#C8BE50','#D8923C','#55B05A','#D05050']
+    // 0 — Spectre : arc-en-ciel par degré, DÉMARRE AU BLEU (tonique) → magenta.
+    ['#4F86C8','#3FA8C0','#55B05A','#C8BE50','#D8923C','#D05050','#C85AAA'],
+    // 1 — Fonction : tonique=bleu → T(I,III,VI)=bleu · S(II,IV)=vert · D(V,VII)=rouge.
+    ['#4F86C8','#55B05A','#4F86C8','#55B05A','#D05050','#4F86C8','#D05050'],
+    // 2 — Tension : I=bleu (maison) · iii,vi=vert · ii,IV=jaune · V=orange · vii°=rouge.
+    ['#4F86C8','#C8BE50','#55B05A','#C8BE50','#D8923C','#55B05A','#D05050'],
+    // 3 — Quintes : distance sur le cercle des quintes. I=bleu (maison, dist0) → lointain=rouge.
+    //     IV,V=cyan (1) · II=vert (2) · VI=jaune (3) · III=orange (4) · VII=rouge (5).
+    ['#4F86C8','#55B05A','#D8923C','#3FA8C0','#3FA8C0','#C8BE50','#D05050']
   ];
-  var SCHEME_NAMES = ['Spectre','Fonction','Tension','Qualité'];
+  var SCHEME_NAMES = ['Spectre','Fonction','Tension','Quintes','Qualité'];
   var colorScheme = 0;
   var BORCOLOR = '#CDADDC';   // violet emprunts (toutes logiques)
   // Qualité (chaud/froid) : 0 majeur=chaud · 1 mineur=froid · 2 dim · 3 aug. Reçu du moteur.
   var QUALHEX = ['#D8923C','#4F86C8','#C85555','#C8BE50'];
   var degQual = [0,0,0,0,0,0,0];
-  function degColorFor(c){ return (colorScheme < 3) ? SCHEMES[colorScheme][c] : (QUALHEX[degQual[c]] || QUALHEX[0]); }
+  function degColorFor(c){ return (colorScheme < 4) ? SCHEMES[colorScheme][c] : (QUALHEX[degQual[c]] || QUALHEX[0]); }
   function borColorFor(){ return BORCOLOR; }   // emprunts en violet (toutes logiques)
 
   var cols = [[],[],[],[],[],[],[]];
@@ -691,7 +693,7 @@
     M.bindInlet('gridcell',  function(col,fn,label){ if(tmpCols) tmpCols[col].push({label:String(label),fn:String(fn)}); });
     M.bindInlet('gridbor',   function(i,label,semis,type,roman){ if(tmpBor) tmpBor.push({label:String(label),roman:roman?String(roman):'',semis:parseInt(semis),type:String(type)}); });
     M.bindInlet('griddone',  function(){ if(tmpCols){cols=tmpCols;bor=tmpBor;tmpCols=null;tmpBor=null;renderGrid();} });
-    M.bindInlet('qualities', function(){ degQual=Array.prototype.slice.call(arguments).map(Number); if(colorScheme===3) applyScheme(); });
+    M.bindInlet('qualities', function(){ degQual=Array.prototype.slice.call(arguments).map(Number); if(colorScheme===4) applyScheme(); });
     M.bindInlet('root',      function(v){ state.root=parseInt(v); renderConfig(); });
     M.bindInlet('scale',     function(v){ state.scaleIdx=parseInt(v); renderConfig(); });
     M.bindInlet('octave',    function(v){ state.oct=parseInt(v); renderConfig(); });

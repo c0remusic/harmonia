@@ -25,16 +25,18 @@ var OFFIDX = 0;
 // puis on allume les pads avec ces index → couleurs identiques à l'écran.
 var DEGIDX = [1, 2, 3, 4, 5, 6, 7], BORIDX = 8;
 var PUSH_RGB = [
-	// 0 Spectre — VIF : I rouge · II orange · III jaune · IV vert · V sarcelle · VI cyan · VII bleu · emprunt VIOLET
-	[[230,40,40],[255,125,0],[230,205,0],[40,195,40],[0,195,150],[0,170,225],[55,90,240],[170,50,230]],
-	// 1 Fonction — groupes francs : T=vert (I,III,VI) · S=bleu (II,IV) · D=rouge (V,VII) · emprunt=violet
-	[[40,195,40],[40,120,235],[40,195,40],[40,120,235],[235,45,45],[40,195,40],[235,45,45],[170,50,230]],
-	// 2 Tension : I=BLEU (maison) · iii,vi=vert (stables) · tendus jaune→orange→rouge :
-	//   ii,IV=jaune · V=orange · vii°=rouge. (emprunt = violet)
-	[[50,120,235],[235,215,0],[55,195,75],[235,215,0],[255,140,0],[55,195,75],[230,50,50],[170,50,230]]
+	// 0 Spectre — arc-en-ciel, DÉMARRE AU BLEU (tonique) → magenta
+	[[50,120,235],[0,180,210],[55,195,75],[235,215,0],[255,140,0],[230,50,50],[220,40,180]],
+	// 1 Fonction — tonique=bleu : T(I,III,VI)=bleu · S(II,IV)=vert · D(V,VII)=rouge
+	[[50,120,235],[55,195,75],[50,120,235],[55,195,75],[230,50,50],[50,120,235],[230,50,50]],
+	// 2 Tension : I=bleu · iii,vi=vert · ii,IV=jaune · V=orange · vii°=rouge
+	[[50,120,235],[235,215,0],[55,195,75],[235,215,0],[255,140,0],[55,195,75],[230,50,50]],
+	// 3 Quintes — distance cercle des quintes : I=bleu (dist0) → rouge (dist5) ;
+	//   IV,V=cyan (1) · II=vert (2) · VI=jaune (3) · III=orange (4) · VII=rouge (5)
+	[[50,120,235],[55,195,75],[255,140,0],[0,180,210],[0,180,210],[235,215,0],[230,50,50]]
 ];
 var scheme = 0;
-var NSCHEMES = 4;   // Spectre, Fonction, Quintes, Qualité
+var NSCHEMES = 5;   // Spectre, Fonction, Tension, Quintes, Qualité
 // Qualité (chaud/froid) : 0 majeur=chaud · 1 mineur=froid · 2 dim · 3 aug. Reçu du moteur (sortie 7).
 var QUAL_RGB = [[255,140,0],[40,130,230],[220,55,55],[230,200,0]];
 var degQual = [0,0,0,0,0,0,0];
@@ -109,7 +111,7 @@ function gridbor() { borTmp++; }
 function griddone() { if (colTmp) { colLen = colTmp; borLen = borTmp; colTmp = null; } L("griddone colLen=[" + colLen.join(",") + "] bor=" + borLen + " enabled=" + enabled); if (enabled) refreshGrid(); }
 function anything() {}   // absorbe active/clearnotes/root/scale/octave/voicing/...
 function colorscheme(v) { scheme = parseInt(v) % NSCHEMES; L("colorscheme=" + scheme); if (enabled) { applyPalette(); refreshGrid(); } flush(); }
-function qualities() { var q = arrayfromargs(arguments); degQual = []; for (var i = 0; i < q.length; i++) degQual.push(parseInt(q[i])); if (scheme === 3 && enabled) { applyPalette(); refreshGrid(); } }
+function qualities() { var q = arrayfromargs(arguments); degQual = []; for (var i = 0; i < q.length; i++) degQual.push(parseInt(q[i])); if (scheme === 4 && enabled) { applyPalette(); refreshGrid(); } }
 
 // Réécrit les RGB des slots de palette via SysEx Push 2 (cmd 0x03), puis on allume avec ces index.
 function setPaletteRGB(idx, c) {
@@ -121,7 +123,7 @@ function setPaletteRGB(idx, c) {
 function applyPalette() {
 	if (!theCS) return;
 	for (var i = 0; i < 7; i++) {
-		var rgb = (scheme < 3) ? PUSH_RGB[scheme][i] : QUAL_RGB[degQual[i] || 0];
+		var rgb = (scheme < 4) ? PUSH_RGB[scheme][i] : QUAL_RGB[degQual[i] || 0];
 		setPaletteRGB(DEGIDX[i], rgb);
 	}
 	setPaletteRGB(BORIDX, [170, 50, 230]);   // emprunt violet (toutes logiques)
