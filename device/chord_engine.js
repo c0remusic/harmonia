@@ -74,7 +74,7 @@ function list() {
 		voicingidx: voicingidx, voiceleading: voiceleading, vlmode: vlmode,
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
-		keynote: keynote, keynoteup: keynoteup
+		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
@@ -480,6 +480,9 @@ function playcell(col, row) {
 
 // Vélocité reçue avant un playcell (pad pressé)
 function padvel(v) { currentVelocity = parseInt(v); }
+
+// Relais du toggle Push mode (UI jweb → module Push, via la sortie 7 déjà câblée).
+function pushmode(v) { outlet(7, "pushmode", parseInt(v)); }
 
 // =====================================================
 // ENTRÉE CLAVIER MIDI → case de la grille (Phase 2)

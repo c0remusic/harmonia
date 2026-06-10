@@ -334,6 +334,7 @@
       <div class="cfg-spacer"></div>
 
       <div class="ontop on" id="ontopBtn" title="Garder la fenêtre au-dessus des autres">ALWAYS ON TOP</div>
+      <div class="btn" id="pushBtn" title="Contrôle de la grille d'accords sur Push 2">PUSH</div>
 
     </div>
 
@@ -757,6 +758,16 @@
     onTop=!onTop;
     this.classList.toggle('on',onTop);   // libellé constant, l'état = surbrillance
     send('ontop', onTop?1:0);
+  };
+
+  // Toggle Push mode : ON = Tuple prend la grille du Push (grab) ; OFF = release.
+  var pushOn=false;
+  document.getElementById('pushBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
+  document.getElementById('pushBtn').onclick = function(){
+    pushOn=!pushOn;
+    this.classList.toggle('on',pushOn);
+    this.textContent = pushOn ? 'PUSH ON' : 'PUSH';
+    send('pushmode', pushOn?1:0);
   };
 
   // ── DEMO ──
