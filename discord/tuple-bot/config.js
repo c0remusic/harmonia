@@ -91,6 +91,26 @@ export const TIPS = [
   "Use /diatonic and /chord right here in Discord to sketch a progression before opening Live.",
 ];
 
+// Rôles auto-attribuables (commande /rolemenu → message à boutons).
+// Crée chaque rôle dans Discord, puis colle son ID dans `id`.
+// Un `id` vide ("") = bouton ignoré → tu peux préparer avant d'avoir les IDs.
+// ⚠️ Le rôle du BOT doit être AU-DESSUS de ces rôles + permission "Manage Roles".
+export const ROLE_MENU = {
+  title: "Pick your roles",
+  description: "Click a button to add or remove a role.",
+  roles: [
+    { id: "", label: "Release Pings", emoji: "🔔" },
+    { id: "", label: "Beta Tester", emoji: "🧪" },
+    { id: "", label: "Producer", emoji: "🎹" },
+    { id: "", label: "Beatmaker", emoji: "🥁" },
+    { id: "", label: "Composer", emoji: "🎼" },
+    { id: "", label: "Sound Designer", emoji: "🔊" },
+    { id: "", label: "Theory Head", emoji: "🤓" },
+    { id: "", label: "Plays by Ear", emoji: "👂" },
+    { id: "", label: "Push User", emoji: "🎛️" },
+  ],
+};
+
 // Message de bienvenue auto (variable {user} = mention du nouveau membre)
 export const WELCOME_MESSAGE =
   `${EMOJI.welcome}Welcome to **Tuple**, {user}!\n\n` +

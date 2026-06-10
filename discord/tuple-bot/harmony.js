@@ -270,3 +270,35 @@ export function parseChord(input) {
     degrees: type.deg.slice(),
   };
 }
+
+// /identify : à partir de noms de notes → nom(s) d'accord.
+// { error:"parse", bad } si note invalide · { error:"few" } si < 2 notes ·
+// sinon un tableau [{ label, root }] (plusieurs si ambigu, ex. C6 / Am7).
+export function identifyChord(noteStrings) {
+  const pcs = [];
+  for (const s of noteStrings) {
+    const pc = parseRoot(s);
+    if (pc === null) return { error: "parse", bad: s };
+    if (!pcs.includes(pc)) pcs.push(pc);
+  }
+  if (pcs.length < 2) return { error: "few" };
+
+  const matches = [];
+  const seen = new Set();
+  for (const root of pcs) {
+    const set = [...new Set(pcs.map((p) => (((p - root) % 12) + 12) % 12))]
+      .sort((a, b) => a - b)
+      .join(",");
+    for (const t of CHORD_TYPES) {
+      const ivset = [...new Set(t.iv.map((i) => i % 12))].sort((a, b) => a - b).join(",");
+      if (ivset === set) {
+        const label = pcName(root) + t.suf;
+        if (!seen.has(label)) {
+          seen.add(label);
+          matches.push({ label, root: pcName(root) });
+        }
+      }
+    }
+  }
+  return matches;
+}

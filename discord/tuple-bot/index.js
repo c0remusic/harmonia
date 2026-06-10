@@ -58,6 +58,32 @@ async function reportError(interaction, err) {
 }
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  // Bouton de rôle (menu /rolemenu) : customId = "role:<roleId>"
+  if (interaction.isButton()) {
+    const [prefix, roleId] = interaction.customId.split(":");
+    if (prefix !== "role") return;
+    try {
+      const member = interaction.member;
+      if (member.roles.cache.has(roleId)) {
+        await member.roles.remove(roleId);
+        await interaction.reply({ content: `➖ Removed <@&${roleId}>`, flags: 64 });
+      } else {
+        await member.roles.add(roleId);
+        await interaction.reply({ content: `➕ Added <@&${roleId}>`, flags: 64 });
+      }
+    } catch (err) {
+      console.error("role toggle failed:", err.message);
+      await interaction
+        .reply({
+          content:
+            "⚠️ I couldn't change that role — I need **Manage Roles** and my role must be **above** it.",
+          flags: 64,
+        })
+        .catch(() => {});
+    }
+    return;
+  }
+
   // Soumission d'un formulaire (modal) : customId = "modal:<commande>"
   if (interaction.isModalSubmit()) {
     const [prefix, name] = interaction.customId.split(":");

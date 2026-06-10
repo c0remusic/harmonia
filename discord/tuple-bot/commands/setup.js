@@ -23,6 +23,15 @@ export const data = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
+async function pinSafe(msg, notes) {
+  try {
+    if (!msg.pinned) await msg.pin();
+    notes.push("pinned");
+  } catch {
+    notes.push("pin✗(needs Manage Messages)");
+  }
+}
+
 async function applyOne(interaction, key) {
   const entry = CHANNEL_CONTENT[key];
   const channelId = process.env[entry.channelEnv];
@@ -58,6 +67,7 @@ async function applyOne(interaction, key) {
     try {
       const msg = await channel.messages.fetch(existingId);
       await msg.edit(content);
+      await pinSafe(msg, notes);
       return `🔄 \`${key}\` — message updated, ${notes.join(", ")}`;
     } catch {
       // message supprimé → on repostera
@@ -67,6 +77,7 @@ async function applyOne(interaction, key) {
   try {
     const msg = await channel.send(content);
     setMessageId(key, msg.id);
+    await pinSafe(msg, notes);
     return `✅ \`${key}\` — message posted, ${notes.join(", ")}`;
   } catch (err) {
     return `❌ \`${key}\` — ${err.message} (bot may lack Send Messages here)`;
