@@ -18,7 +18,7 @@ export function checkIdentity(voicing, notes, spec) {
   }
 
   switch (voicing) {
-    case 'rootlessa': case 'rootlessb': case 'jazz':
+    case 'rootlessa': case 'rootlessb': case 'jazz': case 'nuhouse':
       if (pcs.has(spec.rootPc)) v.push('rootless:fondamentale présente');
       break;
     case 'drop2': case 'drop3': {
