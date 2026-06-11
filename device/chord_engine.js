@@ -39,12 +39,12 @@ var currentOctave       = 0;
 var currentVelocity     = 100;
 var currentVoicing      = "classic";
 var voiceLeadingEnabled = false;
-var previousChord       = null;
+var previousChord       = null;  // v1 fallback uniquement
 var activeNotes         = [];
-var voicingCache        = {};   // mode relative : mémorise le voicing par accord
 var vlMode              = "anchored";  // "anchored" | "relative" | "piano"
-var relativeCounter     = 0;    // counter pour éviter la dérive en mode relative
-var lockedVoicing        = null;  // mémorise la forme du premier accord joué
+var lockedVoicing       = null;       // v1 : lock renversement sur accord répété
+var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
+var lastColorType       = "maj";
 
 // =====================================================
 // INLET 1 — velocity
@@ -197,7 +197,8 @@ function synclive() {
 // Reçoit un index int (0-11) depuis live.menu
 function rootidx(v) {
 	root = parseInt(v);
-	lockedVoicing = null;  // Reset lock quand on change de clé
+	lockedVoicing = null;
+	_vl2_reset();
 	pushUIState();
 }
 
@@ -213,7 +214,8 @@ function setscale(s) {
 	if (SCALES[s]) {
 		scale = SCALES[s];
 		scaleName = s;
-		lockedVoicing = null;  // Reset lock quand on change de gamme
+		lockedVoicing = null;
+		_vl2_reset();
 	}
 }
 
@@ -235,11 +237,12 @@ function voicing(v) {
 	pushConfigState();   // pas de rebuild grille : le voicing n'affecte pas les cellules
 }
 
-// Reçoit un index int (0-5) depuis live.menu
+// Reçoit un index int (0-9) depuis live.menu
 var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3"];
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
-	lockedVoicing = null;  // Reset lock quand on change de voicing
+	lockedVoicing = null;
+	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
 
@@ -249,22 +252,23 @@ function voiceleading(v) {
 	voiceLeadingEnabled = (s === "on" || s === "1" || s === "true");
 	// Repart à zéro à chaque activation/désactivation
 	previousChord = null;
-	voicingCache = {};
+	lockedVoicing = null;
+	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
 
 function resetvoiceleading() {
 	previousChord = null;
-	voicingCache = {};
-	relativeCounter = 0;
+	lockedVoicing = null;
+	_vl2_reset();
 }
 
 // Reçoit "vlmode anchored" ou "vlmode relative"
 function vlmode(m) {
 	vlMode = String(m);
 	previousChord = null;
-	voicingCache = {};
-	relativeCounter = 0;
+	lockedVoicing = null;
+	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
 
@@ -951,6 +955,296 @@ function pianoVL(notes) {
 // OUTPUT — 6 outlets directs, chacun envoie [pitch, velocity]
 // Le patch câble chaque outlet → unpack i i → noteout
 // =====================================================
+// VL2 ENGINE — inliné depuis device/vl2/src/ (import/export retirés)
+// Actif automatiquement quand voiceLeadingEnabled.
+// Mapping modes v1→v2 : "anchored"→"anchor" · "relative"/"piano"→"flow"
+// =====================================================
+
+// --- rules ---
+var _vl2_LOW_LIMITS = [{iv:2,min:50},{iv:4,min:45},{iv:6,min:41}];
+function _vl2_lowIntervalViolations(notes) {
+	var r = notes.slice().sort(function(a,b){return a-b;}), v = [];
+	for (var i = 0; i < r.length-1; i++) {
+		var iv = r[i+1]-r[i];
+		for (var j = 0; j < _vl2_LOW_LIMITS.length; j++) {
+			var L = _vl2_LOW_LIMITS[j];
+			if (iv <= L.iv && r[i] < L.min) { v.push(iv+'st@'+r[i]); break; }
+		}
+	}
+	return v;
+}
+function _vl2_dominantThirdPc(spec) {
+	if (!spec.isDominant) return null;
+	for (var i = 0; i < spec.pcs.length; i++) if (spec.pcs[i].role==='third') return spec.pcs[i].pc;
+	return null;
+}
+
+// --- identity ---
+function _vl2_checkIdentity(voicing, notes, spec) {
+	var v = [], m = function(n){return((n%12)+12)%12;};
+	var ns = notes.slice().sort(function(a,b){return a-b;});
+	var pcs = new Set(ns.map(m));
+	var has = function(role){ var e=null; for(var i=0;i<spec.pcs.length;i++) if(spec.pcs[i].role===role){e=spec.pcs[i];break;} return e&&pcs.has(e.pc); };
+	if (spec.hasSeventh) {
+		if (!has('seventh')) v.push('guide:7e absente');
+		var hasThird = false; for(var i=0;i<spec.pcs.length;i++) if(spec.pcs[i].role==='third'){hasThird=true;break;}
+		if (hasThird && !has('third')) v.push('guide:3ce absente');
+	}
+	if (voicing==='rootlessa'||voicing==='rootlessb') { if (pcs.has(spec.rootPc)) v.push('rootless:fondamentale présente'); }
+	else if (voicing==='drop2'||voicing==='drop3') {
+		if (ns.length < 4) { v.push('dropN:<4 voix'); }
+		else {
+			var lifted = [ns[0]+12].concat(ns.slice(1)).sort(function(a,b){return a-b;});
+			var maxGap=0; for(var i=0;i<lifted.length-1;i++) maxGap=Math.max(maxGap,lifted[i+1]-lifted[i]);
+			if (maxGap>12) { v.push('dropN:base non-close'); }
+			else {
+				var fromTop=lifted.length-1-lifted.indexOf(ns[0]+12);
+				if (voicing==='drop2'&&fromTop!==1) v.push('drop2:voix abaissée ≠ 2e du haut');
+				if (voicing==='drop3'&&fromTop!==2) v.push('drop3:voix abaissée ≠ 3e du haut');
+			}
+		}
+	}
+	else if (voicing==='house') {
+		if (m(ns[0])!==spec.rootPc) v.push('house:basse ≠ fondamentale');
+		var cnt=0; for(var i=0;i<ns.length;i++) if(m(ns[i])===spec.rootPc) cnt++;
+		if (cnt>1) v.push('house:fondamentale doublée');
+	}
+	else if (voicing==='piano') {
+		if (m(ns[0])!==spec.rootPc) v.push('piano:basse ≠ fondamentale');
+		var rh=ns.slice(1);
+		if (rh.length && Math.max.apply(null,rh)-Math.min.apply(null,rh)>12) v.push('piano:MD > 1 octave');
+	}
+	else if (voicing==='prog') { if (ns.length>=2&&ns[1]-ns[0]<7) v.push('prog:basse non détachée'); }
+	return v;
+}
+
+// --- chordspec builder (depuis l'état courant root/scale du moteur) ---
+var _vl2_STEPS = {
+	triad:[0,2,4], seven:[0,2,4,6], nine:[0,2,4,6,8], add9:[0,2,4,8],
+	sus2:[0,1,4], sus4:[0,3,4], six:[0,2,4,5], sixnine:[0,2,4,5,8],
+	sevensus4:[0,3,4,6], mmaj7:[0,2,4,6], sevenflat9:[0,2,4,6,8],
+	sevensharp9:[0,2,4,6,8], m7s5:[0,2,4,6]
+};
+var _vl2_STEP_ROLE = {0:'root',1:'sus',2:'third',3:'sus',4:'fifth',5:'sixth',6:'seventh',8:'ninth'};
+
+function _vl2_buildSpec(fn, d) {
+	var m=function(n){return((n%12)+12)%12;}, steps=_vl2_STEPS[fn]; if(!steps) return null;
+	var rootPc=m(root+scale[d%7]), pcs=[];
+	for (var i=0;i<steps.length;i++) { var s=steps[i]; pcs.push({pc:m(root+scale[(d+s)%7]),role:_vl2_STEP_ROLE[s]}); }
+	if (fn==='m7s5'&&pcs.length>2) pcs[2].pc=m(pcs[2].pc+1); // quinte augmentée
+	var iv=function(p){return m(p.pc-rootPc);};
+	var hasSev=false,isThird4=false,isSev10=false;
+	for(var i=0;i<pcs.length;i++){
+		if(pcs[i].role==='seventh') hasSev=true;
+		if(pcs[i].role==='third'&&iv(pcs[i])===4) isThird4=true;
+		if(pcs[i].role==='seventh'&&iv(pcs[i])===10) isSev10=true;
+	}
+	return {pcs:pcs, rootPc:rootPc, fn:fn, degree:d, hasSeventh:hasSev, isDominant:isThird4&&isSev10};
+}
+
+function _vl2_buildColorSpec(semis, type) {
+	var m=function(n){return((n%12)+12)%12;};
+	var IV={min:[0,3,7],dim7:[0,3,6,9],maj7:[0,4,7,11],dom7:[0,4,7,10],maj:[0,4,7]};
+	var ROLES=['root','third','fifth','seventh'];
+	var ivs=IV[type]||IV.maj, rootPc=m(root+semis), pcs=[];
+	for(var i=0;i<ivs.length;i++) pcs.push({pc:m(rootPc+ivs[i]),role:ROLES[i]});
+	return {pcs:pcs, rootPc:rootPc, fn:'color', degree:semis, hasSeventh:ivs.length>3, isDominant:type==='dom7'};
+}
+
+function _vl2_specKey(s) {
+	var r=s.fn+':'+s.degree+':'; for(var i=0;i<s.pcs.length;i++) r+=(i?'.':'')+s.pcs[i].pc; return r;
+}
+
+// --- realizer ---
+var _vl2_ROLE_ORDER=['root','sus','third','fifth','sixth','seventh','ninth'];
+function _vl2_vs(a){return a.slice().sort(function(x,y){return x-y;});}
+function _vl2_m(n){return((n%12)+12)%12;}
+function _vl2_rotOf(arr){
+	var out=[],r=_vl2_vs(arr);
+	for(var i=0;i<arr.length;i++){out.push(r.slice());r=_vl2_vs(r.slice(1).concat([r[0]+12]));}
+	return out;
+}
+function _vl2_closeFrom(spec,rootMidi){
+	var ord=spec.pcs.slice().sort(function(a,b){return _vl2_ROLE_ORDER.indexOf(a.role)-_vl2_ROLE_ORDER.indexOf(b.role);});
+	var out=[rootMidi],last=rootMidi;
+	for(var i=1;i<ord.length;i++){var n=last+1;n+=_vl2_m(ord[i].pc-_vl2_m(n));out.push(n);last=n;}
+	return out;
+}
+var _vl2_STRUCT=new Set(['piano','rootlessa','rootlessb','drop2','drop3','house','prog']);
+var _vl2_ABSOLUTE=new Set(['house','prog']);
+var _vl2_T={
+	classic:function(c){return[c];},
+	open:function(c){return c.length<2?[c]:[_vl2_vs(c.map(function(n,i){return i===1?n+12:n;}))];},
+	spread:function(c){return c.length<3?[c]:[_vl2_vs(c.map(function(n,i){return i%2===1?n+12:n;}))];},
+	house:function(c,oct){
+		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
+		var hm=function(n){return((n%12)+12)%12;},rootPc=hm(c[0]),upperPc=c.slice(1).map(hm);
+		if(c.length>=5)upperPc=upperPc.filter(function(p,i){return i!==1;});
+		var bass=48+oct+rootPc,floor=60+oct;
+		var cluster=upperPc.map(function(pc){return floor+hm(pc);}).sort(function(a,b){return a-b;})
+			.filter(function(n,i,a){return i===0||n!==a[i-1];});
+		return[_vl2_vs([bass].concat(cluster))];
+	},
+	prog:function(c,oct){
+		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
+		var pm=function(n){return((n%12)+12)%12;},rootPc=pm(c[0]),upperPc=c.slice(1).map(pm);
+		var bass=48+oct+rootPc,rootOct=bass+12,cl=[],last=Math.max(rootOct,59+oct);
+		for(var i=0;i<upperPc.length;i++){var n=last+1;n+=pm(upperPc[i]-pm(n));cl.push(n);last=n;}
+		return _vl2_rotOf(cl).map(function(up){return _vl2_vs([bass,rootOct].concat(up)).slice(0,6);});
+	},
+	piano:function(c){return c.length<3?[c]:_vl2_rotOf(c.slice(1)).map(function(rh){return[c[0]-12].concat(rh);});},
+	rootlessa:function(c){return c.length<3?[c]:_vl2_rotOf(c.slice(1));},
+	rootlessb:function(c){
+		if(c.length<3)return[c];
+		var u=c.slice(1),k=Math.ceil(u.length/2);
+		var sp=_vl2_vs(u.slice(k).concat(u.slice(0,k).map(function(n){return n+12;})));
+		return[-1,0,1,2].map(function(o){return _vl2_vs(sp.map(function(n){return n+o*12;}));});
+	},
+	drop2:function(c){var r=_vl2_vs(c);r[r.length-2]-=12;return[_vl2_vs(r)];},
+	drop3:function(c){var r=_vl2_vs(c);r[r.length-3]-=12;return[_vl2_vs(r)];}
+};
+function _vl2_stabilize(notes,spec,target){
+	var out=notes.slice(),m=_vl2_m;
+	var avoid=_vl2_dominantThirdPc(spec);
+	var prefer=[];
+	['root','fifth','third'].forEach(function(ro){
+		for(var i=0;i<spec.pcs.length;i++){if(spec.pcs[i].role===ro&&spec.pcs[i].pc!==avoid){prefer.push(spec.pcs[i]);break;}}
+	});
+	var pi=0;
+	while(out.length<target&&prefer.length){
+		var pc=prefer[pi%prefer.length].pc;pi++;
+		var top=Math.max.apply(null,out);
+		out.push(top+1+m(pc-m(top+1)));
+	}
+	while(out.length>Math.min(target,6)){
+		var fifth=null;for(var i=0;i<spec.pcs.length;i++){if(spec.pcs[i].role==='fifth'){fifth=spec.pcs[i];break;}}
+		var idx=-1;if(fifth){for(var i=0;i<out.length;i++){if(m(out[i])===fifth.pc){idx=i;break;}}}
+		out.splice(idx>=0?idx:out.length-1,1);
+	}
+	return _vl2_vs(out);
+}
+function _vl2_realize(spec,voicing,opts){
+	var center=(opts&&opts.center!=null)?opts.center:60;
+	var want=(opts&&opts.targetVoices!=null)?opts.targetVoices:null;
+	var vc=voicing,fallback=null;
+	if((vc==='rootlessa'||vc==='rootlessb')&&!spec.hasSeventh){fallback=vc;vc='classic';}
+	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
+	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
+	var rotUp=function(arr){var r=_vl2_vs(arr);r.push(r.shift()+12);return _vl2_vs(r);};
+	var octShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
+	var seen=new Set(),out=[];
+	for(var oct=-2;oct<=2;oct++){
+		var base=48+oct*12,rootMidi=base+_vl2_m(spec.rootPc-_vl2_m(base));
+		var inv=_vl2_closeFrom(spec,rootMidi);
+		var nInv=_vl2_ABSOLUTE.has(vc)?1:spec.pcs.length;
+		for(var k=0;k<nInv;k++){
+			var TF=_vl2_T[vc]||_vl2_T.classic;
+			var shapes=TF(inv,octShift);
+			for(var si=0;si<shapes.length;si++){
+				var notes=(want!=null&&!_vl2_STRUCT.has(vc))?_vl2_stabilize(shapes[si],spec,want):_vl2_vs(shapes[si]).slice(0,6);
+				if(Math.min.apply(null,notes)<24||Math.max.apply(null,notes)>108)continue;
+				if(_vl2_checkIdentity(vc,notes,spec).length)continue;
+				if(!_vl2_ABSOLUTE.has(vc)&&_vl2_lowIntervalViolations(notes).length)continue;
+				var key=notes.join(',');if(seen.has(key))continue;seen.add(key);
+				out.push({notes:notes,voicing:vc,fallback:fallback});
+			}
+			inv=rotUp(inv);
+		}
+	}
+	return out;
+}
+
+// --- selector ---
+var _vl2_W={
+	move:1,leapOver:4,leapFactor:0.6,
+	common:-7,commonPc:-2,
+	soprano:2.5,bass:1.2,bassFreeLeaps:[5,7,12],
+	parallel:10,spacingGap:0.8,countDiff:6,
+	contrary:-1.5,spring:0.04,recall:-6,
+	window:10,outOfWindow:50,
+	tendency:-5,chromatic:-3
+};
+function _vl2_movCost(prev,cand){
+	var a=_vl2_vs(prev),b=_vl2_vs(cand),n=Math.min(a.length,b.length);
+	var tot=Math.abs(a.length-b.length)*_vl2_W.countDiff;
+	var bSet=new Set(b),commons=0;
+	for(var i=0;i<a.length;i++) if(bSet.has(a[i])){tot+=_vl2_W.common;commons++;}
+	for(var i=0;i<n;i++){
+		var isTop=i===n-1,isBass=i===0,d=Math.abs(b[i]-a[i]);if(d===0)continue;
+		var w=_vl2_W.move*(isTop?_vl2_W.soprano:isBass?_vl2_W.bass:1);
+		tot+=d*w;
+		var freeBass=isBass&&_vl2_W.bassFreeLeaps.indexOf(d)>=0;
+		if(d>_vl2_W.leapOver&&!freeBass)tot+=(d-_vl2_W.leapOver)*_vl2_W.leapFactor*(isTop?_vl2_W.soprano:1);
+		if(_vl2_m(a[i])===_vl2_m(b[i]))tot+=_vl2_W.commonPc;
+	}
+	for(var j=0;j<n-1;j++){
+		var i1=_vl2_m(a[j+1]-a[j]),i2=_vl2_m(b[j+1]-b[j]);
+		if(i1===i2&&(i1===0||i1===7)&&a[j]!==b[j])tot+=_vl2_W.parallel;
+	}
+	for(var j=1;j<b.length-1;j++) if(b[j+1]-b[j]>12)tot+=(b[j+1]-b[j]-12)*_vl2_W.spacingGap;
+	if(n>=2){var db=b[0]-a[0],dt=b[n-1]-a[n-1];if(db!==0&&dt!==0&&(db>0)!==(dt>0))tot+=_vl2_W.contrary;}
+	return tot;
+}
+function _vl2_harmBonus(prev,cand,opts){
+	var ps=opts.prevSpec,sp=opts.spec;if(!ps||!sp||!prev||!prev.length)return 0;
+	var a=_vl2_vs(prev),b=_vl2_vs(cand),n=Math.min(a.length,b.length),bonus=0,chrom=0;
+	if(ps.isDominant&&_vl2_m(ps.rootPc-sp.rootPc)===7){
+		var sev=null,thi=null;
+		for(var i=0;i<ps.pcs.length;i++) if(ps.pcs[i].role==='seventh'){sev=ps.pcs[i];break;}
+		for(var i=0;i<sp.pcs.length;i++) if(sp.pcs[i].role==='third'){thi=sp.pcs[i];break;}
+		var apcs=new Set(a.map(_vl2_m)),bpcs=new Set(b.map(_vl2_m));
+		if(sev&&thi&&apcs.has(sev.pc)&&bpcs.has(thi.pc)&&!bpcs.has(sev.pc))bonus+=_vl2_W.tendency;
+	}
+	for(var i=0;i<n&&chrom<2;i++) if(Math.abs(b[i]-a[i])===1){bonus+=_vl2_W.chromatic;chrom++;}
+	return bonus;
+}
+var _vl2_st={voices:null,recall:new Map()};
+function _vl2_resetState(){_vl2_st.voices=null;_vl2_st.recall.clear();}
+var _vl2_prevSpec=null;
+function _vl2_reset(){_vl2_resetState();_vl2_prevSpec=null;}
+function _vl2_select(cands,opts){
+	var st=_vl2_st,mode=opts.mode,center=opts.center,key=opts.key;
+	var mean=function(ns){var s=0;for(var i=0;i<ns.length;i++)s+=ns[i];return s/ns.length;};
+	var same=function(a,b){if(a.length!==b.length)return false;for(var i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true;};
+	if(mode==='anchor'&&st.recall.has(key)){var nn=st.recall.get(key).slice();st.voices=nn.slice();return nn;}
+	var first=st.voices===null,best=null,bestC=Infinity;
+	for(var ci=0;ci<cands.length;ci++){
+		var c=cands[ci],cost;
+		if(first){cost=Math.abs(mean(c.notes)-center);}
+		else{
+			cost=_vl2_movCost(st.voices,c.notes)+_vl2_harmBonus(st.voices,c.notes,opts);
+			if(mode==='flow'){
+				var dev=Math.abs(mean(c.notes)-center);
+				cost+=_vl2_W.spring*dev*dev;
+				if(dev>_vl2_W.window)cost+=_vl2_W.outOfWindow*(dev-_vl2_W.window);
+				var rc=st.recall.get(key);
+				if(rc&&same(rc,c.notes))cost+=_vl2_W.recall;
+			}
+		}
+		if(cost<bestC){bestC=cost;best=c;}
+	}
+	st.voices=best.notes.slice();
+	if(st.recall.size>64)st.recall.delete(st.recall.keys().next().value);
+	st.recall.set(key,best.notes.slice());
+	return best.notes;
+}
+
+// --- façade vl2 ---
+// Mapping mode v1 → v2 : "anchored"→"anchor" · "relative"→"flow" · "piano"→ voicing piano + flow
+function _vl2_play(fn,d,colorSemis,colorType){
+	var spec=(fn==='color')?_vl2_buildColorSpec(colorSemis,colorType):_vl2_buildSpec(fn,d);
+	if(!spec)return null;
+	var vc=currentVoicing,mode=(vlMode==='anchored')?'anchor':'flow';
+	if(vlMode==='piano') vc='piano';
+	var center=60+currentOctave*12,key=_vl2_specKey(spec)+'|'+vc;
+	var cands=_vl2_realize(spec,vc,{center:center});
+	if(!cands.length)return null;
+	var notes=_vl2_select(cands,{mode:mode,center:center,key:key,spec:spec,prevSpec:_vl2_prevSpec});
+	_vl2_prevSpec=spec;
+	return notes;
+}
+
+// =====================================================
 
 function sendNoteOff() {
 	if (activeNotes.length === 0) return;
@@ -963,8 +1257,13 @@ function sendNoteOff() {
 }
 
 function sendChord(name, notes) {
-	notes = applyVoicing(notes);
-	notes = applyVoiceLeading(notes);
+	if (voiceLeadingEnabled) {
+		// VL2 : reconstruit depuis la spec (voicing + voice leading intégrés)
+		var v2 = _vl2_play(lastFn, lastDegree, lastColorSemis, lastColorType);
+		notes = (v2 && v2.length) ? v2 : applyVoicing(notes);  // fallback si pas de candidats
+	} else {
+		notes = applyVoicing(notes);
+	}
 	sendNoteOff();
 	activeNotes = notes.slice();
 	outlet(0, currentVelocity);
@@ -1122,6 +1421,7 @@ function colorchord(semis, type) {
 	}
 
 	lastFn = "color"; lastDegree = semis;
+	lastColorSemis = semis; lastColorType = type;
 	var suffix = (type === "min") ? "m" : (type === "dim7") ? "dim7"
 	           : (type === "maj7") ? "maj7" : (type === "dom7") ? "7" : "";
 	sendChord(noteName(notes[0]) + suffix, notes);

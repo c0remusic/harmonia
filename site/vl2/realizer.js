@@ -77,8 +77,12 @@ const T = {
   rootlessb: c => {
     if (c.length < 3) return [c];
     const u = c.slice(1), k = Math.ceil(u.length / 2);
+    // Forme "open" : moitié basse remontée d'une octave → écartement ~2 octaves.
+    // On génère 4 positions d'octave de cette MÊME forme (pas des rotations) :
+    // rootlessa voice-leade par INVERSION du cluster serré ;
+    // rootlessb voice-leade par REGISTRE de l'écartement large — sons distincts.
     const spread = vsort([...u.slice(k), ...u.slice(0, k).map(n => n + 12)]);
-    return rotationsOf(spread);   // voicing rootless plus étalé, inversions incluses
+    return [-1, 0, 1, 2].map(o => vsort(spread.map(n => n + o * 12)));
   },
   drop2: c => { const r = vsort(c); r[r.length - 2] -= 12; return [vsort(r)]; },
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; }

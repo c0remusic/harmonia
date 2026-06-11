@@ -16,8 +16,7 @@ export const COLORS = {
 export const INFO = {
   version: "Beta", // affiché par /version
   versionNote: "1.0 at release",
-  // ⚠️ URL PROVISOIRE (projet ex-Harmonia) — changera avant la release.
-  site: "https://harmonia-three-theta.vercel.app/",
+  site: "https://tuple.live/",
   maxforlive: null, // null → "coming with the final release" ; sinon mettre l'URL
   email: "c0re_m4l@proton.me",
   donate: "https://www.paypal.com/paypalme/c0remusic", // null → masqué dans /links

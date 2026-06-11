@@ -90,9 +90,9 @@ export function select(candidates, st, opts) {
   // ANCHOR : verrou dur — un accord déjà réalisé ressort tel quel (le wrap de
   // boucle ne re-dérive jamais ; stabilité par récurrence).
   if (mode === 'anchor' && st.recall.has(key)) {
-    const notes = [...st.recall.get(key)];
-    st.voices = [...notes];
-    return { notes, explain: ['recall-lock'], cost: 0 };
+    const stored = st.recall.get(key);
+    st.voices = [...stored.notes];
+    return { notes: [...stored.notes], explain: ['recall-lock'], cost: 0, voicing: stored.voicing, fallback: stored.fallback };
   }
 
   const first = st.voices === null;
@@ -111,12 +111,13 @@ export function select(candidates, st, opts) {
         cost += W.spring * dev * dev;                                  // centrage doux (tie-break)
         if (dev > W.window) cost += W.outOfWindow * (dev - W.window);  // fenêtre : force le repli d'octave (anti-rochet)
         const rc = st.recall.get(key);
-        if (rc && same(rc, c.notes)) { cost += W.recall; ex.push('recall'); }
+        if (rc && same(rc.notes, c.notes)) { cost += W.recall; ex.push('recall'); }
       }
     }
     if (cost < bestC) { bestC = cost; best = c; bestEx = ex; }
   }
   st.voices = [...best.notes];
-  st.recall.set(key, [...best.notes]);
+  if (st.recall.size > 64) st.recall.delete(st.recall.keys().next().value);
+  st.recall.set(key, { notes: [...best.notes], voicing: best.voicing, fallback: best.fallback });
   return { notes: [...best.notes], explain: bestEx, cost: bestC, voicing: best.voicing, fallback: best.fallback };
 }

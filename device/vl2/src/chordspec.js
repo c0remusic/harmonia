@@ -20,6 +20,8 @@ export function buildSpec({ fn, degree, rootPc, scaleArr }) {
     role: STEP_ROLE[s]
   }));
   if (fn === 'm7s5') pcs[2].pc = mod(pcs[2].pc + 1);   // quinte augmentée (cf. moteur v1)
+  // sevenflat9/sevensharp9 : la gamme fournit déjà l'altération (le chord n'est valide
+  // que quand le degré produit naturellement le b9 ou #9 — pas de correction chromatique ici.
   const root = pcs[0].pc;
   const iv = p => mod(p.pc - root);
   return {
