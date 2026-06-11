@@ -23,16 +23,21 @@ export function movementCost(prev, cand, explain, ctx) {
   const a = vsort(prev), b = vsort(cand);
   const n = Math.min(a.length, b.length);
   let tot = Math.abs(a.length - b.length) * W.countDiff;
+  // Notes communes TENUES : par ensemble de notes (pas par index — une tenue
+  // peut se retrouver à une position différente après revoicing).
+  const bSet = new Set(b);
   let commons = 0;
+  for (const x of a) if (bSet.has(x)) { tot += W.common; commons++; }
+  // Distance de mouvement (appariement par index trié, soprano/basse pondérées).
   for (let i = 0; i < n; i++) {
     const isTop = i === n - 1, isBass = i === 0;
     const d = Math.abs(b[i] - a[i]);
+    if (d === 0) continue;                                 // tenue déjà bonifiée ci-dessus
     const w = W.move * (isTop ? W.soprano : isBass ? W.bass : 1);
     tot += d * w;
     const freeBass = isBass && W.bassFreeLeaps.includes(d);
     if (d > W.leapOver && !freeBass) tot += (d - W.leapOver) * W.leapFactor * (isTop ? W.soprano : 1);
-    if (a[i] === b[i]) { tot += W.common; commons++; }
-    else if (mod(a[i]) === mod(b[i])) tot += W.commonPc;
+    if (mod(a[i]) === mod(b[i])) tot += W.commonPc;
   }
   for (let j = 0; j < n - 1; j++) {
     const i1 = mod(a[j + 1] - a[j]), i2 = mod(b[j + 1] - b[j]);

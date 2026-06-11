@@ -79,20 +79,27 @@ export function realize(spec, voicing, opts = {}) {
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
+  // Inversions : monter la note la plus basse d'une octave. Indispensable au
+  // voice leading — c'est ce qui permet de TENIR les notes communes.
+  const rotateUp = arr => { const r = vsort(arr); r.push(r.shift() + 12); return vsort(r); };
+
   const seen = new Set(), out = [];
   for (let oct = -2; oct <= 2; oct++) {
     const base = 48 + oct * 12;
     const rootMidi = base + mod(spec.rootPc - mod(base));
-    const close = closeFrom(spec, rootMidi);
-    for (const shape of T[vc](close)) {
-      let notes = (want != null && !STRUCT.has(vc)) ? stabilize(shape, spec, want) : vsort(shape).slice(0, 6);
-      if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
-      if (checkIdentity(vc, notes, spec).length) continue;
-      if (lowIntervalViolations(notes).length) continue;
-      const key = notes.join(',');
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ notes, voicing: vc, fallback });
+    let inv = closeFrom(spec, rootMidi);
+    for (let k = 0; k < spec.pcs.length; k++) {            // toutes les inversions
+      for (const shape of T[vc](inv)) {
+        let notes = (want != null && !STRUCT.has(vc)) ? stabilize(shape, spec, want) : vsort(shape).slice(0, 6);
+        if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
+        if (checkIdentity(vc, notes, spec).length) continue;
+        if (lowIntervalViolations(notes).length) continue;
+        const key = notes.join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ notes, voicing: vc, fallback });
+      }
+      inv = rotateUp(inv);
     }
   }
   return out;
