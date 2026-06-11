@@ -28,10 +28,20 @@ const T = {
   spread:  c => c.length < 3 ? [c] : [vsort(c.map((n, i) => i % 2 === 1 ? n + 12 : n))],
   house:   c => {
     if (c.length < 4) return [vsort(c)];                          // triade : pas de stab rootless -> close
-    const bass = c[0] - 12;                                       // fondamentale détachée au grave
-    let upper = c.slice(1);                                       // structure supérieure (rootless)
-    if (c.length >= 5) upper = upper.filter((n, i) => i !== 1);   // m9/maj9 : on lâche la quinte
-    return [vsort([bass, ...upper])];
+    var hm = n => ((n % 12) + 12) % 12;
+    var rootPc = hm(c[0]);
+    var upperPc = c.slice(1).map(hm);
+    if (c.length >= 5) upperPc = upperPc.filter((p, i) => i !== 1);  // m9/maj9 : on lâche la quinte
+    // Registres DÉCOUPLÉS : basse = fondamentale en C3..B3 ; cluster rootless dont
+    // le SOMMET est calé en zone brillante (~B4), comme un stab Rhodes.
+    var bass = 48 + rootPc;                                       // octave de basse "piano" (48-59)
+    var cluster = [], last = 47;
+    upperPc.forEach(function (pc) { var n = last + 1; n += hm(pc - hm(n)); cluster.push(n); last = n; });
+    var top = cluster[cluster.length - 1];
+    var sh = Math.round((71 - top) / 12) * 12;                    // sommet ~B4 (zone C4-C5)
+    cluster = cluster.map(function (n) { return n + sh; });
+    while (cluster[0] <= bass) cluster = cluster.map(function (n) { return n + 12; });
+    return [vsort([bass].concat(cluster))];
   },
   prog:    c => {
     if (c.length < 3) return [c];
