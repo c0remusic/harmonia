@@ -237,8 +237,8 @@ function voicing(v) {
 	pushConfigState();   // pas de rebuild grille : le voicing n'affecte pas les cellules
 }
 
-// Reçoit un index int (0-9) depuis live.menu
-var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3"];
+// Reçoit un index int (0-12) depuis live.menu
+var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3","jazz","nuhouse","trap"];
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
 	lockedVoicing = null;
