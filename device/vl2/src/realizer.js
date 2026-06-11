@@ -26,32 +26,34 @@ const T = {
   classic: c => [c],
   open:    c => c.length < 2 ? [c] : [vsort(c.map((n, i) => i === 1 ? n + 12 : n))],
   spread:  c => c.length < 3 ? [c] : [vsort(c.map((n, i) => i % 2 === 1 ? n + 12 : n))],
-  house:   c => {
-    if (c.length < 4) return [vsort(c)];                          // triade : pas de stab rootless -> close
+  house:   (c, oct) => {
+    if (c.length < 3) return [vsort(c)];                          // <3 notes : close (rare)
+    oct = oct || 0;                                               // décalage d'octave (commande OCTAVE)
     var hm = n => ((n % 12) + 12) % 12;
     var rootPc = hm(c[0]);
     var upperPc = c.slice(1).map(hm);
     if (c.length >= 5) upperPc = upperPc.filter((p, i) => i !== 1);  // m9/maj9 : on lâche la quinte
-    // Registres DÉCOUPLÉS : basse = fondamentale en C3..B3 ; cluster rootless dont
-    // le SOMMET est calé en zone brillante (~B4), comme un stab Rhodes.
-    var bass = 48 + rootPc;                                       // octave de basse "piano" (48-59)
-    var cluster = [], last = 47;
-    upperPc.forEach(function (pc) { var n = last + 1; n += hm(pc - hm(n)); cluster.push(n); last = n; });
-    var top = cluster[cluster.length - 1];
-    var sh = Math.round((71 - top) / 12) * 12;                    // sommet ~B4 (zone C4-C5)
-    cluster = cluster.map(function (n) { return n + sh; });
-    while (cluster[0] <= bass) cluster = cluster.map(function (n) { return n + 12; });
+    // Stab Rhodes : basse = fondamentale (jamais de sub-low) ; cluster rootless SERRÉ
+    // dans une octave fixe -> poche brillante constante, seule la basse bouge.
+    // Le tout suit la commande OCTAVE via `oct`.
+    var bass = 48 + oct + rootPc;                                 // octave de basse (défaut C3)
+    var floor = 60 + oct;                                         // base du cluster (défaut C4)
+    var cluster = upperPc.map(function (pc) { return floor + hm(pc); }) // chaque tension dans [floor,floor+11]
+      .sort(function (a, b) { return a - b; })
+      .filter(function (n, i, a) { return i === 0 || n !== a[i - 1]; }); // dédup de classe
     return [vsort([bass].concat(cluster))];
   },
-  prog:    c => {
+  prog:    (c, oct) => {
     if (c.length < 3) return [vsort(c)];
+    oct = oct || 0;                                               // décalage d'octave (commande OCTAVE)
     var pm = n => ((n % 12) + 12) % 12;
     var rootPc = pm(c[0]);
     var upperPc = c.slice(1).map(pm);                             // 3,5,(7,9) — structure PLEINE (5te gardée)
-    // Pad "grand" : basse C3..B3 + fondamentale doublée à l'octave (corps) + structure brillante au-dessus.
-    var bass = 48 + rootPc;                                       // octave de basse "piano" (pas de sub-low)
+    // Pad "grand" : basse + fondamentale doublée à l'octave (corps) + structure brillante
+    // au-dessus. Suit la commande OCTAVE via `oct`.
+    var bass = 48 + oct + rootPc;                                 // octave de basse (défaut C3, pas de sub-low)
     var rootOct = bass + 12;
-    var cl = [], last = Math.max(rootOct, 59);
+    var cl = [], last = Math.max(rootOct, 59 + oct);
     upperPc.forEach(function (pc) { var n = last + 1; n += pm(pc - pm(n)); cl.push(n); last = n; });
     return [vsort([bass, rootOct].concat(cl)).slice(0, 6)];
   },
@@ -106,6 +108,11 @@ export function realize(spec, voicing, opts = {}) {
   // voice leading — c'est ce qui permet de TENIR les notes communes.
   const rotateUp = arr => { const r = vsort(arr); r.push(r.shift() + 12); return vsort(r); };
 
+  // Décalage d'octave pour les gabarits ABSOLUTE : ils suivent la commande OCTAVE
+  // (transmise via `center`). Borné : un stab/pad ne doit jamais plonger en sub-bass
+  // (basse < C2 -> low-interval tue l'unique candidat = silence).
+  const octShift = Math.max(-12, Math.min(24, Math.round((center - 60) / 12) * 12));
+
   const seen = new Set(), out = [];
   for (let oct = -2; oct <= 2; oct++) {
     const base = 48 + oct * 12;
@@ -113,11 +120,13 @@ export function realize(spec, voicing, opts = {}) {
     let inv = closeFrom(spec, rootMidi);
     const nInv = ABSOLUTE.has(vc) ? 1 : spec.pcs.length;  // registre absolu -> pas d'inversions
     for (let k = 0; k < nInv; k++) {                       // toutes les inversions (sauf ABSOLUTE)
-      for (const shape of T[vc](inv)) {
+      for (const shape of T[vc](inv, octShift)) {
         let notes = (want != null && !STRUCT.has(vc)) ? stabilize(shape, spec, want) : vsort(shape).slice(0, 6);
         if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
         if (checkIdentity(vc, notes, spec).length) continue;
-        if (lowIntervalViolations(notes).length) continue;
+        // Low-interval : exigé pour les voicings à candidats multiples ; best-effort pour
+        // les ABSOLUTE (candidat unique -> ne jamais produire de silence aux octaves basses).
+        if (!ABSOLUTE.has(vc) && lowIntervalViolations(notes).length) continue;
         const key = notes.join(',');
         if (seen.has(key)) continue;
         seen.add(key);
