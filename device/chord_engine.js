@@ -1,11 +1,81 @@
-post("CHORD ENGINE v5 LOADED\n");
-
 autowatch = 1;
+
+// =====================================================
+// LOGGER FICHIER — tee de post() vers un fichier lisible hors Max.
+// Permet de relire la console Max depuis l'extérieur (outil dev).
+// Le fichier est remis à zéro à chaque (re)chargement du script.
+// Chemin: device/max_console.log (à côté de ce .js).
+// =====================================================
+var DBG_LOG = "C:/Users/LEETJ/Desktop/CHORD SELECTOR/device/max_console.log";
+var _origPost = post;
+(function _dbgInit(){
+	try {
+		var f = new File(DBG_LOG, "write");   // crée/tronque
+		if (f.isopen) {
+			f.writestring("=== chord_engine.js (re)chargé ===\n");
+			f.close();
+		}
+	} catch(e) { _origPost("dbg init err: " + e + "\n"); }
+})();
+post = function(){
+	var s = Array.prototype.slice.call(arguments).join(" ");
+	_origPost(s);                              // console Max normale
+	try {
+		var f = new File(DBG_LOG, "readwrite");  // append
+		if (f.isopen) { f.position = f.eof; f.writestring(s); f.close(); }
+	} catch(e) {}
+};
+
+post("CHORD ENGINE v5 LOADED\n");
 // outlet 0   = velocity (partagé, tire TOUJOURS en premier)
 // outlets 1..6 = pitch voix 1..6
 // outlet 7   = feedback UI → "active <fn> <degree>" → jsui chord_ui
 outlets = 8;
 inlets  = 2;  // inlet 0 = messages accord/config, inlet 1 = velocity
+
+// =====================================================
+// POLYFILLS ES5 — le moteur JS de Max n'a PAS Set/Map (ES6).
+// Le code vl2 (porté du bench Node) les utilise → on les fournit ici.
+// Clés internes préfixées par type pour éviter toute collision avec
+// les membres hérités d'Object.prototype (toString, constructor…).
+// =====================================================
+if (typeof Set === 'undefined') {
+	Set = function(arr){
+		this._k = {}; this._a = []; this.size = 0;
+		if (arr) for (var i = 0; i < arr.length; i++) this.add(arr[i]);
+	};
+	Set.prototype.add = function(v){
+		var k = (typeof v) + ':' + v;
+		if (!this._k[k]) { this._k[k] = true; this._a.push(v); this.size++; }
+		return this;
+	};
+	Set.prototype.has = function(v){ return !!this._k[(typeof v) + ':' + v]; };
+}
+if (typeof Map === 'undefined') {
+	Map = function(){ this._k = {}; this._order = []; this.size = 0; };
+	Map.prototype.has = function(k){ return !!this._k[(typeof k) + ':' + k]; };
+	Map.prototype.get = function(k){ var e = this._k[(typeof k) + ':' + k]; return e ? e.v : undefined; };
+	Map.prototype.set = function(k, v){
+		var mk = (typeof k) + ':' + k;
+		if (!this._k[mk]) { this._order.push(k); this.size++; }
+		this._k[mk] = { v: v };
+		return this;
+	};
+	Map.prototype['delete'] = function(k){
+		var mk = (typeof k) + ':' + k;
+		if (this._k[mk]) {
+			delete this._k[mk];
+			for (var i = 0; i < this._order.length; i++) if (this._order[i] === k) { this._order.splice(i, 1); break; }
+			this.size--; return true;
+		}
+		return false;
+	};
+	Map.prototype.clear = function(){ this._k = {}; this._order = []; this.size = 0; };
+	Map.prototype.keys = function(){
+		var a = this._order.slice(), i = 0;
+		return { next: function(){ return i < a.length ? { value: a[i++], done: false } : { value: undefined, done: true }; } };
+	};
+}
 
 var lastFn           = "triad";
 var lastDegree       = 0;
@@ -46,26 +116,32 @@ var lockedVoicing       = null;       // v1 : lock renversement sur accord rép�
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
 
-// jweb URL dynamique — portable, résolu depuis le filepath du patcher au chargement.
-// Utilise this.patcher.getnamed() avec les varnames posés dans le .amxd.
-(function() {
-	var t = new Task(function() {
-		try {
-			var fp = this.patcher.filepath.replace(/\\/g, '/');
+function loadbang() {
+	try {
+		var fp = this.patcher.filepath;
+		var url;
+		if (fp && fp.length > 0) {
+			fp = fp.replace(/\\/g, '/');
 			var dir = fp.substring(0, fp.lastIndexOf('/') + 1).replace(/ /g, '%20');
-			var url = 'file:///' + dir + 'ui/index.html';
-			var sw = this.patcher.getnamed('tuple_strip_jweb');
-			if (sw) sw.message('url', url);
-			var fvp = this.patcher.getnamed('tuple_fullview_patcher');
-			if (fvp) {
-				var sub = fvp.subpatcher();
-				if (sub) { var fw = sub.getnamed('tuple_full_jweb'); if (fw) fw.message('url', url + '?full'); }
+			url = 'file:///' + dir + 'ui/tuple_ui.html';
+		} else {
+			url = 'file:///C:/Users/LEETJ/Desktop/CHORD%20SELECTOR/device/ui/tuple_ui.html';
+			post('tuple: filepath vide, fallback url\n');
+		}
+		post('tuple: url=' + url + '\n');
+		var sw = this.patcher.getnamed('tuple_strip_jweb');
+		post('tuple: strip_jweb=' + (sw ? 'found' : 'null') + '\n');
+		if (sw) sw.message('url', url);
+		var fvp = this.patcher.getnamed('tuple_fullview_patcher');
+		if (fvp) {
+			var sub = fvp.subpatcher();
+			if (sub) {
+				var fw = sub.getnamed('tuple_full_jweb');
+				if (fw) fw.message('url', url + '?full');
 			}
-			post('tuple: jweb url -> ' + url + '\n');
-		} catch(e) { post('tuple: jweb url error: ' + e + '\n'); }
-	}, this);
-	t.schedule(200);
-}());
+		}
+	} catch(e) { post('tuple: loadbang error: ' + e + '\n'); }
+}
 
 // =====================================================
 // INLET 1 — velocity
@@ -1506,4 +1582,18 @@ function colorchord(semis, type) {
 // Diffusion initiale de la grille (différée le temps que l'UI charge)
 var gridInitTask = new Task(broadcastGrid, this);
 gridInitTask.schedule(700);
+
+// =====================================================
+// SELF-CHECK — confirme que les globals critiques sont initialisés.
+// Visible dans device/max_console.log après (re)chargement.
+// =====================================================
+(function _selfCheck(){
+	try {
+		var okSt = (typeof _vl2_st !== 'undefined' && _vl2_st && _vl2_st.recall);
+		post("tuple selfcheck: Set=" + (typeof Set !== 'undefined') +
+		     " Map=" + (typeof Map !== 'undefined') +
+		     " _vl2_st=" + (okSt ? "ok" : "KO") +
+		     " STRUCT=" + (typeof _vl2_STRUCT !== 'undefined') + "\n");
+	} catch(e) { post("tuple selfcheck ERROR: " + e + "\n"); }
+})();
 

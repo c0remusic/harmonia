@@ -15,6 +15,9 @@ push/
 *.bak*
 Capture.PNG
 
+# Max console tee (dev tool — chord_engine.js writes post() here)
+device/max_console.log
+
 # Screenshots/Media
 *.JPG
 *.PNG
