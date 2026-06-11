@@ -44,13 +44,16 @@ const T = {
     return [vsort([bass].concat(cluster))];
   },
   prog:    c => {
-    if (c.length < 3) return [c];
-    const r = [c[0] - 12, c[0]];
-    if (c.length >= 3) r.push(c[2]);
-    r.push(c[1] + 12);
-    for (let i = 3; i < c.length; i++) r.push(c[i] + 12);
-    if (c.length === 3) r.push(c[2] + 12);
-    return [vsort(r).slice(0, 6)];
+    if (c.length < 3) return [vsort(c)];
+    var pm = n => ((n % 12) + 12) % 12;
+    var rootPc = pm(c[0]);
+    var upperPc = c.slice(1).map(pm);                             // 3,5,(7,9) — structure PLEINE (5te gardée)
+    // Pad "grand" : basse C3..B3 + fondamentale doublée à l'octave (corps) + structure brillante au-dessus.
+    var bass = 48 + rootPc;                                       // octave de basse "piano" (pas de sub-low)
+    var rootOct = bass + 12;
+    var cl = [], last = Math.max(rootOct, 59);
+    upperPc.forEach(function (pc) { var n = last + 1; n += pm(pc - pm(n)); cl.push(n); last = n; });
+    return [vsort([bass, rootOct].concat(cl)).slice(0, 6)];
   },
   piano:     c => c.length < 3 ? [c] : [[c[0] - 12, ...c.slice(1)]],
   rootlessa: c => c.length < 3 ? [c] : [c.slice(1)],
@@ -63,7 +66,11 @@ const T = {
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; }
 };
 // Gabarits à structure stricte : jamais stabilisés (la stabilisation casserait l'invariant).
-const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house']);
+const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog']);
+// Gabarits à REGISTRE ABSOLU : la réalisation ignore l'octave/inversion d'entrée
+// (basse posée dans une octave fixe). On ne leur applique donc PAS d'inversions —
+// sinon on génère des candidats à mauvaise basse. Le voice leading se fait par le Selector.
+const ABSOLUTE = new Set(['house', 'prog']);
 
 // Doublures/omissions pour atteindre `target` voix (jamais la 3ce d'une dominante).
 function stabilize(notes, spec, target) {
@@ -104,7 +111,8 @@ export function realize(spec, voicing, opts = {}) {
     const base = 48 + oct * 12;
     const rootMidi = base + mod(spec.rootPc - mod(base));
     let inv = closeFrom(spec, rootMidi);
-    for (let k = 0; k < spec.pcs.length; k++) {            // toutes les inversions
+    const nInv = ABSOLUTE.has(vc) ? 1 : spec.pcs.length;  // registre absolu -> pas d'inversions
+    for (let k = 0; k < nInv; k++) {                       // toutes les inversions (sauf ABSOLUTE)
       for (const shape of T[vc](inv)) {
         let notes = (want != null && !STRUCT.has(vc)) ? stabilize(shape, spec, want) : vsort(shape).slice(0, 6);
         if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
