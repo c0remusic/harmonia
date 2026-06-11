@@ -9,6 +9,16 @@ const mod = n => ((n % 12) + 12) % 12;
 const ROLE_ORDER = ['root', 'sus', 'third', 'fifth', 'sixth', 'seventh', 'ninth'];
 const vsort = a => [...a].sort((x, y) => x - y);
 
+// Toutes les inversions d'un cluster (monte la note la plus basse d'une octave).
+// Indispensable au voice leading des voicings à fondamentale contrainte (rootless,
+// piano) : ils filtrent les inversions de la pile complète (la fondamentale y revient),
+// donc sans ça le Realizer ne sort que la position fondamentale -> transposition en bloc.
+const rotationsOf = arr => {
+  const out = []; let r = vsort(arr);
+  for (let i = 0; i < arr.length; i++) { out.push([...r]); r = vsort([...r.slice(1), r[0] + 12]); }
+  return out;
+};
+
 // Empile la spec en position serrée, fondamentale à rootMidi.
 export function closeFrom(spec, rootMidi) {
   const ordered = [...spec.pcs].sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role));
@@ -55,14 +65,20 @@ const T = {
     var rootOct = bass + 12;
     var cl = [], last = Math.max(rootOct, 59 + oct);
     upperPc.forEach(function (pc) { var n = last + 1; n += pm(pc - pm(n)); cl.push(n); last = n; });
-    return [vsort([bass, rootOct].concat(cl)).slice(0, 6)];
+    // Structure haute en TOUTES ses inversions -> le Selector voice-leade le haut du
+    // pad (basse + fondamentale doublée restent le corps fixe).
+    return rotationsOf(cl).map(function (up) { return vsort([bass, rootOct].concat(up)).slice(0, 6); });
   },
-  piano:     c => c.length < 3 ? [c] : [[c[0] - 12, ...c.slice(1)]],
-  rootlessa: c => c.length < 3 ? [c] : [c.slice(1)],
+  // piano : basse = fondamentale (octave grave), main droite = structure en toutes
+  // ses inversions -> le Selector peut TENIR les notes communes à la MD.
+  piano:     c => c.length < 3 ? [c] : rotationsOf(c.slice(1)).map(rh => [c[0] - 12, ...rh]),
+  // rootless : cluster sans fondamentale, en toutes ses inversions.
+  rootlessa: c => c.length < 3 ? [c] : rotationsOf(c.slice(1)),
   rootlessb: c => {
     if (c.length < 3) return [c];
     const u = c.slice(1), k = Math.ceil(u.length / 2);
-    return [vsort([...u.slice(k), ...u.slice(0, k).map(n => n + 12)])];
+    const spread = vsort([...u.slice(k), ...u.slice(0, k).map(n => n + 12)]);
+    return rotationsOf(spread);   // voicing rootless plus étalé, inversions incluses
   },
   drop2: c => { const r = vsort(c); r[r.length - 2] -= 12; return [vsort(r)]; },
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; }
