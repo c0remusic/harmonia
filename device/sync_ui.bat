@@ -1,10 +1,6 @@
 @echo off
-REM ── Sync UI : copie device/ui/index.html -> C:/TupleUI/index.html (jweb).
-REM    A lancer apres chaque edit de l'UI (jweb ne s'autowatch pas : rouvrir le device ensuite).
-copy /Y "%~dp0ui\index.html" "C:\TupleUI\index.html" >nul
-if %errorlevel%==0 (
-  echo UI synchronisee -> C:/TupleUI/index.html
-) else (
-  echo ECHEC de la copie — verifie que C:/TupleUI existe.
-)
+REM ── sync_ui.bat — OBSOLETE depuis 2026-06-11.
+REM    Le jweb charge directement depuis device/ui/index.html (URL patchee dans tuple.amxd).
+REM    Plus besoin de copier. Rouvrir simplement le device apres edition de device/ui/index.html.
+echo jweb charge directement depuis device/ui/index.html -- aucune copie necessaire.
 pause
