@@ -8,7 +8,7 @@ import { createEngine } from '../src/engine.js';
 import { checkIdentity } from '../src/identity.js';
 import { writeFileSync } from 'node:fs';
 
-const VOICINGS = ['classic', 'piano', 'open', 'spread', 'house', 'prog', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'jazz', 'nuhouse', 'trap'];
+const VOICINGS = ['classic', 'piano', 'open', 'spread', 'house', 'prog', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'jazz', 'nuhouse', 'trap', 'trance', 'funk'];
 const mean = ns => ns.reduce((a, b) => a + b, 0) / ns.length;
 
 let totalViol = 0, loopFails = 0, maxDrift = 0;

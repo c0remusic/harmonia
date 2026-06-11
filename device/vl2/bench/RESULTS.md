@@ -1,6 +1,6 @@
 # Banc vl2 — résultats
 
-Critères durs : violations d'identité = **0** (cible 0) · boucles instables = **0** (cible 0) · dérive FLOW max = **10.8** demi-tons (cible ≤ ~12).
+Critères durs : violations d'identité = **0** (cible 0) · boucles instables = **0** (cible 0) · dérive FLOW max = **11.3** demi-tons (cible ≤ ~12).
 
 Métriques par voicing × progression (move = mouvement total toutes voix ; sopMax = plus grand saut de soprano ; common% = notes tenues ; par = quintes/octaves parallèles).
 
@@ -16,15 +16,15 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **classic** / V7#9-I (harm. maj.→#9) : move=6 sopMax=1 common=33% par=0
 - **classic** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=33% par=0 | loop=true
 - **classic** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
-- **piano** / ii-V-I (C) : move=18 sopMax=2 common=25% par=0
-- **piano** / I-vi-IV-V (C) : move=27 sopMax=5 common=22% par=0
+- **piano** / ii-V-I (C) : move=20 sopMax=2 common=25% par=0
+- **piano** / I-vi-IV-V (C) : move=27 sopMax=4 common=22% par=0
 - **piano** / i-VII-VI (Am nat) : move=11 sopMax=2 common=0% par=0
-- **piano** / IV-iv-I (chromatique) : move=13 sopMax=1 common=33% par=0
-- **piano** / vamp Am7-D7 (loop) : move=77 sopMax=2 common=25% par=0 | loop=true
-- **piano** / chaine 12 accords : move=98 sopMax=4 common=23% par=0
-- **piano** / V7b9-I (harm. min.) : move=12 sopMax=1 common=0% par=0
-- **piano** / V7#9-I (harm. maj.→#9) : move=13 sopMax=2 common=0% par=0
-- **piano** / sus + m7#5 vamp (loop) : move=21 sopMax=1 common=33% par=0 | loop=true
+- **piano** / IV-iv-I (chromatique) : move=11 sopMax=1 common=33% par=0
+- **piano** / vamp Am7-D7 (loop) : move=91 sopMax=1 common=25% par=0 | loop=true
+- **piano** / chaine 12 accords : move=96 sopMax=2 common=23% par=2
+- **piano** / V7b9-I (harm. min.) : move=10 sopMax=1 common=0% par=0
+- **piano** / V7#9-I (harm. maj.→#9) : move=11 sopMax=2 common=0% par=0
+- **piano** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=33% par=0 | loop=true
 - **piano** / bVII-IV-I (empruntés) : move=24 sopMax=4 common=0% par=0
 - **open** / ii-V-I (C) : move=6 sopMax=2 common=50% par=0
 - **open** / I-vi-IV-V (C) : move=9 sopMax=2 common=44% par=0
@@ -46,26 +46,26 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **spread** / V7#9-I (harm. maj.→#9) : move=7 sopMax=5 common=33% par=0
 - **spread** / sus + m7#5 vamp (loop) : move=21 sopMax=2 common=33% par=0 | loop=true
 - **spread** / bVII-IV-I (empruntés) : move=6 sopMax=2 common=33% par=0
-- **house** / ii-V-I (C) : move=20 sopMax=2 common=25% par=0
-- **house** / I-vi-IV-V (C) : move=31 sopMax=5 common=22% par=1
-- **house** / i-VII-VI (Am nat) : move=19 sopMax=2 common=0% par=0
-- **house** / IV-iv-I (chromatique) : move=11 sopMax=1 common=33% par=0
-- **house** / vamp Am7-D7 (loop) : move=77 sopMax=2 common=25% par=0 | loop=true
-- **house** / chaine 12 accords : move=104 sopMax=4 common=23% par=2
-- **house** / V7b9-I (harm. min.) : move=10 sopMax=1 common=0% par=0
-- **house** / V7#9-I (harm. maj.→#9) : move=10 sopMax=2 common=0% par=0
-- **house** / sus + m7#5 vamp (loop) : move=77 sopMax=4 common=33% par=0 | loop=true
-- **house** / bVII-IV-I (empruntés) : move=22 sopMax=4 common=0% par=0
-- **prog** / ii-V-I (C) : move=48 sopMax=5 common=20% par=2
-- **prog** / I-vi-IV-V (C) : move=58 sopMax=9 common=17% par=3
-- **prog** / i-VII-VI (Am nat) : move=49 sopMax=10 common=0% par=2
-- **prog** / IV-iv-I (chromatique) : move=16 sopMax=4 common=38% par=1
-- **prog** / vamp Am7-D7 (loop) : move=154 sopMax=1 common=40% par=7 | loop=true
-- **prog** / chaine 12 accords : move=184 sopMax=5 common=20% par=11
-- **prog** / V7b9-I (harm. min.) : move=19 sopMax=1 common=25% par=1
-- **prog** / V7#9-I (harm. maj.→#9) : move=20 sopMax=2 common=25% par=1
-- **prog** / sus + m7#5 vamp (loop) : move=21 sopMax=1 common=50% par=0 | loop=true
-- **prog** / bVII-IV-I (empruntés) : move=36 sopMax=5 common=0% par=3
+- **house** / ii-V-I (C) : move=8 sopMax=2 common=33% par=0
+- **house** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
+- **house** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
+- **house** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
+- **house** / vamp Am7-D7 (loop) : move=28 sopMax=2 common=33% par=0 | loop=true
+- **house** / chaine 12 accords : move=48 sopMax=1 common=30% par=0
+- **house** / V7b9-I (harm. min.) : move=4 sopMax=1 common=0% par=0
+- **house** / V7#9-I (harm. maj.→#9) : move=4 sopMax=1 common=0% par=0
+- **house** / sus + m7#5 vamp (loop) : move=147 sopMax=8 common=0% par=0 | loop=true
+- **house** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
+- **prog** / ii-V-I (C) : move=60 sopMax=7 common=30% par=0
+- **prog** / I-vi-IV-V (C) : move=58 sopMax=9 common=25% par=0
+- **prog** / i-VII-VI (Am nat) : move=49 sopMax=10 common=0% par=0
+- **prog** / IV-iv-I (chromatique) : move=20 sopMax=5 common=50% par=0
+- **prog** / vamp Am7-D7 (loop) : move=238 sopMax=7 common=40% par=0 | loop=true
+- **prog** / chaine 12 accords : move=242 sopMax=7 common=33% par=0
+- **prog** / V7b9-I (harm. min.) : move=27 sopMax=5 common=25% par=0
+- **prog** / V7#9-I (harm. maj.→#9) : move=26 sopMax=5 common=25% par=0
+- **prog** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=50% par=0 | loop=true
+- **prog** / bVII-IV-I (empruntés) : move=40 sopMax=5 common=25% par=0
 - **rootlessa** / ii-V-I (C) : move=12 sopMax=1 common=33% par=0
 - **rootlessa** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
 - **rootlessa** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
@@ -116,23 +116,43 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **jazz** / V7#9-I (harm. maj.→#9) : move=5 sopMax=2 common=0% par=0
 - **jazz** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=0% par=0 | loop=true
 - **jazz** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
-- **nuhouse** / ii-V-I (C) : move=36 sopMax=6 common=0% par=0
+- **nuhouse** / ii-V-I (C) : move=8 sopMax=2 common=33% par=0
 - **nuhouse** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
 - **nuhouse** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
 - **nuhouse** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
-- **nuhouse** / vamp Am7-D7 (loop) : move=126 sopMax=7 common=0% par=0 | loop=true
-- **nuhouse** / chaine 12 accords : move=178 sopMax=9 common=3% par=0
-- **nuhouse** / V7b9-I (harm. min.) : move=12 sopMax=10 common=0% par=0
-- **nuhouse** / V7#9-I (harm. maj.→#9) : move=19 sopMax=1 common=0% par=0
-- **nuhouse** / sus + m7#5 vamp (loop) : move=91 sopMax=10 common=0% par=0 | loop=true
+- **nuhouse** / vamp Am7-D7 (loop) : move=28 sopMax=2 common=33% par=0 | loop=true
+- **nuhouse** / chaine 12 accords : move=54 sopMax=3 common=24% par=0
+- **nuhouse** / V7b9-I (harm. min.) : move=3 sopMax=1 common=0% par=0
+- **nuhouse** / V7#9-I (harm. maj.→#9) : move=5 sopMax=1 common=0% par=0
+- **nuhouse** / sus + m7#5 vamp (loop) : move=231 sopMax=15 common=0% par=0 | loop=true
 - **nuhouse** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
-- **trap** / ii-V-I (C) : move=36 sopMax=5 common=13% par=0
-- **trap** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
-- **trap** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
-- **trap** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
-- **trap** / vamp Am7-D7 (loop) : move=161 sopMax=5 common=0% par=0 | loop=true
-- **trap** / chaine 12 accords : move=112 sopMax=5 common=20% par=0
-- **trap** / V7b9-I (harm. min.) : move=29 sopMax=5 common=0% par=0
-- **trap** / V7#9-I (harm. maj.→#9) : move=30 sopMax=5 common=0% par=0
-- **trap** / sus + m7#5 vamp (loop) : move=231 sopMax=8 common=0% par=0 | loop=true
-- **trap** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
+- **trap** / ii-V-I (C) : move=48 sopMax=6 common=25% par=0
+- **trap** / I-vi-IV-V (C) : move=43 sopMax=9 common=22% par=0
+- **trap** / i-VII-VI (Am nat) : move=37 sopMax=10 common=0% par=0
+- **trap** / IV-iv-I (chromatique) : move=15 sopMax=5 common=33% par=0
+- **trap** / vamp Am7-D7 (loop) : move=189 sopMax=7 common=50% par=0 | loop=true
+- **trap** / chaine 12 accords : move=192 sopMax=7 common=27% par=0
+- **trap** / V7b9-I (harm. min.) : move=25 sopMax=10 common=33% par=0
+- **trap** / V7#9-I (harm. maj.→#9) : move=24 sopMax=10 common=33% par=0
+- **trap** / sus + m7#5 vamp (loop) : move=21 sopMax=1 common=33% par=0 | loop=true
+- **trap** / bVII-IV-I (empruntés) : move=30 sopMax=5 common=0% par=0
+- **trance** / ii-V-I (C) : move=48 sopMax=7 common=13% par=0
+- **trance** / I-vi-IV-V (C) : move=58 sopMax=9 common=25% par=0
+- **trance** / i-VII-VI (Am nat) : move=49 sopMax=10 common=0% par=0
+- **trance** / IV-iv-I (chromatique) : move=20 sopMax=5 common=50% par=0
+- **trance** / vamp Am7-D7 (loop) : move=189 sopMax=7 common=25% par=0 | loop=true
+- **trance** / chaine 12 accords : move=192 sopMax=7 common=18% par=5
+- **trance** / V7b9-I (harm. min.) : move=32 sopMax=7 common=25% par=0
+- **trance** / V7#9-I (harm. maj.→#9) : move=31 sopMax=7 common=25% par=0
+- **trance** / sus + m7#5 vamp (loop) : move=35 sopMax=0 common=50% par=0 | loop=true
+- **trance** / bVII-IV-I (empruntés) : move=40 sopMax=5 common=25% par=0
+- **funk** / ii-V-I (C) : move=12 sopMax=3 common=25% par=0
+- **funk** / I-vi-IV-V (C) : move=9 sopMax=2 common=44% par=0
+- **funk** / i-VII-VI (Am nat) : move=13 sopMax=2 common=0% par=1
+- **funk** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
+- **funk** / vamp Am7-D7 (loop) : move=21 sopMax=2 common=50% par=0 | loop=true
+- **funk** / chaine 12 accords : move=50 sopMax=3 common=39% par=0
+- **funk** / V7b9-I (harm. min.) : move=9 sopMax=7 common=33% par=0
+- **funk** / V7#9-I (harm. maj.→#9) : move=9 sopMax=7 common=33% par=0
+- **funk** / sus + m7#5 vamp (loop) : move=105 sopMax=9 common=0% par=0 | loop=true
+- **funk** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0

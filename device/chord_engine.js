@@ -335,7 +335,7 @@ function voicing(v) {
 }
 
 // Reçoit un index int (0-12) depuis live.menu
-var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3","jazz","nuhouse","trap"];
+var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3","jazz","nuhouse","trap","trance","funk"];
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
 	lockedVoicing = null;
@@ -1087,8 +1087,8 @@ function _vl2_checkIdentity(voicing, notes, spec) {
 		var hasThird = false; for(var i=0;i<spec.pcs.length;i++) if(spec.pcs[i].role==='third'){hasThird=true;break;}
 		if (hasThird && !has('third')) v.push('guide:3ce absente');
 	}
-	if (voicing==='rootlessa'||voicing==='rootlessb'||voicing==='jazz'||voicing==='nuhouse') { if (pcs.has(spec.rootPc)) v.push('rootless:fondamentale présente'); }
-	else if (voicing==='trap') { if(m(ns[0])!==spec.rootPc)v.push('trap:basse ≠ fondamentale'); if(ns.filter(function(n){return m(n)===spec.rootPc;}).length>1)v.push('trap:fondamentale doublée'); }
+	if (voicing==='rootlessa'||voicing==='rootlessb'||voicing==='jazz'||voicing==='nuhouse'||voicing==='house') { if (pcs.has(spec.rootPc)) v.push('rootless:fondamentale présente'); }
+	else if (voicing==='trap') { if(m(ns[0])!==spec.rootPc)v.push('trap:basse ≠ fondamentale'); }
 	else if (voicing==='drop2'||voicing==='drop3') {
 		if (ns.length < 4) { v.push('dropN:<4 voix'); }
 		else {
@@ -1102,17 +1102,11 @@ function _vl2_checkIdentity(voicing, notes, spec) {
 			}
 		}
 	}
-	else if (voicing==='house') {
-		if (m(ns[0])!==spec.rootPc) v.push('house:basse ≠ fondamentale');
-		var cnt=0; for(var i=0;i<ns.length;i++) if(m(ns[i])===spec.rootPc) cnt++;
-		if (cnt>1) v.push('house:fondamentale doublée');
-	}
 	else if (voicing==='piano') {
 		if (m(ns[0])!==spec.rootPc) v.push('piano:basse ≠ fondamentale');
 		var rh=ns.slice(1);
 		if (rh.length && Math.max.apply(null,rh)-Math.min.apply(null,rh)>12) v.push('piano:MD > 1 octave');
 	}
-	else if (voicing==='prog') { if (ns.length>=2&&ns[1]-ns[0]<7) v.push('prog:basse non détachée'); }
 	return v;
 }
 
@@ -1168,29 +1162,39 @@ function _vl2_closeFrom(spec,rootMidi){
 	for(var i=1;i<ord.length;i++){var n=last+1;n+=_vl2_m(ord[i].pc-_vl2_m(n));out.push(n);last=n;}
 	return out;
 }
-var _vl2_STRUCT=new Set(['piano','rootlessa','rootlessb','drop2','drop3','house','prog','jazz','nuhouse','trap']);
-var _vl2_ABSOLUTE=new Set(['house','prog','jazz','nuhouse','trap']);
+var _vl2_STRUCT=new Set(['piano','rootlessa','rootlessb','drop2','drop3','house','prog','jazz','nuhouse','trap','trance','funk']);
+var _vl2_ABSOLUTE=new Set(['house','prog','jazz','nuhouse','trap','trance','funk']);
 var _vl2_T={
 	classic:function(c){return[c];},
 	open:function(c){return c.length<2?[c]:[_vl2_vs(c.map(function(n,i){return i===1?n+12:n;}))];},
 	spread:function(c){return c.length<3?[c]:[_vl2_vs(c.map(function(n,i){return i%2===1?n+12:n;}))];},
+	// house : stab deep-house ROOTLESS (basse jouée à part), cluster serré verrouillé C4.
 	house:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
-		var hm=function(n){return((n%12)+12)%12;},rootPc=hm(c[0]),upperPc=c.slice(1).map(hm);
-		if(c.length>=5)upperPc=upperPc.filter(function(p,i){return i!==1;});
-		var bass=48+oct+rootPc,floor=60+oct;
-		var cluster=upperPc.map(function(pc){return floor+hm(pc);}).sort(function(a,b){return a-b;})
+		var hm=function(n){return((n%12)+12)%12;},pcs=c.slice(1).map(hm);
+		if(c.length>=5)pcs=pcs.filter(function(p,i){return i!==1;});
+		var floor=60+oct;
+		var cluster=pcs.map(function(pc){return floor+hm(pc);}).sort(function(a,b){return a-b;})
 			.filter(function(n,i,a){return i===0||n!==a[i-1];});
-		return[_vl2_vs([bass].concat(cluster))];
+		return _vl2_rotOf(_vl2_vs(cluster));
 	},
+	// prog : pad root-inclus, structure pleine + fonda doublée à l'octave, ~1 octave, suit OCT.
 	prog:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
 		var pm=function(n){return((n%12)+12)%12;},rootPc=pm(c[0]),upperPc=c.slice(1).map(pm);
-		var bass=48+oct+rootPc,rootOct=bass+12,cl=[],last=Math.max(rootOct,59+oct);
-		for(var i=0;i<upperPc.length;i++){var n=last+1;n+=pm(upperPc[i]-pm(n));cl.push(n);last=n;}
-		return _vl2_rotOf(cl).map(function(up){return _vl2_vs([bass,rootOct].concat(up)).slice(0,6);});
+		var root=48+oct+rootPc,cl=[root],cur=root,i,n;
+		for(i=0;i<upperPc.length;i++){n=cur+1+pm(upperPc[i]-pm(cur+1));cl.push(n);cur=n;}
+		cl.push(root+12);
+		return[_vl2_vs(cl).slice(0,6)];
 	},
-	piano:function(c){return c.length<3?[c]:_vl2_rotOf(c.slice(1)).map(function(rh){return[c[0]-12].concat(rh);});},
+	piano:function(c){
+		if(c.length<3)return[c];
+		var pm=function(n){return((n%12)+12)%12;},rootPc=pm(c[0]);
+		return _vl2_rotOf(c.slice(1)).map(function(rh){
+			var lo=Math.min.apply(null,rh),d=pm(rootPc-pm(lo-12));if(d>6)d-=12;
+			return[lo-12+d].concat(rh);  // basse ~1 octave sous la MD
+		});
+	},
 	rootlessa:function(c){return c.length<3?[c]:_vl2_rotOf(c.slice(1));},
 	rootlessb:function(c){
 		if(c.length<3)return[c];
@@ -1200,25 +1204,23 @@ var _vl2_T={
 	},
 	drop2:function(c){var r=_vl2_vs(c);r[r.length-2]-=12;return[_vl2_vs(r)];},
 	drop3:function(c){var r=_vl2_vs(c);r[r.length-3]-=12;return[_vl2_vs(r)];},
+	// trap : accord grave serré root-inclus verrouillé C3 (dark) ; la sub-808 jouée à part.
 	trap:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
-		var pm=function(n){return((n%12)+12)%12;};
-		var rootPc=pm(c[0]),upperPc=c.slice(1).map(pm);
+		var pm=function(n){return((n%12)+12)%12;},rootPc=pm(c[0]),upperPc=c.slice(1).map(pm);
 		if(upperPc.length>=4)upperPc=upperPc.filter(function(_,i){return i!==1;});
-		var bass=36+oct+rootPc,floor=60+oct,cluster=[],cur=floor,i,n;
-		for(i=0;i<upperPc.length;i++){n=cur+pm(upperPc[i]-pm(cur));if(cluster.length&&n<=cluster[cluster.length-1])n+=12;cluster.push(n);cur=n;}
-		return _vl2_rotOf(cluster).map(function(rc){return _vl2_vs([bass].concat(rc));});
+		var root=48+oct+rootPc,cl=[root],cur=root,i,n;
+		for(i=0;i<upperPc.length;i++){n=cur+1+pm(upperPc[i]-pm(cur+1));cl.push(n);cur=n;}
+		return[_vl2_vs(cl)];
 	},
+	// nuhouse : rootless OUVERT aéré (2e voix +octave), 1 main, verrouillé C4, suit OCT.
 	nuhouse:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
-		var pm=function(n){return((n%12)+12)%12;};
-		var pcs=c.slice(1).map(pm),half=Math.ceil(pcs.length/2);
-		var low=[],high=[],cur=48+oct,i,n;
-		for(i=0;i<half;i++){n=cur+pm(pcs[i]-pm(cur));if(low.length&&n<=low[low.length-1])n+=12;low.push(n);cur=n;}
-		cur=72+oct;
-		for(i=half;i<pcs.length;i++){n=cur+pm(pcs[i]-pm(cur));if(high.length&&n<=high[high.length-1])n+=12;high.push(n);cur=n;}
-		var shape=_vl2_vs(low.concat(high));
-		return[-1,0,1].map(function(o){return _vl2_vs(shape.map(function(n){return n+o*12;}));});
+		var pm=function(n){return((n%12)+12)%12;},pcs=c.slice(1).map(pm),floor=60+oct;
+		var cl=pcs.map(function(pc){return floor+pm(pc);}).sort(function(a,b){return a-b;})
+			.filter(function(n,i,a){return i===0||n!==a[i-1];});
+		if(cl.length>=2)cl[1]+=12;
+		return[_vl2_vs(cl)];
 	},
 	jazz:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
@@ -1230,6 +1232,26 @@ var _vl2_T={
 			cluster.push(n);cur=n;
 		}
 		return _vl2_rotOf(_vl2_vs(cluster));
+	},
+	// trance : anthem 1 main — fonda + 3ce (+7e) + fonda doublée à l'octave au sommet ;
+	// lâche la 5te sur les 7e (son power). Root-inclus, centré, suit OCT.
+	trance:function(c,oct){
+		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
+		var pm=function(n){return((n%12)+12)%12;},rootPc=pm(c[0]),upperPc=c.slice(1).map(pm);
+		if(upperPc.length>=3)upperPc=upperPc.filter(function(_,i){return i!==1;});
+		var root=48+oct+rootPc,cl=[root],cur=root,i,n;
+		for(i=0;i<upperPc.length;i++){n=cur+1+pm(upperPc[i]-pm(cur+1));cl.push(n);cur=n;}
+		cl.push(root+12);
+		return[_vl2_vs(cl).slice(0,6)];
+	},
+	// funk : grip "10e" root-inclus — accord mappé en C4, 2e voix (3ce) montée d'une octave. 1 main.
+	funk:function(c,oct){
+		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
+		var pm=function(n){return((n%12)+12)%12;},floor=60+oct;
+		var notes=c.map(function(n){return floor+pm(n);}).sort(function(a,b){return a-b;})
+			.filter(function(n,i,a){return i===0||n!==a[i-1];});
+		if(notes.length>=2)notes[1]+=12;
+		return[_vl2_vs(notes)];
 	}
 };
 function _vl2_stabilize(notes,spec,target){
@@ -1256,7 +1278,7 @@ function _vl2_realize(spec,voicing,opts){
 	var center=(opts&&opts.center!=null)?opts.center:60;
 	var want=(opts&&opts.targetVoices!=null)?opts.targetVoices:null;
 	var vc=voicing,fallback=null;
-	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='trap')&&!spec.hasSeventh){fallback=vc;vc='classic';}
+	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
 	var rotUp=function(arr){var r=_vl2_vs(arr);r.push(r.shift()+12);return _vl2_vs(r);};
@@ -1304,7 +1326,7 @@ var _vl2_W_jazz={
 	tendency:-5,chromatic:-5,
 	crossing:12
 };
-var _vl2_JAZZ_VC={rootlessa:1,rootlessb:1,drop2:1,drop3:1,prog:1,house:1,jazz:1,nuhouse:1,trap:1};
+var _vl2_JAZZ_VC={rootlessa:1,rootlessb:1,drop2:1,drop3:1,house:1,jazz:1,nuhouse:1};
 function _vl2_pickW(vc){return _vl2_JAZZ_VC[vc]?_vl2_W_jazz:_vl2_W;}
 function _vl2_movCost(prev,cand,w){
 	if(!w)w=_vl2_W;

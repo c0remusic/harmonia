@@ -36,42 +36,47 @@ const T = {
   classic: c => [c],
   open:    c => c.length < 2 ? [c] : [vsort(c.map((n, i) => i === 1 ? n + 12 : n))],
   spread:  c => c.length < 3 ? [c] : [vsort(c.map((n, i) => i % 2 === 1 ? n + 12 : n))],
+  // house : stab deep-house ROOTLESS (la basse joue la fonda à part). Cluster serré
+  // brillant verrouillé dans l'octave C4 ; toutes les rotations pour le VL. 1 main.
   house:   (c, oct) => {
-    if (c.length < 3) return [vsort(c)];                          // <3 notes : close (rare)
-    oct = oct || 0;                                               // décalage d'octave (commande OCTAVE)
+    if (c.length < 3) return [vsort(c)];
+    oct = oct || 0;
     var hm = n => ((n % 12) + 12) % 12;
-    var rootPc = hm(c[0]);
-    var upperPc = c.slice(1).map(hm);
-    if (c.length >= 5) upperPc = upperPc.filter((p, i) => i !== 1);  // m9/maj9 : on lâche la quinte
-    // Stab Rhodes : basse = fondamentale (jamais de sub-low) ; cluster rootless SERRÉ
-    // dans une octave fixe -> poche brillante constante, seule la basse bouge.
-    // Le tout suit la commande OCTAVE via `oct`.
-    var bass = 48 + oct + rootPc;                                 // octave de basse (défaut C3)
-    var floor = 60 + oct;                                         // base du cluster (défaut C4)
-    var cluster = upperPc.map(function (pc) { return floor + hm(pc); }) // chaque tension dans [floor,floor+11]
+    var pcs = c.slice(1).map(hm);                                 // rootless
+    if (c.length >= 5) pcs = pcs.filter((p, i) => i !== 1);       // 9th+ : lâche la quinte
+    var floor = 60 + oct;                                         // verrouillé C4
+    var cluster = pcs.map(function (pc) { return floor + hm(pc); })
       .sort(function (a, b) { return a - b; })
-      .filter(function (n, i, a) { return i === 0 || n !== a[i - 1]; }); // dédup de classe
-    return [vsort([bass].concat(cluster))];
+      .filter(function (n, i, a) { return i === 0 || n !== a[i - 1]; });
+    return rotationsOf(vsort(cluster));
   },
+  // prog : pad root-inclus, structure PLEINE + fondamentale doublée à l'octave au-dessus
+  // (corps de pad), serré sur ~1 octave. Suit la commande OCTAVE. La tonique reste
+  // dans le registre de l'accord (pas de basse séparée).
   prog:    (c, oct) => {
     if (c.length < 3) return [vsort(c)];
-    oct = oct || 0;                                               // décalage d'octave (commande OCTAVE)
+    oct = oct || 0;
     var pm = n => ((n % 12) + 12) % 12;
     var rootPc = pm(c[0]);
-    var upperPc = c.slice(1).map(pm);                             // 3,5,(7,9) — structure PLEINE (5te gardée)
-    // Pad "grand" : basse + fondamentale doublée à l'octave (corps) + structure brillante
-    // au-dessus. Suit la commande OCTAVE via `oct`.
-    var bass = 48 + oct + rootPc;                                 // octave de basse (défaut C3, pas de sub-low)
-    var rootOct = bass + 12;
-    var cl = [], last = Math.max(rootOct, 59 + oct);
-    upperPc.forEach(function (pc) { var n = last + 1; n += pm(pc - pm(n)); cl.push(n); last = n; });
-    // Structure haute en TOUTES ses inversions -> le Selector voice-leade le haut du
-    // pad (basse + fondamentale doublée restent le corps fixe).
-    return rotationsOf(cl).map(function (up) { return vsort([bass, rootOct].concat(up)).slice(0, 6); });
+    var upperPc = c.slice(1).map(pm);
+    var root = 48 + oct + rootPc;                                 // fonda C3, l'octave au sommet recentre
+    var cl = [root], cur = root;
+    upperPc.forEach(function (pc) { var n = cur + 1 + pm(pc - pm(cur + 1)); cl.push(n); cur = n; });
+    cl.push(root + 12);                                           // fonda doublée à l'octave
+    return [vsort(cl).slice(0, 6)];
   },
-  // piano : basse = fondamentale (octave grave), main droite = structure en toutes
-  // ses inversions -> le Selector peut TENIR les notes communes à la MD.
-  piano:     c => c.length < 3 ? [c] : rotationsOf(c.slice(1)).map(rh => [c[0] - 12, ...rh]),
+  // piano : main droite = structure en toutes ses inversions ; basse = fondamentale
+  // ~1 octave SOUS la main droite (couplée à son registre, jamais 2 octaves dessous).
+  piano:     c => {
+    if (c.length < 3) return [c];
+    const pm = n => ((n % 12) + 12) % 12;
+    const rootPc = pm(c[0]);
+    return rotationsOf(c.slice(1)).map(rh => {
+      const lo = Math.min(...rh);
+      let d = pm(rootPc - pm(lo - 12)); if (d > 6) d -= 12;   // fonda la plus proche de (lo−12)
+      return [lo - 12 + d, ...rh];
+    });
+  },
   // rootless : cluster sans fondamentale, en toutes ses inversions.
   rootlessa: c => c.length < 3 ? [c] : rotationsOf(c.slice(1)),
   rootlessb: c => {
@@ -86,52 +91,33 @@ const T = {
   },
   drop2: c => { const r = vsort(c); r[r.length - 2] -= 12; return [vsort(r)]; },
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; },
-  // trap : basse sub-grave (C2+oct) + cluster rootless haut (C4+oct).
-  // Gap de ~2 octaves — rien au milieu. Rotations du cluster (basse fixe) pour VL.
-  // Registre FIXE (ABSOLUTE). Fallback classic si !hasSeventh.
+  // trap : accord GRAVE serré, root-inclus, verrouillé en C3 (son dark/lourd). La
+  // sub-basse 808 est jouée par l'instrument de basse à part — ici, accord cohérent
+  // en position fondamentale, serré sur ~1 octave. Suit la commande OCTAVE.
   trap: (c, oct) => {
     if (c.length < 3) return [vsort(c)];
     const pm = n => ((n % 12) + 12) % 12;
     oct = oct || 0;
     const rootPc = pm(c[0]);
     let upperPc = c.slice(1).map(pm);
-    if (upperPc.length >= 4) upperPc = upperPc.filter((_, i) => i !== 1);  // drop quinte
-    const bass = 36 + oct + rootPc;   // C2+oct zone
-    const floor = 60 + oct;           // C4+oct zone
-    const cluster = [];
-    let cur = floor;
-    for (const pc of upperPc) {
-      let n = cur + pm(pc - pm(cur));
-      if (cluster.length && n <= cluster[cluster.length - 1]) n += 12;
-      cluster.push(n); cur = n;
-    }
-    return rotationsOf(cluster).map(rc => vsort([bass, ...rc]));
+    if (upperPc.length >= 4) upperPc = upperPc.filter((_, i) => i !== 1);  // 9th+ : lâche la 5te
+    const root = 48 + oct + rootPc;   // C3 (grave, dark)
+    const cl = [root]; let cur = root;
+    for (const pc of upperPc) { let n = cur + 1 + pm(pc - pm(cur + 1)); cl.push(n); cur = n; }
+    return [vsort(cl)];
   },
-  // nuhouse : voicing splitté (Naked Music / nu-house). Cluster rootless en DEUX
-  // groupes séparés par ~2 octaves : guide tones en C3 (grave, chaleureux) +
-  // extensions en C5 (aérien, brillant). 3 positions de registre pour VL.
-  // Registre FIXE (ABSOLUTE) ; fallback classic si !hasSeventh.
+  // nuhouse : voicing rootless OUVERT et aéré (nu-house). Cluster rootless en C4, une
+  // voix sur deux montée d'une octave → écartement aéré (≠ stab serré de house), mais
+  // jouable d'une main (plus de split 2 octaves). Suit la commande OCTAVE.
   nuhouse: (c, oct) => {
     if (c.length < 3) return [vsort(c)];
     const pm = n => ((n % 12) + 12) % 12;
     oct = oct || 0;
     const pcs = c.slice(1).map(pm);
-    const half = Math.ceil(pcs.length / 2);
-    const low = [], high = [];
-    let cur = 48 + oct;
-    for (let i = 0; i < half; i++) {
-      let n = cur + pm(pcs[i] - pm(cur));
-      if (low.length && n <= low[low.length - 1]) n += 12;
-      low.push(n); cur = n;
-    }
-    cur = 72 + oct;
-    for (let i = half; i < pcs.length; i++) {
-      let n = cur + pm(pcs[i] - pm(cur));
-      if (high.length && n <= high[high.length - 1]) n += 12;
-      high.push(n); cur = n;
-    }
-    const shape = vsort([...low, ...high]);
-    return [-1, 0, 1].map(o => vsort(shape.map(n => n + o * 12)));
+    const floor = 60 + oct;
+    let cl = pcs.map(pc => floor + pm(pc)).sort((a, b) => a - b).filter((n, i, a) => i === 0 || n !== a[i - 1]);
+    if (cl.length >= 2) cl[1] += 12;   // aéré : 2e voix montée d'une octave (reste 1 main)
+    return [vsort(cl)];
   },
   // jazz : cluster rootless ancré en C3+oct (zone comping LH jazz/électro).
   // Pas de fondamentale. Toutes les rotations pour le voice leading.
@@ -152,14 +138,45 @@ const T = {
       cur = n;
     }
     return rotationsOf(vsort(cluster));
+  },
+  // trance : anthème supersaw. Basse fondamentale (C3) + fondamentale doublée à
+  // l'octave (corps), structure ouverte au-dessus, fondamentale RE-doublée tout en
+  // haut (octave iconique brillante). Root-full, suit la commande OCTAVE. ABSOLUTE.
+  // trance : grip ANTHEM 1 main — fondamentale + 3ce (+ 7e si présente) + fondamentale
+  // doublée à l'octave au sommet (l'octave brillante iconique). Lâche la 5te sur les
+  // accords de 7e (son "power" supersaw). Root-inclus, centré, suit la commande OCTAVE.
+  trance: (c, oct) => {
+    if (c.length < 3) return [vsort(c)];
+    oct = oct || 0;
+    const pm = n => ((n % 12) + 12) % 12;
+    const rootPc = pm(c[0]);
+    let upperPc = c.slice(1).map(pm);
+    if (upperPc.length >= 3) upperPc = upperPc.filter((_, i) => i !== 1);  // 7e+ : lâche la 5te
+    const root = 48 + oct + rootPc;                             // fonda C3, l'octave au sommet recentre
+    const cl = [root]; let cur = root;
+    upperPc.forEach(pc => { let n = cur + 1 + pm(pc - pm(cur + 1)); cl.push(n); cur = n; });
+    cl.push(root + 12);                                          // octave de fonda au sommet
+    return [vsort(cl).slice(0, 6)];
+  },
+  // funk : grip "10e" root-inclus (soul/funk, Rhodes). Accord mappé dans l'octave C4
+  // puis la 2e voix (la 3ce) montée d'une octave → la dixième caractéristique. 1 main,
+  // tonique dans le registre. Suit la commande OCTAVE.
+  funk: (c, oct) => {
+    if (c.length < 3) return [vsort(c)];
+    oct = oct || 0;
+    const pm = n => ((n % 12) + 12) % 12;
+    const floor = 60 + oct;
+    let notes = c.map(n => floor + pm(n)).sort((a, b) => a - b).filter((n, i, a) => i === 0 || n !== a[i - 1]);
+    if (notes.length >= 2) notes[1] += 12;                       // 2e voix +octave = la "10e"
+    return [vsort(notes)];
   }
 };
 // Gabarits à structure stricte : jamais stabilisés (la stabilisation casserait l'invariant).
-const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog', 'jazz', 'nuhouse', 'trap']);
+const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog', 'jazz', 'nuhouse', 'trap', 'trance', 'funk']);
 // Gabarits à REGISTRE ABSOLU : la réalisation ignore l'octave/inversion d'entrée
 // (basse posée dans une octave fixe). On ne leur applique donc PAS d'inversions —
 // sinon on génère des candidats à mauvaise basse. Le voice leading se fait par le Selector.
-const ABSOLUTE = new Set(['house', 'prog', 'jazz', 'nuhouse', 'trap']);
+const ABSOLUTE = new Set(['house', 'prog', 'jazz', 'nuhouse', 'trap', 'trance', 'funk']);
 
 // Doublures/omissions pour atteindre `target` voix (jamais la 3ce d'une dominante).
 function stabilize(notes, spec, target) {
@@ -187,7 +204,7 @@ export function realize(spec, voicing, opts = {}) {
   let vc = voicing, fallback = null;
 
   // Edge cases définis (spec §2a) : fallback explicites, jamais silencieux.
-  if ((vc === 'rootlessa' || vc === 'rootlessb' || vc === 'jazz' || vc === 'nuhouse' || vc === 'trap') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
+  if ((vc === 'rootlessa' || vc === 'rootlessb' || vc === 'jazz' || vc === 'nuhouse' || vc === 'house') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
