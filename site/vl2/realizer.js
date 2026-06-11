@@ -26,7 +26,13 @@ const T = {
   classic: c => [c],
   open:    c => c.length < 2 ? [c] : [vsort(c.map((n, i) => i === 1 ? n + 12 : n))],
   spread:  c => c.length < 3 ? [c] : [vsort(c.map((n, i) => i % 2 === 1 ? n + 12 : n))],
-  house:   c => c.length < 3 ? [c] : [vsort([...c, c[0] + 12])],
+  house:   c => {
+    if (c.length < 4) return [vsort(c)];                          // triade : pas de stab rootless -> close
+    const bass = c[0] - 12;                                       // fondamentale détachée au grave
+    let upper = c.slice(1);                                       // structure supérieure (rootless)
+    if (c.length >= 5) upper = upper.filter((n, i) => i !== 1);   // m9/maj9 : on lâche la quinte
+    return [vsort([bass, ...upper])];
+  },
   prog:    c => {
     if (c.length < 3) return [c];
     const r = [c[0] - 12, c[0]];
@@ -47,7 +53,7 @@ const T = {
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; }
 };
 // Gabarits à structure stricte : jamais stabilisés (la stabilisation casserait l'invariant).
-const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3']);
+const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house']);
 
 // Doublures/omissions pour atteindre `target` voix (jamais la 3ce d'une dominante).
 function stabilize(notes, spec, target) {

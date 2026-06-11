@@ -33,7 +33,9 @@ export function checkIdentity(voicing, notes, spec) {
       break;
     }
     case 'house':
-      if (ns.filter(n => mod(n) === spec.rootPc).length < 2) v.push('house:fondamentale non doublée');
+      // deep-house / french-touch stab : basse = fondamentale, structure sup. ROOTLESS (brillante)
+      if (mod(ns[0]) !== spec.rootPc) v.push('house:basse ≠ fondamentale');
+      if (ns.filter(n => mod(n) === spec.rootPc).length > 1) v.push('house:fondamentale doublée (sup. doit être rootless)');
       break;
     case 'piano': {
       if (mod(ns[0]) !== spec.rootPc) v.push('piano:basse ≠ fondamentale');
