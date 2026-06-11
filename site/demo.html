@@ -118,6 +118,12 @@
     transition:opacity .12s,transform .12s;box-shadow:0 10px 30px rgba(0,0,0,.45)}
   .tip.show{opacity:1;transform:translateY(0)}
   .tip b{color:var(--gold);font-weight:600}
+
+  /* ── EMBED (intégration iframe dans la landing) : on masque l'entête/pied
+        de la page démo, le device seul reste, jouable, avec ses bulles. ── */
+  body.embed{padding:0;min-height:0;background:transparent}
+  body.embed .page-h,body.embed .page-f{display:none}
+  body.embed .device{max-width:none;height:100vh;border-radius:0;border:none;box-shadow:none}
 </style>
 </head>
 <body>
@@ -647,6 +653,10 @@
   document.addEventListener('mousedown',function(){ hideTip(); });
 
   // ── Boot ──
+  // Embed = la démo tourne dans une iframe (landing). On masque alors l'entête/pied
+  // de la page démo ; query/hash en secours si jamais servie autrement.
+  if(window.self!==window.top || location.search.indexOf('embed')!==-1 || location.hash.indexOf('embed')!==-1)
+    document.body.classList.add('embed');
   buildPiano(); renderConfig(); rebuildGrid(); renderNotes([]);
 </script>
 <script type="module">
