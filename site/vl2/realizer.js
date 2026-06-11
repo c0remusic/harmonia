@@ -86,6 +86,27 @@ const T = {
   },
   drop2: c => { const r = vsort(c); r[r.length - 2] -= 12; return [vsort(r)]; },
   drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; },
+  // trap : basse sub-grave (C2+oct) + cluster rootless haut (C4+oct).
+  // Gap de ~2 octaves — rien au milieu. Rotations du cluster (basse fixe) pour VL.
+  // Registre FIXE (ABSOLUTE). Fallback classic si !hasSeventh.
+  trap: (c, oct) => {
+    if (c.length < 3) return [vsort(c)];
+    const pm = n => ((n % 12) + 12) % 12;
+    oct = oct || 0;
+    const rootPc = pm(c[0]);
+    let upperPc = c.slice(1).map(pm);
+    if (upperPc.length >= 4) upperPc = upperPc.filter((_, i) => i !== 1);  // drop quinte
+    const bass = 36 + oct + rootPc;   // C2+oct zone
+    const floor = 60 + oct;           // C4+oct zone
+    const cluster = [];
+    let cur = floor;
+    for (const pc of upperPc) {
+      let n = cur + pm(pc - pm(cur));
+      if (cluster.length && n <= cluster[cluster.length - 1]) n += 12;
+      cluster.push(n); cur = n;
+    }
+    return rotationsOf(cluster).map(rc => vsort([bass, ...rc]));
+  },
   // nuhouse : voicing splitté (Naked Music / nu-house). Cluster rootless en DEUX
   // groupes séparés par ~2 octaves : guide tones en C3 (grave, chaleureux) +
   // extensions en C5 (aérien, brillant). 3 positions de registre pour VL.
@@ -134,11 +155,11 @@ const T = {
   }
 };
 // Gabarits à structure stricte : jamais stabilisés (la stabilisation casserait l'invariant).
-const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog', 'jazz', 'nuhouse']);
+const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog', 'jazz', 'nuhouse', 'trap']);
 // Gabarits à REGISTRE ABSOLU : la réalisation ignore l'octave/inversion d'entrée
 // (basse posée dans une octave fixe). On ne leur applique donc PAS d'inversions —
 // sinon on génère des candidats à mauvaise basse. Le voice leading se fait par le Selector.
-const ABSOLUTE = new Set(['house', 'prog', 'jazz', 'nuhouse']);
+const ABSOLUTE = new Set(['house', 'prog', 'jazz', 'nuhouse', 'trap']);
 
 // Doublures/omissions pour atteindre `target` voix (jamais la 3ce d'une dominante).
 function stabilize(notes, spec, target) {
@@ -166,7 +187,7 @@ export function realize(spec, voicing, opts = {}) {
   let vc = voicing, fallback = null;
 
   // Edge cases définis (spec §2a) : fallback explicites, jamais silencieux.
-  if ((vc === 'rootlessa' || vc === 'rootlessb' || vc === 'jazz' || vc === 'nuhouse') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
+  if ((vc === 'rootlessa' || vc === 'rootlessb' || vc === 'jazz' || vc === 'nuhouse' || vc === 'trap') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 

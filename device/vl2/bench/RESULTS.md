@@ -126,3 +126,13 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **nuhouse** / V7#9-I (harm. maj.→#9) : move=19 sopMax=1 common=0% par=0
 - **nuhouse** / sus + m7#5 vamp (loop) : move=91 sopMax=10 common=0% par=0 | loop=true
 - **nuhouse** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
+- **trap** / ii-V-I (C) : move=36 sopMax=5 common=13% par=0
+- **trap** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
+- **trap** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
+- **trap** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
+- **trap** / vamp Am7-D7 (loop) : move=161 sopMax=5 common=0% par=0 | loop=true
+- **trap** / chaine 12 accords : move=112 sopMax=5 common=20% par=0
+- **trap** / V7b9-I (harm. min.) : move=29 sopMax=5 common=0% par=0
+- **trap** / V7#9-I (harm. maj.→#9) : move=30 sopMax=5 common=0% par=0
+- **trap** / sus + m7#5 vamp (loop) : move=231 sopMax=8 common=0% par=0 | loop=true
+- **trap** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
