@@ -178,6 +178,7 @@
       <div class="devgrp">
         <div class="lbl">Device</div>
         <div class="btn" id="colorBtn">LAYOUT · Spectrum</div>
+        <div class="btn" id="engineBtn" title="A/B the voicing/voice-leading engine">ENGINE · v1</div>
         <div class="btn on" id="soundBtn">SOUND ON</div>
       </div>
     </div>
@@ -379,23 +380,45 @@
         v.g.gain.exponentialRampToValueAtTime(0.0006,t+0.22); v.o1.stop(t+0.3); v.o2.stop(t+0.3); }catch(_){} }
     voices=[]; }
 
-  // ── Lecture d'un accord (équivalent sendChord : voicing → VL → 6 voix max) ──
-  function chordPlay(name,notes){ notes=applyVoicing(notes); notes=applyVL(notes); notes=notes.slice(0,6);
+  // ── Moteur sélectionnable : v1 (inline) ou v2 (module vl2) ──
+  var engineMode='v1';   // 'v1' | 'v2flow' | 'v2anchor'
+  var v2eng=null;
+  function v2() { if(!v2eng && window.VL2) v2eng=window.VL2.createEngine(); return v2eng; }
+  function v2reset(){ if(v2eng) v2eng.reset(); }
+
+  // Émission audio + moniteur (notes déjà voicées/voice-led en amont).
+  function emit(name,notes){ notes=notes.slice(0,6);
     allNotesOff(); eActiveNotes=notes.slice();
     for(var i=0;i<notes.length;i++)noteOn(notes[i],curVel);
     activeChordName=name; renderNotes(eActiveNotes); }
+
+  // v1 : voicing → voice leading inline, puis émission.
+  function chordPlay(name,notes){ notes=applyVoicing(notes); notes=applyVL(notes); emit(name,notes); }
+
+  // v2 : le double moteur vl2 choisit la réalisation depuis le spec. false si vl2 pas prêt.
+  function playV2(spec,name){
+    var e=v2(); if(!e) return false;
+    var r=e.play(spec, eVoicing, { mode: engineMode==='v2anchor'?'anchor':'flow', center: 60+eOct*12 });
+    emit(name, r.notes); return true;
+  }
+
   function playFn(fn,d){ d=parseInt(d); if(!gridTypeValid(d,fn))return;
     lastFn=fn; lastDegree=d;
+    if(engineMode!=='v1' && window.VL2 &&
+       playV2(window.VL2.buildSpec({fn:fn,degree:d,rootPc:eRoot,scaleArr:eScale}), gridLabel(d,fn))) return;
     var notes=buildNotes(d,STEPS[fn]);
     if(fn==='m7s5'&&notes.length>2)notes[2]++;
     chordPlay(gridLabel(d,fn),notes); }
   function playColor(semis,type){ semis=parseInt(semis); type=String(type);
+    lastFn='color'; lastDegree=semis;
+    var suf = type==='min'?'m':type==='dim7'?'dim7':type==='maj7'?'maj7':type==='dom7'?'7':'';
+    var name = NOTE_NAMES[(eRoot+semis)%12]+suf;
+    if(engineMode!=='v1' && window.VL2 &&
+       playV2(window.VL2.buildColorSpec({semis:semis,type:type,keyRootPc:eRoot}), name)) return;
     var ivs = type==='min'?[0,3,7]:type==='dim7'?[0,3,6,9]:type==='maj7'?[0,4,7,11]:type==='dom7'?[0,4,7,10]:[0,4,7];
     var base=eRoot+semis+(4+eOct)*12, notes=[];
     for(var i=0;i<ivs.length;i++){ var m=base+ivs[i]; if(m>=0&&m<=127)notes.push(m); }
-    lastFn='color'; lastDegree=semis;
-    var suf = type==='min'?'m':type==='dim7'?'dim7':type==='maj7'?'maj7':type==='dom7'?'7':'';
-    chordPlay(NOTE_NAMES[notes[0]%12]+suf,notes); }
+    chordPlay(name,notes); }
   function doRelease(){ allNotesOff(); eActiveNotes=[]; activeCol=-1; activeRow=-1; activeChordName='';
     renderNotes([]); updateActive(); }
 
@@ -532,10 +555,10 @@
   // ── Dispatcher : remplace la sortie Max — tout part dans le moteur local ──
   function send(){ var a=Array.prototype.slice.call(arguments); demoHandle(a); }
   function demoHandle(a){ var m=a[0];
-    if(m==='rootidx'){ eRoot=parseInt(a[1]); rebuildGrid(); return; }
-    if(m==='scaleidx'){ eScaleName=SCALEKEYS[parseInt(a[1])]; eScale=SCALES[eScaleName]; rebuildGrid(); return; }
-    if(m==='octave'){ eOct=parseInt(a[1]); return; }
-    if(m==='voicingidx'){ eVoicing=VOICEKEYS[parseInt(a[1])]||'classic'; return; }
+    if(m==='rootidx'){ eRoot=parseInt(a[1]); v2reset(); rebuildGrid(); return; }
+    if(m==='scaleidx'){ eScaleName=SCALEKEYS[parseInt(a[1])]; eScale=SCALES[eScaleName]; v2reset(); rebuildGrid(); return; }
+    if(m==='octave'){ eOct=parseInt(a[1]); v2reset(); return; }
+    if(m==='voicingidx'){ eVoicing=VOICEKEYS[parseInt(a[1])]||'classic'; v2reset(); return; }
     if(m==='voiceleading'){ eVL=(parseInt(a[1])===1); prevChord=null; lockedV=null; return; }
     if(m==='vlmode'){ eVlMode=String(a[1]); prevChord=null; lockedV=null; return; }
     if(m==='colorchord'){ playColor(a[1],a[2]); return; }
@@ -565,6 +588,13 @@
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
     this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme]; applyScheme(); };
+  document.getElementById('engineBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
+  document.getElementById('engineBtn').onclick=function(){
+    engineMode = engineMode==='v1' ? 'v2flow' : engineMode==='v2flow' ? 'v2anchor' : 'v1';
+    this.textContent = 'ENGINE · ' + (engineMode==='v1' ? 'v1' : engineMode==='v2flow' ? 'v2 · FLOW' : 'v2 · ANCHOR');
+    this.classList.toggle('on', engineMode!=='v1');
+    v2reset(); prevChord=null; lockedV=null;
+  };
   document.getElementById('soundBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('soundBtn').onclick=function(){ soundOn=!soundOn;
     this.classList.toggle('on',soundOn); this.textContent=soundOn?'SOUND ON':'SOUND OFF';
@@ -590,6 +620,7 @@
     vl:'<b>Voice leading</b> — moves each voice the shortest distance between chords, for smooth changes.',
     colorBtn:'<b>Layout</b> — the color logic of the degree headers (mirrored on the Push 2 pads).',
     soundBtn:'<b>Sound</b> — toggles the demo synth on/off.',
+    engineBtn:'<b>Engine</b> — A/B the harmony engine: v1 (current) vs v2 (new dual engine). v2 has two modes: FLOW (living voice leading, bounded drift) and ANCHOR (stable loops).',
     chord:'<b>Monitor</b> — the chord you’re playing: degree, name and notes.',
     keys:'<b>Keyboard</b> — the exact notes coming out, after voicing &amp; voice leading.'
   };
@@ -617,6 +648,11 @@
 
   // ── Boot ──
   buildPiano(); renderConfig(); rebuildGrid(); renderNotes([]);
+</script>
+<script type="module">
+  import { createEngine } from './vl2/engine.js';
+  import { buildSpec, buildColorSpec } from './vl2/chordspec.js';
+  window.VL2 = { createEngine, buildSpec, buildColorSpec };
 </script>
 </body>
 </html>
