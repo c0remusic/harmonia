@@ -24,7 +24,9 @@ export function checkIdentity(voicing, notes, spec) {
     case 'drop2': case 'drop3': {
       if (ns.length < 4) { v.push('dropN:<4 voix'); break; }
       const lifted = [ns[0] + 12, ...ns.slice(1)].sort((a, b) => a - b);
-      if (span(lifted) > 11) { v.push('dropN:base non-close'); break; }
+      let maxGap = 0;
+      for (let i = 0; i < lifted.length - 1; i++) maxGap = Math.max(maxGap, lifted[i + 1] - lifted[i]);
+      if (maxGap > 12) { v.push('dropN:base non-close'); break; }   // pas de trou d'octave = vrai close stack
       const fromTop = lifted.length - 1 - lifted.indexOf(ns[0] + 12);
       if (voicing === 'drop2' && fromTop !== 1) v.push('drop2:voix abaissée ≠ 2e du haut');
       if (voicing === 'drop3' && fromTop !== 2) v.push('drop3:voix abaissée ≠ 3e du haut');
