@@ -20,8 +20,9 @@ Capture.PNG
 *.PNG
 *.jpg
 *.png
-# Exception: the device screenshot used by the deployed site
+# Exceptions: assets used by the deployed site
 !site/chord_selector_screenshot.png
+!site/logo.png
 
 # Dependencies
 node_modules/

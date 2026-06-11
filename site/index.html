@@ -52,7 +52,8 @@
       display: flex; align-items: center; gap: 12px; border-bottom: 1px solid transparent;
       transition: border-color .3s, background .3s, backdrop-filter .3s; }
     nav.scrolled { background: rgba(42,42,42,0.85); backdrop-filter: blur(12px); border-color: var(--border); }
-    .nav-logo { font-family: 'DM Serif Display', serif; font-size: 20px; text-decoration: none; }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo img { height: 22px; width: auto; display: block; }
     .nav-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
       background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.28);
       border-radius: 4px; padding: 2px 7px; letter-spacing: .06em; }
@@ -231,7 +232,7 @@
     /* FOOTER */
     footer { border-top: 1px solid var(--border); padding: 30px 48px; display: flex;
       align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--muted); }
+    .footer-logo img { height: 16px; width: auto; opacity: .45; }
     .footer-links { display: flex; gap: 22px; }
     .footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .2s; }
     .footer-links a:hover { color: var(--white); }
@@ -302,7 +303,7 @@
   </div>
 
   <nav id="nav">
-    <a href="#" class="nav-logo">Tuple</a>
+    <a href="#" class="nav-logo"><img src="./logo.png" alt="Tuple"></a>
     <span class="nav-tag">Max for Live</span>
     <div class="nav-links">
       <a href="demo.html">Try it</a>
@@ -524,7 +525,7 @@
   </section>
 
   <footer>
-    <span class="footer-logo">Tuple</span>
+    <img src="./logo.png" alt="Tuple" class="footer-logo">
     <span class="footer-links">
       <a href="#" id="legal-link">Legal notice</a>
       <a href="https://github.com/c0remusic/tuple" target="_blank" rel="noopener">GitHub</a>
