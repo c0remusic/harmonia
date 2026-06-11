@@ -123,21 +123,24 @@
     .feature::after { content: counter(feat, decimal-leading-zero); position: absolute; top: 16px; right: 20px;
       font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted2); }
 
-    /* DEVICE SHOWCASE — annotated diagram (callouts around the frame) */
-    .showcase { max-width: 1340px; margin: 0 auto; padding: 10px 24px 40px; }
-    .annotated { position: relative; padding: 188px 60px; }
-    .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
-    .leaders line { stroke-width: 1.5; stroke-dasharray: 4 4; opacity: .8; }
-    .leaders circle { } /* end dots drawn in JS */
-    .frame { position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    /* DEVICE SHOWCASE — embedded interactive demo */
+    .showcase { max-width: 1080px; margin: 0 auto; padding: 10px 24px 60px; }
+    .frame { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
       box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06); }
     .frame-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg2);
       border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0; }
     .frame-bar .d { width: 10px; height: 10px; border-radius: 50%; }
     .d-r{background:#ff5f57}.d-y{background:#febc2e}.d-g{background:#28c840}
     .frame-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-left: 8px; }
-    .shot-wrap { position: relative; line-height: 0; }
-    .shot-wrap img { width: 100%; display: block; border-radius: 0 0 12px 12px; }
+    .demo-frame { width: 100%; height: 540px; border: none; display: block; border-radius: 0 0 12px 12px; }
+    .demo-callouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+    .dc { background: #1e1e1e; border: 1px solid rgba(255,255,255,.10); border-radius: 10px; padding: 14px 16px;
+      transition: border-color .2s; }
+    .dc:hover { border-color: rgba(255,255,255,.2); }
+    .dc-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: .08em; margin-bottom: 4px; }
+    .dc.blue .dc-n { color: var(--blue); }
+    .dc-t { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 5px; }
+    .dc-x { font-size: 12px; color: var(--muted); line-height: 1.5; }
     .spot { position: absolute; transform: translate(-50%,-50%); width: 20px; height: 20px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace;
       font-size: 10px; font-weight: 500; z-index: 4; background: rgba(255,173,86,0.25); border: 1px solid var(--gold);
@@ -276,10 +279,8 @@
       nav, section.block, footer { padding-left: 24px; padding-right: 24px; }
       .hero-content { padding-left: 24px; padding-right: 24px; }
       .showcase { padding-left: 16px; padding-right: 16px; }
-      .annotated { padding: 0; }
-      .leaders, .spot, .callout { display: none; }
-      .shot-wrap { overflow-x: auto; }
-      .shot-wrap img { min-width: 820px; }
+      .demo-frame { height: 420px; }
+      .demo-callouts { grid-template-columns: 1fr; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
       .mobile-callouts { display: block; }
@@ -306,7 +307,7 @@
     <a href="#" class="nav-logo"><img src="./logo.png" alt="Tuple"></a>
     <span class="nav-tag">Max for Live</span>
     <div class="nav-links">
-      <a href="demo.html">Try it</a>
+      <a href="#device">Try it</a>
       <a href="#features">Features</a>
       <a href="#voicings">Voicings</a>
       <a href="#download">Download</a>
@@ -321,7 +322,7 @@
   <!-- MOBILE NAV -->
   <div class="nav-mobile" id="nav-mobile">
     <button class="nav-mobile-close" id="nav-mobile-close" aria-label="Close menu">&times;</button>
-    <a href="demo.html"  id="mn-try">Try it</a>
+    <a href="#device"  id="mn-try">Try it</a>
     <a href="#features"  id="mn-feat">Features</a>
     <a href="#voicings"  id="mn-voic">Voicings</a>
     <a href="#download"  id="mn-dl">Download</a>
@@ -341,52 +342,29 @@
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9m0 0L4 7m3.5 3L11 7M1 13h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Download
         </a>
-        <a href="demo.html" class="btn-secondary btn-blue">&#9654;&#xFE0E; Try it in your browser</a>
+        <a href="#device" class="btn-secondary btn-blue">&#9654;&#xFE0E; Try it</a>
+        <a href="#features" class="btn-secondary">Features</a>
       </div>
      </div>
     </div>
   </section>
 
-  <!-- DEVICE SHOWCASE — annotated diagram -->
+  <!-- DEVICE SHOWCASE — embedded interactive demo -->
   <section class="showcase" id="device">
-    <div class="annotated" id="annotated">
-      <svg class="leaders" id="leaders"></svg>
-
-      <div class="frame">
-        <div class="frame-bar">
-          <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
-          <span class="frame-title">tuple &mdash; E Min</span>
-        </div>
-        <div class="shot-wrap" id="shot">
-          <img src="./chord_selector_screenshot.png" alt="Tuple — chord device running in Ableton Live">
-          <div class="spot"      id="sp1" style="left:45%;top:52%">1</div>
-          <div class="spot blue" id="sp2" style="left:4%;top:82%">2</div>
-          <div class="spot"      id="sp3" style="left:4%;top:56%">3</div>
-          <div class="spot blue" id="sp4" style="left:4.5%;top:18%">4</div>
-          <div class="spot"      id="sp5" style="left:88%;top:18%">5</div>
-          <div class="spot blue" id="sp6" style="left:95.5%;top:80%">6</div>
-        </div>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
+        <span class="frame-title">tuple &mdash; interactive demo</span>
       </div>
-
-      <!-- mobile fallback: numbered list of callout annotations -->
-      <div class="mobile-callouts">
-        <ol>
-          <li><span class="mc-n blue">01</span><div><div class="mc-t">Chord Grid</div><div class="mc-x">7 diatonic degrees — every valid chord, always visible.</div></div></li>
-          <li><span class="mc-n">02</span><div><div class="mc-t">Voice Leading</div><div class="mc-x">3 algorithms with common-tone detection for smooth motion.</div></div></li>
-          <li><span class="mc-n blue">03</span><div><div class="mc-t">13 Voicings</div><div class="mc-x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3, Jazz, Nu-House, Trap.</div></div></li>
-          <li><span class="mc-n">04</span><div><div class="mc-t">Live Scale Sync</div><div class="mc-x">Import the current key &amp; scale from Ableton Live in one click.</div></div></li>
-          <li><span class="mc-n">05</span><div><div class="mc-t">Borrowed Chords</div><div class="mc-x">Secondary dominants &amp; modal interchange, right in the grid.</div></div></li>
-          <li><span class="mc-n blue">06</span><div><div class="mc-t">MIDI &amp; Hold</div><div class="mc-x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div></li>
-        </ol>
-      </div>
-
-      <!-- callouts placed around the frame -->
-      <div class="callout"      data-spot="sp4" style="left:0;top:24px"        ><div class="n">04</div><div class="t">Live Scale Sync</div><div class="x">Import the current key &amp; scale from Ableton Live in one click.</div></div>
-      <div class="callout blue" data-spot="sp1" style="left:34%;top:0"          ><div class="n">01</div><div class="t">Chord Grid</div><div class="x">7 diatonic degrees &mdash; every valid chord, always visible.</div></div>
-      <div class="callout"      data-spot="sp5" style="right:0;top:24px"        ><div class="n">05</div><div class="t">Borrowed Chords</div><div class="x">Secondary dominants &amp; modal interchange, right in the grid.</div></div>
-      <div class="callout blue" data-spot="sp3" style="left:0;bottom:24px"      ><div class="n">03</div><div class="t">13 Voicings</div><div class="x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3, Jazz, Nu-House, Trap.</div></div>
-      <div class="callout"      data-spot="sp2" style="left:30%;bottom:0"       ><div class="n">02</div><div class="t">Voice Leading</div><div class="x">3 algorithms with common-tone detection for smooth motion.</div></div>
-      <div class="callout blue" data-spot="sp6" style="right:0;bottom:24px"     ><div class="n">06</div><div class="t">MIDI &amp; Hold</div><div class="x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div>
+      <iframe src="demo.html" class="demo-frame" title="Tuple Interactive Demo" allow="autoplay" loading="lazy"></iframe>
+    </div>
+    <div class="demo-callouts">
+      <div class="dc blue"><div class="dc-n">01</div><div class="dc-t">Chord Grid</div><div class="dc-x">7 diatonic degrees &mdash; every valid chord, always visible.</div></div>
+      <div class="dc"><div class="dc-n">02</div><div class="dc-t">Voice Leading</div><div class="dc-x">3 algorithms with common-tone detection for smooth progressions.</div></div>
+      <div class="dc blue"><div class="dc-n">03</div><div class="dc-t">13 Voicings</div><div class="dc-x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3, Jazz, Nu-House, Trap.</div></div>
+      <div class="dc"><div class="dc-n">04</div><div class="dc-t">Live Scale Sync</div><div class="dc-x">Import key &amp; scale from Ableton Live in one click.</div></div>
+      <div class="dc"><div class="dc-n">05</div><div class="dc-t">Borrowed Chords</div><div class="dc-x">Secondary dominants &amp; modal interchange, right in the grid.</div></div>
+      <div class="dc blue"><div class="dc-n">06</div><div class="dc-t">MIDI &amp; Hold</div><div class="dc-x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div>
     </div>
   </section>
 
@@ -591,38 +569,6 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
 
     // Device showcase — draw leader lines from each callout to its spot
-    const SVGNS = 'http://www.w3.org/2000/svg';
-    function drawLeaders() {
-      const annotated = document.getElementById('annotated');
-      const leaders = document.getElementById('leaders');
-      if (!annotated || !leaders) return;
-      const ar = annotated.getBoundingClientRect();
-      if (ar.width === 0) return;
-      leaders.setAttribute('viewBox', '0 0 ' + ar.width + ' ' + ar.height);
-      leaders.setAttribute('preserveAspectRatio', 'none');
-      leaders.innerHTML = '';
-      document.querySelectorAll('.callout').forEach(c => {
-        const spot = document.getElementById(c.dataset.spot);
-        if (!spot) return;
-        const cr = c.getBoundingClientRect(), sr = spot.getBoundingClientRect();
-        const sx = sr.left + sr.width / 2 - ar.left, sy = sr.top + sr.height / 2 - ar.top;
-        const cx0 = cr.left - ar.left, cy0 = cr.top - ar.top;
-        const ax = Math.max(cx0, Math.min(cx0 + cr.width, sx));   // nearest point on callout edge
-        const ay = Math.max(cy0, Math.min(cy0 + cr.height, sy));
-        const col = c.classList.contains('blue') ? '#8ECCE8' : '#FFAD56';
-        const ln = document.createElementNS(SVGNS, 'line');
-        ln.setAttribute('x1', ax); ln.setAttribute('y1', ay);
-        ln.setAttribute('x2', sx); ln.setAttribute('y2', sy); ln.setAttribute('stroke', col);
-        leaders.appendChild(ln);
-        const dot = document.createElementNS(SVGNS, 'circle');
-        dot.setAttribute('cx', ax); dot.setAttribute('cy', ay); dot.setAttribute('r', '3'); dot.setAttribute('fill', col);
-        leaders.appendChild(dot);
-      });
-    }
-    window.addEventListener('load', drawLeaders);
-    window.addEventListener('resize', drawLeaders);
-    setTimeout(drawLeaders, 300); setTimeout(drawLeaders, 900);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLeaders);
 
     // Contact form (Formspree AJAX)
     const form = document.getElementById('contact-form');
