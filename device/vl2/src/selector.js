@@ -36,7 +36,7 @@ export const W_jazz = {
   crossing: 12
 };
 
-const JAZZ_VOICINGS = new Set(['rootlessa', 'rootlessb', 'drop2', 'drop3', 'prog', 'house']);
+const JAZZ_VOICINGS = new Set(['rootlessa', 'rootlessb', 'drop2', 'drop3', 'prog', 'house', 'jazz']);
 export function pickW(voicing) { return JAZZ_VOICINGS.has(voicing) ? W_jazz : W; }
 
 // Coût de mouvement prev -> cand (appariement par index trié grave→aigu).

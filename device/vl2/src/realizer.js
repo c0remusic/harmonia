@@ -85,14 +85,34 @@ const T = {
     return [-1, 0, 1, 2].map(o => vsort(spread.map(n => n + o * 12)));
   },
   drop2: c => { const r = vsort(c); r[r.length - 2] -= 12; return [vsort(r)]; },
-  drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; }
+  drop3: c => { const r = vsort(c); r[r.length - 3] -= 12; return [vsort(r)]; },
+  // jazz : cluster rootless ancré en C3+oct (zone comping LH jazz/électro).
+  // Pas de fondamentale. Toutes les rotations pour le voice leading.
+  // Distinct de rootlessa : registre FIXE (ABSOLUTE) → le cluster reste dans la
+  // poche C3-C4 quelle que soit la commande OCTAVE, comme une main gauche de pianiste.
+  jazz: (c, oct) => {
+    if (c.length < 3) return [vsort(c)];
+    const pm = n => ((n % 12) + 12) % 12;
+    oct = oct || 0;
+    const pcs = c.slice(1).map(pm);   // sans fondamentale, ordre ROLE_ORDER
+    const floor = 48 + oct;           // C3 par défaut
+    const cluster = [];
+    let cur = floor;
+    for (const pc of pcs) {
+      let n = cur + pm(pc - pm(cur));
+      if (cluster.length && n <= cluster[cluster.length - 1]) n += 12;
+      cluster.push(n);
+      cur = n;
+    }
+    return rotationsOf(vsort(cluster));
+  }
 };
 // Gabarits à structure stricte : jamais stabilisés (la stabilisation casserait l'invariant).
-const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog']);
+const STRUCT = new Set(['piano', 'rootlessa', 'rootlessb', 'drop2', 'drop3', 'house', 'prog', 'jazz']);
 // Gabarits à REGISTRE ABSOLU : la réalisation ignore l'octave/inversion d'entrée
 // (basse posée dans une octave fixe). On ne leur applique donc PAS d'inversions —
 // sinon on génère des candidats à mauvaise basse. Le voice leading se fait par le Selector.
-const ABSOLUTE = new Set(['house', 'prog']);
+const ABSOLUTE = new Set(['house', 'prog', 'jazz']);
 
 // Doublures/omissions pour atteindre `target` voix (jamais la 3ce d'une dominante).
 function stabilize(notes, spec, target) {
@@ -120,7 +140,7 @@ export function realize(spec, voicing, opts = {}) {
   let vc = voicing, fallback = null;
 
   // Edge cases définis (spec §2a) : fallback explicites, jamais silencieux.
-  if ((vc === 'rootlessa' || vc === 'rootlessb') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
+  if ((vc === 'rootlessa' || vc === 'rootlessb' || vc === 'jazz') && !spec.hasSeventh) { fallback = vc; vc = 'classic'; }
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 

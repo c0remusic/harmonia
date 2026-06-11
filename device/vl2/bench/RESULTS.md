@@ -106,3 +106,13 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **drop3** / V7#9-I (harm. maj.→#9) : move=3 sopMax=1 common=33% par=0
 - **drop3** / sus + m7#5 vamp (loop) : move=56 sopMax=0 common=33% par=0 | loop=true
 - **drop3** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
+- **jazz** / ii-V-I (C) : move=12 sopMax=1 common=33% par=0
+- **jazz** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
+- **jazz** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
+- **jazz** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0
+- **jazz** / vamp Am7-D7 (loop) : move=28 sopMax=2 common=33% par=0 | loop=true
+- **jazz** / chaine 12 accords : move=50 sopMax=2 common=30% par=0
+- **jazz** / V7b9-I (harm. min.) : move=4 sopMax=2 common=0% par=0
+- **jazz** / V7#9-I (harm. maj.→#9) : move=5 sopMax=2 common=0% par=0
+- **jazz** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=0% par=0 | loop=true
+- **jazz** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
