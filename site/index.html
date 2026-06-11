@@ -244,6 +244,33 @@
     .hero-desc { animation: fadeUp .6s .2s ease both; }
     .hero-actions { animation: fadeUp .6s .3s ease both; }
 
+    /* NAV HAMBURGER */
+    .nav-hamburger { display: none; margin-left: auto; background: none; border: none;
+      cursor: pointer; padding: 4px; color: var(--muted); transition: color .2s; }
+    .nav-hamburger:hover { color: var(--white); }
+    .nav-hamburger svg { display: block; }
+    .nav-mobile { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 98; background: rgba(22,22,22,0.97); backdrop-filter: blur(12px);
+      flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+    .nav-mobile.open { display: flex; animation: fadeUp .2s ease both; }
+    .nav-mobile a { color: var(--muted); text-decoration: none; font-size: 22px; font-weight: 500;
+      transition: color .2s; }
+    .nav-mobile a:hover { color: var(--white); }
+    .nav-mobile-close { position: absolute; top: 20px; right: 24px; background: none; border: none;
+      color: var(--muted); font-size: 30px; cursor: pointer; transition: color .2s; line-height: 1; }
+    .nav-mobile-close:hover { color: var(--white); }
+
+    /* MOBILE CALLOUTS LIST */
+    .mobile-callouts { display: none; margin-top: 20px; padding: 0 4px; }
+    .mobile-callouts ol { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .mobile-callouts li { display: flex; align-items: flex-start; gap: 12px; }
+    .mobile-callouts .mc-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
+      background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.28); border-radius: 4px;
+      padding: 2px 7px; flex: none; margin-top: 2px; }
+    .mobile-callouts .mc-n.blue { color: var(--blue); background: var(--blue-dim); border-color: rgba(142,204,232,0.28); }
+    .mobile-callouts .mc-t { font-family: 'DM Serif Display', serif; font-size: 15px; }
+    .mobile-callouts .mc-x { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+
     @media (max-width: 920px) {
       nav, section.block, footer { padding-left: 24px; padding-right: 24px; }
       .hero-content { padding-left: 24px; padding-right: 24px; }
@@ -253,6 +280,8 @@
       .shot-wrap { overflow-x: auto; }
       .shot-wrap img { min-width: 820px; }
       .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .mobile-callouts { display: block; }
       .features-head { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       .voicings-grid { grid-template-columns: repeat(2, 1fr); }
@@ -283,14 +312,28 @@
       <a href="#support">Support</a>
       <a href="#contact">Contact</a>
     </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
   </nav>
+
+  <!-- MOBILE NAV -->
+  <div class="nav-mobile" id="nav-mobile">
+    <button class="nav-mobile-close" id="nav-mobile-close" aria-label="Close menu">&times;</button>
+    <a href="demo.html"  id="mn-try">Try it</a>
+    <a href="#features"  id="mn-feat">Features</a>
+    <a href="#voicings"  id="mn-voic">Voicings</a>
+    <a href="#download"  id="mn-dl">Download</a>
+    <a href="#support"   id="mn-sup">Support</a>
+    <a href="#contact"   id="mn-con">Contact</a>
+  </div>
 
   <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
      <div class="hero-inner">
       <p class="eyebrow">Max for Live &middot; Ableton Live</p>
-      <h1>Har<em>monia</em></h1>
+      <h1>Tu<em>ple</em></h1>
       <p class="hero-desc">A harmonic composition tool for fast and musical chord selection, exploration and performance &mdash; directly inside Ableton Live.</p>
       <div class="hero-actions">
         <a href="#download" class="btn-primary">
@@ -298,7 +341,6 @@
           Download
         </a>
         <a href="demo.html" class="btn-secondary btn-blue">&#9654;&#xFE0E; Try it in your browser</a>
-        <a href="#features" class="btn-secondary">Explore features</a>
       </div>
      </div>
     </div>
@@ -315,7 +357,7 @@
           <span class="frame-title">tuple &mdash; E Min</span>
         </div>
         <div class="shot-wrap" id="shot">
-          <img src="./chord_selector_screenshot.png" alt="Tuple device running in Ableton Live">
+          <img src="./chord_selector_screenshot.png" alt="Tuple — chord device running in Ableton Live">
           <div class="spot"      id="sp1" style="left:45%;top:52%">1</div>
           <div class="spot blue" id="sp2" style="left:4%;top:82%">2</div>
           <div class="spot"      id="sp3" style="left:4%;top:56%">3</div>
@@ -323,6 +365,18 @@
           <div class="spot"      id="sp5" style="left:88%;top:18%">5</div>
           <div class="spot blue" id="sp6" style="left:95.5%;top:80%">6</div>
         </div>
+      </div>
+
+      <!-- mobile fallback: numbered list of callout annotations -->
+      <div class="mobile-callouts">
+        <ol>
+          <li><span class="mc-n blue">01</span><div><div class="mc-t">Chord Grid</div><div class="mc-x">7 diatonic degrees — every valid chord, always visible.</div></div></li>
+          <li><span class="mc-n">02</span><div><div class="mc-t">Voice Leading</div><div class="mc-x">3 algorithms with common-tone detection for smooth motion.</div></div></li>
+          <li><span class="mc-n blue">03</span><div><div class="mc-t">10 Voicings</div><div class="mc-x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3.</div></div></li>
+          <li><span class="mc-n">04</span><div><div class="mc-t">Live Scale Sync</div><div class="mc-x">Import the current key &amp; scale from Ableton Live in one click.</div></div></li>
+          <li><span class="mc-n">05</span><div><div class="mc-t">Borrowed Chords</div><div class="mc-x">Secondary dominants &amp; modal interchange, right in the grid.</div></div></li>
+          <li><span class="mc-n blue">06</span><div><div class="mc-t">MIDI &amp; Hold</div><div class="mc-x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div></li>
+        </ol>
       </div>
 
       <!-- callouts placed around the frame -->
@@ -347,32 +401,32 @@
     </div>
     <div class="features-grid">
       <div class="feature">
-        <div class="ficon">&sharp;</div>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg></div>
         <h3>Chord Grid</h3>
         <p>7 diatonic degrees plus a dedicated Borrowed column. All valid chords for your key, always visible &mdash; no hidden pages.</p>
       </div>
       <div class="feature">
-        <div class="ficon blue">&harr;</div>
+        <div class="ficon blue"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M5 12h14M15 8l4 4-4 4M9 8l-4 4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>Voice Leading</h3>
         <p>3 algorithms (Anchored, Relative, Piano) with common-tone detection and progressive center pull for natural progressions.</p>
       </div>
       <div class="feature">
-        <div class="ficon">&equiv;</div>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
         <h3>10 Voicings</h3>
         <p>Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2, Drop 3 &mdash; from tight jazz to wide prog textures.</p>
       </div>
       <div class="feature">
-        <div class="ficon">&#x21BB;</div>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M12 4v2M12 18v2M4 12H2M22 12h-2M6.34 6.34 4.93 4.93M19.07 19.07l-1.41-1.41M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/></svg></div>
         <h3>Live Scale Sync</h3>
         <p>Instantly import the current key and scale from Ableton Live &mdash; stay in sync with your session at all times.</p>
       </div>
       <div class="feature">
-        <div class="ficon blue">&flat;</div>
+        <div class="ficon blue"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M9 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4h-2M9 3a3 3 0 0 0 6 0M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
         <h3>Borrowed Chords</h3>
         <p>Secondary dominants and modal interchange chords right in the main grid &mdash; always one click away.</p>
       </div>
       <div class="feature">
-        <div class="ficon">&#x25C9;</div>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="2" y="7" width="20" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13.5" r="1.5" fill="currentColor"/></svg></div>
         <h3>MIDI &amp; Hold</h3>
         <p>Full keyboard mapping, clickable grid and Hold/Latch mode for performance &mdash; with visual keyboard feedback.</p>
       </div>
@@ -406,7 +460,7 @@
         <h2>Free download</h2>
         <p class="req">
           Requires <b>Ableton Live 11+</b> &middot; <b>Max for Live</b><br>
-          Unzip and drop <code>tuple.amxd</code> onto a MIDI track before an instrument. Keep all files in the same folder.
+          Unzip, then drag <code>tuple.amxd</code> onto a MIDI track that feeds a virtual instrument. Keep all extracted files in the same folder.
         </p>
       </div>
       <div class="card-actions">
@@ -515,6 +569,15 @@
   <script>
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Mobile nav
+    const mobileNav = document.getElementById('nav-mobile');
+    function openMobile()  { mobileNav.classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeMobile() { mobileNav.classList.remove('open'); document.body.style.overflow=''; }
+    document.getElementById('nav-hamburger').addEventListener('click', openMobile);
+    document.getElementById('nav-mobile-close').addEventListener('click', closeMobile);
+    mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobile));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobile(); });
 
     // Legal modal
     const legalModal = document.getElementById('legal-modal');
