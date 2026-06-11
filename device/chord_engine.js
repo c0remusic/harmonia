@@ -46,6 +46,27 @@ var lockedVoicing       = null;       // v1 : lock renversement sur accord rép�
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
 
+// jweb URL dynamique — portable, résolu depuis le filepath du patcher au chargement.
+// Utilise this.patcher.getnamed() avec les varnames posés dans le .amxd.
+(function() {
+	var t = new Task(function() {
+		try {
+			var fp = this.patcher.filepath.replace(/\\/g, '/');
+			var dir = fp.substring(0, fp.lastIndexOf('/') + 1).replace(/ /g, '%20');
+			var url = 'file:///' + dir + 'ui/index.html';
+			var sw = this.patcher.getnamed('tuple_strip_jweb');
+			if (sw) sw.message('url', url);
+			var fvp = this.patcher.getnamed('tuple_fullview_patcher');
+			if (fvp) {
+				var sub = fvp.subpatcher();
+				if (sub) { var fw = sub.getnamed('tuple_full_jweb'); if (fw) fw.message('url', url + '?full'); }
+			}
+			post('tuple: jweb url -> ' + url + '\n');
+		} catch(e) { post('tuple: jweb url error: ' + e + '\n'); }
+	}, this);
+	t.schedule(200);
+}());
+
 // =====================================================
 // INLET 1 — velocity
 // =====================================================
