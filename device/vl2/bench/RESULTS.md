@@ -17,7 +17,7 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **classic** / sus + m7#5 vamp (loop) : move=35 sopMax=2 common=33% par=0 | loop=true
 - **classic** / bVII-IV-I (empruntés) : move=6 sopMax=1 common=33% par=0
 - **piano** / ii-V-I (C) : move=18 sopMax=2 common=25% par=0
-- **piano** / I-vi-IV-V (C) : move=25 sopMax=5 common=22% par=1
+- **piano** / I-vi-IV-V (C) : move=27 sopMax=5 common=22% par=0
 - **piano** / i-VII-VI (Am nat) : move=11 sopMax=2 common=0% par=0
 - **piano** / IV-iv-I (chromatique) : move=13 sopMax=1 common=33% par=0
 - **piano** / vamp Am7-D7 (loop) : move=77 sopMax=2 common=25% par=0 | loop=true
@@ -66,7 +66,7 @@ Métriques par voicing × progression (move = mouvement total toutes voix ; sopM
 - **prog** / V7#9-I (harm. maj.→#9) : move=20 sopMax=2 common=25% par=1
 - **prog** / sus + m7#5 vamp (loop) : move=21 sopMax=1 common=50% par=0 | loop=true
 - **prog** / bVII-IV-I (empruntés) : move=36 sopMax=5 common=0% par=3
-- **rootlessa** / ii-V-I (C) : move=12 sopMax=1 common=33% par=0
+- **rootlessa** / ii-V-I (C) : move=8 sopMax=2 common=33% par=0
 - **rootlessa** / I-vi-IV-V (C) : move=9 sopMax=3 common=44% par=0
 - **rootlessa** / i-VII-VI (Am nat) : move=11 sopMax=1 common=0% par=0
 - **rootlessa** / IV-iv-I (chromatique) : move=3 sopMax=1 common=50% par=0

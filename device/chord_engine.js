@@ -1156,13 +1156,14 @@ function _vl2_realize(spec,voicing,opts){
 
 // --- selector ---
 var _vl2_W={
-	move:1,leapOver:4,leapFactor:0.6,
+	move:1,leapOver:4,leapFactor:0.7,
 	common:-7,commonPc:-2,
-	soprano:2.5,bass:1.2,bassFreeLeaps:[5,7,12],
+	soprano:2.2,bass:1.2,bassFreeLeaps:[5,7,12],
 	parallel:10,spacingGap:0.8,countDiff:6,
 	contrary:-1.5,spring:0.04,recall:-6,
 	window:10,outOfWindow:50,
-	tendency:-5,chromatic:-3
+	tendency:-5,chromatic:-3,
+	crossing:12
 };
 function _vl2_movCost(prev,cand){
 	var a=_vl2_vs(prev),b=_vl2_vs(cand),n=Math.min(a.length,b.length);
@@ -1183,17 +1184,24 @@ function _vl2_movCost(prev,cand){
 	}
 	for(var j=1;j<b.length-1;j++) if(b[j+1]-b[j]>12)tot+=(b[j+1]-b[j]-12)*_vl2_W.spacingGap;
 	if(n>=2){var db=b[0]-a[0],dt=b[n-1]-a[n-1];if(db!==0&&dt!==0&&(db>0)!==(dt>0))tot+=_vl2_W.contrary;}
+	var crosses=0;
+	for(var ci=0;ci<n-1;ci++){var dir=Math.abs(b[ci]-a[ci])+Math.abs(b[ci+1]-a[ci+1]);var sw=Math.abs(b[ci+1]-a[ci])+Math.abs(b[ci]-a[ci+1]);if(sw<dir)crosses++;}
+	if(crosses)tot+=crosses*_vl2_W.crossing;
 	return tot;
 }
 function _vl2_harmBonus(prev,cand,opts){
 	var ps=opts.prevSpec,sp=opts.spec;if(!ps||!sp||!prev||!prev.length)return 0;
 	var a=_vl2_vs(prev),b=_vl2_vs(cand),n=Math.min(a.length,b.length),bonus=0,chrom=0;
-	if(ps.isDominant&&_vl2_m(ps.rootPc-sp.rootPc)===7){
-		var sev=null,thi=null;
-		for(var i=0;i<ps.pcs.length;i++) if(ps.pcs[i].role==='seventh'){sev=ps.pcs[i];break;}
-		for(var i=0;i<sp.pcs.length;i++) if(sp.pcs[i].role==='third'){thi=sp.pcs[i];break;}
-		var apcs=new Set(a.map(_vl2_m)),bpcs=new Set(b.map(_vl2_m));
-		if(sev&&thi&&apcs.has(sev.pc)&&bpcs.has(thi.pc)&&!bpcs.has(sev.pc))bonus+=_vl2_W.tendency;
+	var apcs=new Set(a.map(_vl2_m)),bpcs=new Set(b.map(_vl2_m));
+	if(ps.isDominant){
+		var tri3=null,tri7=null;
+		for(var i=0;i<ps.pcs.length;i++){if(ps.pcs[i].role==='third')tri3=ps.pcs[i];if(ps.pcs[i].role==='seventh')tri7=ps.pcs[i];}
+		if(tri3&&apcs.has(tri3.pc)&&bpcs.has(_vl2_m(tri3.pc+1)))bonus+=_vl2_W.tendency;
+		if(tri7&&apcs.has(tri7.pc)&&bpcs.has(_vl2_m(tri7.pc-1)))bonus+=_vl2_W.tendency;
+		if(_vl2_m(ps.rootPc-sp.rootPc)===7){
+			var thi=null;for(var i=0;i<sp.pcs.length;i++) if(sp.pcs[i].role==='third'){thi=sp.pcs[i];break;}
+			if(tri7&&thi&&apcs.has(tri7.pc)&&bpcs.has(thi.pc)&&!bpcs.has(tri7.pc))bonus+=_vl2_W.tendency;
+		}
 	}
 	for(var i=0;i<n&&chrom<2;i++) if(Math.abs(b[i]-a[i])===1){bonus+=_vl2_W.chromatic;chrom++;}
 	return bonus;

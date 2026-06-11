@@ -8,14 +8,18 @@ const mean = ns => ns.reduce((a, b) => a + b, 0) / ns.length;
 const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 // Poids (point de départ — réglés au banc puis à l'oreille, cf. spec §2b).
+// W calibrés sur 382 chorals Bach (33 128 transitions) :
+//   soprano/basse ratio corpus = 2.07× → W.soprano/W.bass = 2.2/1.2 ≈ 1.83 (basse intentionnellement plus libre)
+//   sauts soprano >4st = 4.6% → leapFactor 0.7 ; croisements corpus = 0.000 → crossing 12.
 export const W = {
-  move: 1, leapOver: 4, leapFactor: 0.6,
+  move: 1, leapOver: 4, leapFactor: 0.7,
   common: -7, commonPc: -2,
-  soprano: 2.5, bass: 1.2, bassFreeLeaps: [5, 7, 12],
+  soprano: 2.2, bass: 1.2, bassFreeLeaps: [5, 7, 12],
   parallel: 10, spacingGap: 0.8, countDiff: 6,
   contrary: -1.5, spring: 0.04, recall: -6,
   window: 10, outOfWindow: 50,
-  tendency: -5, chromatic: -3
+  tendency: -5, chromatic: -3,
+  crossing: 12   // Bach = 0 croisements sur 33k transitions → pénalité ferme
 };
 
 // Coût de mouvement prev -> cand (appariement par index trié grave→aigu).
@@ -49,6 +53,15 @@ export function movementCost(prev, cand, explain, ctx) {
     const db = b[0] - a[0], dt = b[n - 1] - a[n - 1];
     if (db !== 0 && dt !== 0 && Math.sign(db) !== Math.sign(dt)) tot += W.contrary;
   }
+  // Croisement de voix (heuristique) : si permuter deux voix adjacentes coûterait
+  // moins cher que l'appariement direct (trié→trié), c'est que les voix se croisent.
+  let crosses = 0;
+  for (let i = 0; i < n - 1; i++) {
+    const direct = Math.abs(b[i] - a[i]) + Math.abs(b[i + 1] - a[i + 1]);
+    const swap   = Math.abs(b[i + 1] - a[i]) + Math.abs(b[i] - a[i + 1]);
+    if (swap < direct) crosses++;
+  }
+  if (crosses) { tot += crosses * W.crossing; explain.push('crossing×' + crosses); }
   if (commons) explain.push('communes:' + commons);
   return tot;
 }
@@ -61,19 +74,28 @@ export function harmonicBonus(prev, cand, opts, explain) {
   const n = Math.min(a.length, b.length);
   let bonus = 0, chrom = 0;
 
-  // V7 -> I (fondamentales à une quinte) : la 7e (note tendancielle) disparaît
-  // au profit de la 3ce de I → résolution lisse. Détection au niveau pitch-class
-  // (le revoicing réordonne les voix → l'index ne suffit pas).
-  const isVtoI = prevSpec.isDominant && mod(prevSpec.rootPc - spec.rootPc) === 7;
-  if (isVtoI) {
-    const sev = prevSpec.pcs.find(p => p.role === 'seventh');
-    const thi = spec.pcs.find(p => p.role === 'third');
-    const apcs = new Set(a.map(mod)), bpcs = new Set(b.map(mod));
-    if (sev && thi && apcs.has(sev.pc) && bpcs.has(thi.pc) && !bpcs.has(sev.pc)) {
-      bonus += W.tendency; explain.push('résolution 7→3');
+  const apcs = new Set(a.map(mod)), bpcs = new Set(b.map(mod));
+
+  // Résolutions de triton — tout accord dominant (pas seulement V→I).
+  // La 3ce majeure (sensible) doit monter d'un demi-ton ; la 7e mineure descendre.
+  if (prevSpec.isDominant) {
+    const tri3 = prevSpec.pcs.find(p => p.role === 'third');
+    const tri7 = prevSpec.pcs.find(p => p.role === 'seventh');
+    if (tri3 && apcs.has(tri3.pc) && bpcs.has(mod(tri3.pc + 1))) {
+      bonus += W.tendency; explain.push('triton:3↑');
+    }
+    if (tri7 && apcs.has(tri7.pc) && bpcs.has(mod(tri7.pc - 1))) {
+      bonus += W.tendency; explain.push('triton:7↓');
+    }
+    // V7→I : la 7e disparaît au profit de la 3ce de I (résolution classique).
+    if (mod(prevSpec.rootPc - spec.rootPc) === 7) {
+      const sev = tri7, thi = spec.pcs.find(p => p.role === 'third');
+      if (sev && thi && apcs.has(sev.pc) && bpcs.has(thi.pc) && !bpcs.has(sev.pc)) {
+        bonus += W.tendency; explain.push('V7→I:7→3');
+      }
     }
   }
-  // lignes chromatiques : voix bougeant d'exactement ±1 (cap 2)
+  // Lignes chromatiques : voix bougeant d'exactement ±1 (cap 2).
   for (let i = 0; i < n && chrom < 2; i++)
     if (Math.abs(b[i] - a[i]) === 1) { bonus += W.chromatic; chrom++; }
   if (chrom) explain.push('chromatique×' + chrom);
