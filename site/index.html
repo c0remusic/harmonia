@@ -6,18 +6,20 @@
   <title>Tuple &mdash; chord device for Ableton</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta name="description" content="A harmonic composition tool for fast and musical chord selection, exploration and performance inside Ableton Live.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* Brand typography (self-hosted) — Syne (display) + Space Grotesk (text) */
+    @font-face { font-family: 'Syne'; src: url('./fonts/Syne-Variable.ttf') format('truetype');
+      font-weight: 400 800; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Space Grotesk'; src: url('./fonts/SpaceGrotesk-Variable.ttf') format('truetype');
+      font-weight: 300 700; font-style: normal; font-display: swap; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #161616;
       --bg2: #232323;
       --bg3: #303030;
       --border: rgba(255,255,255,0.08);
-      --gold: #FFAD56;
-      --gold-dim: rgba(255, 173, 86, 0.14);
+      --gold: #FFdc82;
+      --gold-dim: rgba(255, 220, 130, 0.14);
       --blue: #8ECCE8;
       --blue-dim: rgba(142, 204, 232, 0.12);
       --white: #f0eee8;
@@ -27,7 +29,7 @@
     html { scroll-behavior: smooth; }
     body {
       background: var(--bg); color: var(--white);
-      font-family: 'Instrument Sans', sans-serif; font-size: 16px; line-height: 1.6;
+      font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.6;
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; }
@@ -40,9 +42,9 @@
       -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
       mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%); }
     .page-bg .glow { position: absolute; inset: 0;
-      background: radial-gradient(ellipse 50% 45% at 72% 18%, rgba(255,173,86,0.14) 0%, transparent 70%),
+      background: radial-gradient(ellipse 50% 45% at 72% 18%, rgba(255,220,130,0.14) 0%, transparent 70%),
                   radial-gradient(ellipse 45% 40% at 15% 55%, rgba(142,204,232,0.10) 0%, transparent 65%),
-                  radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,173,86,0.09) 0%, transparent 70%); }
+                  radial-gradient(ellipse 50% 40% at 80% 85%, rgba(255,220,130,0.09) 0%, transparent 70%); }
     .page-bg .vignette { position: absolute; inset: 0;
       background: radial-gradient(ellipse 90% 80% at 50% 35%, transparent 40%, rgba(0,0,0,0.55) 100%); }
     nav, .hero, section.block, footer { position: relative; z-index: 1; }
@@ -53,9 +55,10 @@
       transition: border-color .3s, background .3s, backdrop-filter .3s; }
     nav.scrolled { background: rgba(42,42,42,0.85); backdrop-filter: blur(12px); border-color: var(--border); }
     .nav-logo { text-decoration: none; display: flex; align-items: center; }
-    .nav-logo img { height: 22px; width: auto; display: block; }
-    .nav-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
-      background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.28);
+    .wordmark { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--gold);
+      letter-spacing: -0.01em; font-size: 21px; line-height: 1; display: inline-block; }
+    .nav-tag { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--gold);
+      background: var(--gold-dim); border: 1px solid rgba(255,220,130,0.28);
       border-radius: 4px; padding: 2px 7px; letter-spacing: .06em; }
     .nav-links { margin-left: auto; display: flex; gap: 30px; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
@@ -64,8 +67,8 @@
     /* BUTTONS */
     .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--gold-dim);
       color: var(--gold); font-weight: 600; font-size: 14px; padding: 13px 26px; border-radius: 7px;
-      text-decoration: none; border: 1px solid rgba(255,173,86,0.35); cursor: pointer; transition: all .2s; }
-    .btn-primary:hover { background: rgba(255,173,86,0.2); border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 10px 30px rgba(255,173,86,0.2); }
+      text-decoration: none; border: 1px solid rgba(255,220,130,0.35); cursor: pointer; transition: all .2s; }
+    .btn-primary:hover { background: rgba(255,220,130,0.2); border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 10px 30px rgba(255,220,130,0.2); }
     .btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border);
       color: var(--muted); font-size: 14px; font-weight: 500; padding: 13px 26px; border-radius: 7px;
       text-decoration: none; background: rgba(255,255,255,0.02); transition: all .2s; cursor: pointer; }
@@ -80,24 +83,24 @@
     .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto;
       padding: 0 48px; width: 100%; }
     .hero-inner { max-width: 720px; }
-    .eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .16em;
+    .eyebrow { font-family: 'Space Grotesk', sans-serif; font-size: 11px; letter-spacing: .16em;
       color: var(--gold); text-transform: uppercase; margin-bottom: 26px; display: flex; align-items: center; gap: 12px; }
     .eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--gold); opacity: .55; }
-    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(56px, 8vw, 96px);
-      line-height: .95; letter-spacing: -0.02em; margin-bottom: 26px; }
-    .hero h1 em { font-style: italic; color: var(--gold); }
+    .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(56px, 8vw, 96px);
+      line-height: .95; letter-spacing: -0.02em; margin-bottom: 26px; color: var(--gold); }
+    .hero h1 em { font-style: normal; color: var(--gold); }
     .hero-desc { font-size: 18px; color: var(--muted); max-width: 500px; line-height: 1.7; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
     /* SECTION SHELL */
     section.block { padding: 90px 48px; max-width: 1200px; margin: 0 auto; }
-    .label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
+    .label { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--gold);
       letter-spacing: .14em; text-transform: uppercase; margin-bottom: 16px; }
     .sec-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.22); color: var(--gold); margin-bottom: 18px; }
+      background: var(--gold-dim); border: 1px solid rgba(255,220,130,0.22); color: var(--gold); margin-bottom: 18px; }
     .sec-icon.blue { background: var(--blue-dim); border-color: rgba(142,204,232,0.22); color: var(--blue); }
     .sec-icon svg { width: 19px; height: 19px; }
-    .heading { font-family: 'DM Serif Display', serif; font-size: clamp(34px, 4.2vw, 52px);
+    .heading { font-family: 'Syne', sans-serif; font-size: clamp(34px, 4.2vw, 52px);
       line-height: 1.05; letter-spacing: -0.02em; }
     .sub { font-size: 15px; color: var(--muted); line-height: 1.8; max-width: 540px; margin-top: 18px; }
 
@@ -114,14 +117,14 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); }
     .feature:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); }
     .ficon { width: 42px; height: 42px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-      font-size: 19px; margin-bottom: 20px; background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.22); color: var(--gold); }
+      font-size: 19px; margin-bottom: 20px; background: var(--gold-dim); border: 1px solid rgba(255,220,130,0.22); color: var(--gold); }
     .ficon.blue { background: var(--blue-dim); border-color: rgba(142,204,232,0.22); color: var(--blue); }
-    .feature h3 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 20px; letter-spacing: -0.01em; margin-bottom: 10px; }
+    .feature h3 { font-family: 'Syne', sans-serif; font-weight: 400; font-size: 20px; letter-spacing: -0.01em; margin-bottom: 10px; }
     .feature p { font-size: 14px; color: var(--muted); line-height: 1.7; }
     .features-grid { counter-reset: feat; }
     .feature { counter-increment: feat; }
     .feature::after { content: counter(feat, decimal-leading-zero); position: absolute; top: 16px; right: 20px;
-      font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted2); }
+      font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: var(--muted2); }
 
     /* DEVICE SHOWCASE — embedded interactive demo */
     .showcase { max-width: 1080px; margin: 0 auto; padding: 10px 24px 60px; }
@@ -131,31 +134,31 @@
       border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0; }
     .frame-bar .d { width: 10px; height: 10px; border-radius: 50%; }
     .d-r{background:#ff5f57}.d-y{background:#febc2e}.d-g{background:#28c840}
-    .frame-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-left: 8px; }
+    .frame-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: var(--muted); margin-left: 8px; }
     .demo-frame { width: 100%; height: 540px; border: none; display: block; border-radius: 0 0 12px 12px; }
     .demo-callouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
     .dc { background: #1e1e1e; border: 1px solid rgba(255,255,255,.10); border-radius: 10px; padding: 14px 16px;
       transition: border-color .2s; }
     .dc:hover { border-color: rgba(255,255,255,.2); }
-    .dc-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: .08em; margin-bottom: 4px; }
+    .dc-n { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--gold); letter-spacing: .08em; margin-bottom: 4px; }
     .dc.blue .dc-n { color: var(--blue); }
-    .dc-t { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 5px; }
+    .dc-t { font-family: 'Syne', sans-serif; font-size: 16px; margin-bottom: 5px; }
     .dc-x { font-size: 12px; color: var(--muted); line-height: 1.5; }
     .spot { position: absolute; transform: translate(-50%,-50%); width: 20px; height: 20px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace;
-      font-size: 10px; font-weight: 500; z-index: 4; background: rgba(255,173,86,0.25); border: 1px solid var(--gold);
-      color: var(--gold); box-shadow: 0 0 0 0 rgba(255,173,86,0.5); animation: hs 2.8s infinite; }
+      display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif;
+      font-size: 10px; font-weight: 500; z-index: 4; background: rgba(255,220,130,0.25); border: 1px solid var(--gold);
+      color: var(--gold); box-shadow: 0 0 0 0 rgba(255,220,130,0.5); animation: hs 2.8s infinite; }
     .spot.blue { background: rgba(142,204,232,0.25); border-color: var(--blue); color: var(--blue);
       box-shadow: 0 0 0 0 rgba(142,204,232,0.5); animation: hsb 2.8s infinite; }
-    @keyframes hs { 70%{box-shadow:0 0 0 9px rgba(255,173,86,0)} 100%{box-shadow:0 0 0 0 rgba(255,173,86,0)} }
+    @keyframes hs { 70%{box-shadow:0 0 0 9px rgba(255,220,130,0)} 100%{box-shadow:0 0 0 0 rgba(255,220,130,0)} }
     @keyframes hsb { 70%{box-shadow:0 0 0 9px rgba(142,204,232,0)} 100%{box-shadow:0 0 0 0 rgba(142,204,232,0)} }
     .callout { position: absolute; z-index: 3; width: 232px; background: #1e1e1e;
       border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 15px 17px;
       box-shadow: 0 22px 55px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08); transition: transform .15s, border-color .2s; }
     .callout:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.22); }
-    .callout .n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: .08em; }
+    .callout .n { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--gold); letter-spacing: .08em; }
     .callout.blue .n { color: var(--blue); }
-    .callout .t { font-family: 'DM Serif Display', serif; font-size: 17px; margin: 4px 0 6px; }
+    .callout .t { font-family: 'Syne', sans-serif; font-size: 17px; margin: 4px 0 6px; }
     .callout .x { font-size: 12px; color: var(--muted); line-height: 1.55; }
 
     /* VOICINGS */
@@ -168,8 +171,8 @@
                   inset 0 1px 0 rgba(255,255,255,0.05); }
     .chip::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); }
-    .chip:hover { border-color: rgba(255,173,86,0.5); background: var(--gold-dim); transform: translateY(-3px); }
-    .chip .name { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+    .chip:hover { border-color: rgba(255,220,130,0.5); background: var(--gold-dim); transform: translateY(-3px); }
+    .chip .name { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
     .chip .d { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
     /* CARD (download + support) */
@@ -182,8 +185,8 @@
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .4; }
     .card.support::before { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
-    .card h2 { font-family: 'DM Serif Display', serif; font-size: 34px; letter-spacing: -0.02em; margin-bottom: 12px; }
-    .card .req { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); line-height: 1.9; }
+    .card h2 { font-family: 'Syne', sans-serif; font-size: 34px; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .card .req { font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: var(--muted); line-height: 1.9; }
     .card .req b { color: var(--gold); font-weight: 500; }
     .card .req code { color: var(--gold); }
     .card-actions { display: flex; flex-direction: column; gap: 12px; min-width: 210px; }
@@ -196,15 +199,15 @@
       background: rgba(255,255,255,0.02); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
       box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
       display: flex; flex-direction: column; }
-    .contact-card h3 { font-family: 'DM Serif Display', serif; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .contact-card h3 { font-family: 'Syne', sans-serif; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 10px; }
     .contact-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
     .contact-card .btn-primary, .contact-card .btn-secondary, .contact-card .btn-blue { align-self: flex-start; margin-top: auto; }
     .contact-form { display: flex; flex-direction: column; gap: 12px; }
-    .contact-form input, .contact-form textarea { width: 100%; font-family: 'Instrument Sans', sans-serif;
+    .contact-form input, .contact-form textarea { width: 100%; font-family: 'Space Grotesk', sans-serif;
       font-size: 14px; color: var(--white); background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 14px; transition: border-color .2s, background .2s; }
     .contact-form input::placeholder, .contact-form textarea::placeholder { color: var(--muted2); }
-    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: rgba(255,173,86,0.5); background: rgba(255,255,255,0.06); }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: rgba(255,220,130,0.5); background: rgba(255,255,255,0.06); }
     .contact-form textarea { resize: vertical; min-height: 110px; }
     .contact-form button { align-self: flex-start; margin-top: 4px; }
     .form-status { font-size: 13px; color: var(--blue); min-height: 18px; }
@@ -220,12 +223,12 @@
     .modal { position: relative; width: 100%; max-width: 780px; max-height: 85vh; overflow-y: auto;
       background: #1c1c1c; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 44px 48px;
       box-shadow: 0 24px 80px rgba(0,0,0,0.55); }
-    .modal-title { font-family: 'DM Serif Display', serif; font-size: 30px; letter-spacing: -0.02em; margin-bottom: 28px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 30px; letter-spacing: -0.02em; margin-bottom: 28px; }
     .modal-close { position: absolute; top: 18px; right: 20px; background: none; border: none;
       color: var(--muted); font-size: 28px; line-height: 1; cursor: pointer; transition: color .2s; }
     .modal-close:hover { color: var(--white); }
     .legal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 36px; }
-    .legal-grid h4 { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--gold);
+    .legal-grid h4 { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 500; color: var(--gold);
       text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
     .legal-grid p { font-size: 13px; color: var(--muted); line-height: 1.7; }
     .legal-grid a { color: var(--blue); text-decoration: none; }
@@ -235,11 +238,11 @@
     /* FOOTER */
     footer { border-top: 1px solid var(--border); padding: 30px 48px; display: flex;
       align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .footer-logo img { height: 16px; width: auto; opacity: .45; }
+    .footer-logo { font-size: 15px; opacity: .5; }
     .footer-links { display: flex; gap: 22px; }
     .footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .2s; }
     .footer-links a:hover { color: var(--white); }
-    .footer-note { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted2); }
+    .footer-note { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--muted2); }
 
     /* ANIM */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
@@ -268,11 +271,11 @@
     .mobile-callouts { display: none; margin-top: 20px; padding: 0 4px; }
     .mobile-callouts ol { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .mobile-callouts li { display: flex; align-items: flex-start; gap: 12px; }
-    .mobile-callouts .mc-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
-      background: var(--gold-dim); border: 1px solid rgba(255,173,86,0.28); border-radius: 4px;
+    .mobile-callouts .mc-n { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--gold);
+      background: var(--gold-dim); border: 1px solid rgba(255,220,130,0.28); border-radius: 4px;
       padding: 2px 7px; flex: none; margin-top: 2px; }
     .mobile-callouts .mc-n.blue { color: var(--blue); background: var(--blue-dim); border-color: rgba(142,204,232,0.28); }
-    .mobile-callouts .mc-t { font-family: 'DM Serif Display', serif; font-size: 15px; }
+    .mobile-callouts .mc-t { font-family: 'Syne', sans-serif; font-size: 15px; }
     .mobile-callouts .mc-x { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
 
     @media (max-width: 920px) {
@@ -304,7 +307,7 @@
   </div>
 
   <nav id="nav">
-    <a href="#" class="nav-logo"><img src="./logo.png" alt="Tuple"></a>
+    <a href="#" class="nav-logo"><span class="wordmark">Tuple</span></a>
     <span class="nav-tag">Max for Live</span>
     <div class="nav-links">
       <a href="#device">Try it</a>
@@ -361,10 +364,44 @@
     <div class="demo-callouts">
       <div class="dc blue"><div class="dc-n">01</div><div class="dc-t">Chord Grid</div><div class="dc-x">7 diatonic degrees &mdash; every valid chord, always visible.</div></div>
       <div class="dc"><div class="dc-n">02</div><div class="dc-t">Voice Leading</div><div class="dc-x">3 algorithms with common-tone detection for smooth progressions.</div></div>
-      <div class="dc blue"><div class="dc-n">03</div><div class="dc-t">13 Voicings</div><div class="dc-x">Classic, Piano, Open, Spread, House, Prog, Rootless, Drop 2/3, Jazz, Nu-House, Trap.</div></div>
+      <div class="dc blue"><div class="dc-n">03</div><div class="dc-t">15 Voicings</div><div class="dc-x">Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2/3, Jazz, Nu-House, Trap, Trance, Funk.</div></div>
       <div class="dc"><div class="dc-n">04</div><div class="dc-t">Live Scale Sync</div><div class="dc-x">Import key &amp; scale from Ableton Live in one click.</div></div>
       <div class="dc"><div class="dc-n">05</div><div class="dc-t">Borrowed Chords</div><div class="dc-x">Secondary dominants &amp; modal interchange, right in the grid.</div></div>
       <div class="dc blue"><div class="dc-n">06</div><div class="dc-t">MIDI &amp; Hold</div><div class="dc-x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div>
+    </div>
+  </section>
+
+  <!-- ABLETON LIVE INTEGRATION -->
+  <section class="block" id="live">
+    <div class="features-head">
+      <div>
+        <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4v16M7 7v13M11 9v11M15 4v16M19 11v9M23 8v12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <p class="label">Ableton Live</p>
+        <p class="heading">Built right into<br>your session</p>
+      </div>
+      <p class="sub">Tuple isn&rsquo;t a standalone app &mdash; it&rsquo;s a <b>Max for Live</b> device that lives on a MIDI track. It reads your project, plays your instruments and follows you while you write.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 8v8M12 8v8M16 8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <h3>Native Max for Live</h3>
+        <p>Drop <code>tuple.amxd</code> onto a MIDI track &mdash; no standalone app, no extra setup. It runs inside Live like any stock device.</p>
+      </div>
+      <div class="feature">
+        <div class="ficon blue"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M4 12h4l3-7 4 14 3-7h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Plays your instruments</h3>
+        <p>Tuple streams MIDI to whatever instrument follows it &mdash; synths, samplers, Rhodes, anything. Your bass keeps its own track and its own sound.</p>
+      </div>
+      <div class="feature">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M12 4v2M12 18v2M4 12H2M22 12h-2M6.34 6.34 4.93 4.93M19.07 19.07l-1.41-1.41M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/></svg></div>
+        <h3>Live scale sync</h3>
+        <p>One click imports Live&rsquo;s current key and scale, so the chord grid always matches your session &mdash; no manual setup.</p>
+      </div>
+      <div class="feature">
+        <div class="ficon blue"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="6.5" y="6.5" width="3.4" height="3.4" rx="1" fill="currentColor"/><rect x="11.5" y="6.5" width="3.4" height="3.4" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="6.5" y="11.5" width="3.4" height="3.4" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="14" y="14" width="3.4" height="3.4" rx="1" fill="currentColor"/></svg></div>
+        <h3>Made for performance</h3>
+        <p>Hold/Latch, a clickable grid and full keyboard mapping for playing live &mdash; with Push&nbsp;2 pad integration on the way.</p>
+      </div>
     </div>
   </section>
 
@@ -391,13 +428,13 @@
       </div>
       <div class="feature">
         <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
-        <h3>13 Voicings</h3>
-        <p>Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2/3, Jazz, Nu-House, Trap &mdash; from tight jazz to wide electronic textures.</p>
+        <h3>15 Voicings</h3>
+        <p>Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2/3, Jazz, Nu-House, Trap, Trance, Funk &mdash; from tight jazz to wide electronic textures.</p>
       </div>
       <div class="feature">
-        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M12 4v2M12 18v2M4 12H2M22 12h-2M6.34 6.34 4.93 4.93M19.07 19.07l-1.41-1.41M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/></svg></div>
-        <h3>Live Scale Sync</h3>
-        <p>Instantly import the current key and scale from Ableton Live &mdash; stay in sync with your session at all times.</p>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M4 18h16M4 14h16M7 14V8m5 6V5m5 9v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <h3>One-hand voicings</h3>
+        <p>Every voicing is a single coherent grip in one register &mdash; built to sit on top of your own bass line, never doubling it.</p>
       </div>
       <div class="feature">
         <div class="ficon blue"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M9 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4h-2M9 3a3 3 0 0 0 6 0M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
@@ -405,9 +442,9 @@
         <p>Secondary dominants and modal interchange chords right in the main grid &mdash; always one click away.</p>
       </div>
       <div class="feature">
-        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><rect x="2" y="7" width="20" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13.5" r="1.5" fill="currentColor"/></svg></div>
-        <h3>MIDI &amp; Hold</h3>
-        <p>Full keyboard mapping, clickable grid and Hold/Latch mode for performance &mdash; with visual keyboard feedback.</p>
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" width="19" height="19"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="8.5" r="1.4" fill="currentColor"/><circle cx="15" cy="8.5" r="1.4" fill="currentColor"/><circle cx="7.5" cy="13" r="1.4" fill="currentColor"/><circle cx="16.5" cy="13" r="1.4" fill="currentColor"/></svg></div>
+        <h3>Color-coded degrees</h3>
+        <p>Five color logics &mdash; spectrum, function, tension, fifths, quality &mdash; make the whole grid readable at a glance.</p>
       </div>
     </div>
   </section>
@@ -416,21 +453,23 @@
   <section class="block" id="voicings">
     <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 4v10M15 4v10" stroke="currentColor" stroke-width="1.6"/><rect x="7.3" y="4" width="3.4" height="7" rx="1" fill="currentColor"/><rect x="13.3" y="4" width="3.4" height="7" rx="1" fill="currentColor"/></svg></div>
     <p class="label">Voicings</p>
-    <p class="heading">13 ways to voice any chord</p>
+    <p class="heading">15 ways to voice any chord</p>
     <div class="voicings-grid">
       <div class="chip"><div class="name">Classic</div><div class="d">Close position</div></div>
       <div class="chip"><div class="name">Piano</div><div class="d">Bass + grouped upper</div></div>
       <div class="chip"><div class="name">Open</div><div class="d">2nd voice up an octave</div></div>
       <div class="chip"><div class="name">Spread</div><div class="d">Wide alternating</div></div>
-      <div class="chip"><div class="name">House</div><div class="d">Chord + bass doubling</div></div>
-      <div class="chip"><div class="name">Prog</div><div class="d">Wide prog/techno stab</div></div>
-      <div class="chip"><div class="name">Rootless A</div><div class="d">No root &middot; 3&ndash;5&ndash;7&ndash;9</div></div>
-      <div class="chip"><div class="name">Rootless B</div><div class="d">No root &middot; 7&ndash;9&ndash;3&ndash;5</div></div>
-      <div class="chip"><div class="name">Drop 2</div><div class="d">2nd from top, &ndash;8va</div></div>
-      <div class="chip"><div class="name">Drop 3</div><div class="d">3rd from top, &ndash;8va</div></div>
-      <div class="chip"><div class="name">Jazz</div><div class="d">Rootless cluster, C3 anchor</div></div>
-      <div class="chip"><div class="name">Nu-House</div><div class="d">Split C3 + C5, open gap</div></div>
-      <div class="chip"><div class="name">Trap</div><div class="d">Sub bass + upper cluster</div></div>
+      <div class="chip"><div class="name">House</div><div class="d">Rootless bright stab</div></div>
+      <div class="chip"><div class="name">Prog</div><div class="d">Pad &middot; root + octave</div></div>
+      <div class="chip"><div class="name">Rootless A</div><div class="d">No root &middot; close cluster</div></div>
+      <div class="chip"><div class="name">Rootless B</div><div class="d">No root &middot; open spread</div></div>
+      <div class="chip"><div class="name">Drop 2</div><div class="d">2nd from top, octave down</div></div>
+      <div class="chip"><div class="name">Drop 3</div><div class="d">3rd from top, octave down</div></div>
+      <div class="chip"><div class="name">Jazz</div><div class="d">Rootless cluster, C3</div></div>
+      <div class="chip"><div class="name">Nu-House</div><div class="d">Rootless, open &amp; airy</div></div>
+      <div class="chip"><div class="name">Trap</div><div class="d">Dark close chord, low</div></div>
+      <div class="chip"><div class="name">Trance</div><div class="d">Anthem &middot; triad + octave</div></div>
+      <div class="chip"><div class="name">Funk</div><div class="d">Open &ldquo;10th&rdquo; grip</div></div>
     </div>
   </section>
 
@@ -476,6 +515,14 @@
     <p class="heading">Get in touch &amp; join the community</p>
     <div class="contact-grid">
       <div class="contact-card">
+        <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.3 1.4 13.7 13.7 0 0 0-15-.05A14.8 14.8 0 0 1 8.8 3.5L8.55 3A19.7 19.7 0 0 0 3.7 4.4 20.3 20.3 0 0 0 .2 18.1a19.9 19.9 0 0 0 6 3 14.7 14.7 0 0 0 1.27-2.06 12.9 12.9 0 0 1-2-.96l.5-.37a14.2 14.2 0 0 0 12.07 0l.5.37a12.7 12.7 0 0 1-2 .96A14.3 14.3 0 0 0 17.8 21a19.8 19.8 0 0 0 6-3 20.3 20.3 0 0 0-3.5-13.6zM8.02 15.3c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.95 2.41-2.15 2.41zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.94 2.41-2.15 2.41z"/></svg>
+        <h3>Discord</h3>
+        <p>Share presets and progressions, get help, and follow development with other Tuple users.</p>
+        <a href="https://discord.gg/N52jGhGE" target="_blank" rel="noopener" class="btn-primary btn-blue">Join the Discord</a>
+        <!-- Widget requires "Server Widget" enabled in the Discord server settings -->
+        <iframe class="discord-widget" src="https://discord.com/widget?id=1514004893994713138&theme=dark" height="300" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Discord server"></iframe>
+      </div>
+      <div class="contact-card">
         <svg class="mail-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h3>Contact</h3>
         <p>A question, a bug, a feature idea? Send a message &mdash; feedback shapes where Tuple goes next.</p>
@@ -491,19 +538,11 @@
           <p class="form-status" id="form-status"></p>
         </form>
       </div>
-      <div class="contact-card">
-        <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.3 1.4 13.7 13.7 0 0 0-15-.05A14.8 14.8 0 0 1 8.8 3.5L8.55 3A19.7 19.7 0 0 0 3.7 4.4 20.3 20.3 0 0 0 .2 18.1a19.9 19.9 0 0 0 6 3 14.7 14.7 0 0 0 1.27-2.06 12.9 12.9 0 0 1-2-.96l.5-.37a14.2 14.2 0 0 0 12.07 0l.5.37a12.7 12.7 0 0 1-2 .96A14.3 14.3 0 0 0 17.8 21a19.8 19.8 0 0 0 6-3 20.3 20.3 0 0 0-3.5-13.6zM8.02 15.3c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.95 2.41-2.15 2.41zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.94 2.41-2.15 2.41z"/></svg>
-        <h3>Discord</h3>
-        <p>Share presets and progressions, get help, and follow development with other Tuple users.</p>
-        <a href="https://discord.gg/N52jGhGE" target="_blank" rel="noopener" class="btn-primary btn-blue">Join the Discord</a>
-        <!-- Widget requires "Server Widget" enabled in the Discord server settings -->
-        <iframe class="discord-widget" src="https://discord.com/widget?id=1514004893994713138&theme=dark" height="300" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Discord server"></iframe>
-      </div>
     </div>
   </section>
 
   <footer>
-    <img src="./logo.png" alt="Tuple" class="footer-logo">
+    <span class="wordmark footer-logo">Tuple</span>
     <span class="footer-links">
       <a href="#" id="legal-link">Legal notice</a>
       <a href="https://github.com/c0remusic/tuple" target="_blank" rel="noopener">GitHub</a>

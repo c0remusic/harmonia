@@ -1,7 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#161616"/>
-  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="none" stroke="#FFAD56" stroke-opacity="0.35"/>
-  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
-        font-family="Georgia, 'Times New Roman', serif" font-style="italic"
-        font-size="40" font-weight="400" fill="#FFAD56">H</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-136 -1006 1372 1372" width="64" height="64">
+  <!-- Tuple favicon - glyphe T de Syne ExtraBold, jaune sur fond transparent -->
+  <path d="M30-450L30-640L1070-640L1070-450L30-450M425 0L425-463L675-463L675 0" fill="#FFdc82"/>
 </svg>

@@ -18,7 +18,7 @@ export function checkIdentity(voicing, notes, spec) {
   }
 
   switch (voicing) {
-    case 'rootlessa': case 'rootlessb': case 'jazz': case 'nuhouse':
+    case 'rootlessa': case 'rootlessb': case 'jazz': case 'nuhouse': case 'house':
       if (pcs.has(spec.rootPc)) v.push('rootless:fondamentale présente');
       break;
     case 'drop2': case 'drop3': {
@@ -32,14 +32,9 @@ export function checkIdentity(voicing, notes, spec) {
       if (voicing === 'drop3' && fromTop !== 2) v.push('drop3:voix abaissée ≠ 3e du haut');
       break;
     }
-    case 'house':
-      // deep-house / french-touch stab : basse = fondamentale, structure sup. ROOTLESS (brillante)
-      if (mod(ns[0]) !== spec.rootPc) v.push('house:basse ≠ fondamentale');
-      if (ns.filter(n => mod(n) === spec.rootPc).length > 1) v.push('house:fondamentale doublée (sup. doit être rootless)');
-      break;
     case 'trap':
+      // accord grave root-inclus : basse = fondamentale (position fondamentale)
       if (mod(ns[0]) !== spec.rootPc) v.push('trap:basse ≠ fondamentale');
-      if (ns.filter(n => mod(n) === spec.rootPc).length > 1) v.push('trap:fondamentale doublée');
       break;
     case 'piano': {
       if (mod(ns[0]) !== spec.rootPc) v.push('piano:basse ≠ fondamentale');
@@ -47,9 +42,6 @@ export function checkIdentity(voicing, notes, spec) {
       if (rh.length && span(rh) > 12) v.push('piano:MD > 1 octave');
       break;
     }
-    case 'prog':
-      if (ns.length >= 2 && ns[1] - ns[0] < 7) v.push('prog:basse non détachée');
-      break;
   }
   return v;
 }
