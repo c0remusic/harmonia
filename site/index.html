@@ -626,18 +626,30 @@
     // Contact form (Formspree AJAX)
     const form = document.getElementById('contact-form');
     const status = document.getElementById('form-status');
+    const submitBtn = form.querySelector('button[type=submit]');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      submitBtn.disabled = true;
       status.style.color = 'var(--blue)';
       status.textContent = 'Sending…';
       try {
         const res = await fetch(form.action, {
           method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
         });
-        if (res.ok) { form.reset(); status.textContent = 'Thanks! Your message has been sent.'; }
-        else { status.style.color = '#ff8080'; status.textContent = 'Something went wrong. Please try again.'; }
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          form.reset();
+          status.textContent = 'Thanks! Your message has been sent.';
+        } else {
+          status.style.color = '#ff8080';
+          const msg = (data.errors && data.errors[0] && data.errors[0].message) || data.error || 'Something went wrong. Try emailing c0re_m4l@proton.me directly.';
+          status.textContent = msg;
+          submitBtn.disabled = false;
+        }
       } catch (_) {
-        status.style.color = '#ff8080'; status.textContent = 'Network error. Please try again.';
+        status.style.color = '#ff8080';
+        status.textContent = 'Network error. Email us at c0re_m4l@proton.me';
+        submitBtn.disabled = false;
       }
     });
   </script>
