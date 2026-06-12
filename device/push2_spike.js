@@ -57,6 +57,13 @@ var theCS = null, theMatrix = null, theMid = null;
 var pressed = {}, pressedPitch = {};
 var colLen = [0,0,0,0,0,0,0], borLen = 0, colTmp = null, borTmp = 0;
 
+// Observe device active state — release grab si le device est désactivé
+var deviceActiveApi = new LiveAPI(function() {
+	var active = parseInt(deviceActiveApi.get("active"));
+	if (!active && enabled) { L("device désactivé → release"); disable(); }
+}, "this_device");
+deviceActiveApi.observe("active");
+
 // écriture-clip (option 1-piste) — DORMANTE
 var REC = false, lastNotes = [], writePos = 0, entries = [], theClip = null;
 
