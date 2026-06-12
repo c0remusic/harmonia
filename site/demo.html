@@ -19,7 +19,7 @@
     --mono:'JetBrains Mono',ui-monospace,monospace;
     --display:'Unbounded',var(--sans);
   }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;outline:none}
   body{background:#1a1a1a;color:var(--txt);font-family:var(--sans);min-height:100vh;
     display:flex;flex-direction:column;align-items:center;padding:28px 16px 40px}
   .page-h{max-width:1080px;width:100%;margin-bottom:14px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
@@ -589,6 +589,7 @@
     if(had)send('release'); }
 
   function flash(e){ e.classList.add('flash'); setTimeout(function(){e.classList.remove('flash');},180); }
+  function pressFlash(el){ el.classList.add('flash'); function off(){ el.classList.remove('flash'); document.removeEventListener('mouseup',off); el.removeEventListener('mouseleave',off); } document.addEventListener('mouseup',off); el.addEventListener('mouseleave',off); }
 
   // ── Dispatcher : remplace la sortie Max — tout part dans le moteur local ──
   function send(){ var a=Array.prototype.slice.call(arguments); demoHandle(a); }
@@ -614,7 +615,7 @@
     if(STEPS[m]){ playFn(m,a[1]); return; } }
 
   // ── Contrôles ──
-  document.getElementById('sync').onmousedown=function(){ flash(this); };
+  document.getElementById('sync').onmousedown=function(){ pressFlash(this); };
   document.getElementById('key').onclick=function(e){ e.stopPropagation();
     openDrop('key','KEY',KEYS,state.root,3,function(i,name){ state.root=i; document.getElementById('keyV').textContent=name; send('rootidx',i); }); };
   document.getElementById('scale').onclick=function(e){ e.stopPropagation();
