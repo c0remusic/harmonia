@@ -396,8 +396,8 @@
   var KEYS     = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   var SCALES   = ['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min'];
   var VOICINGS = ['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3','Jazz','Nu-House','Trap','Trance','Funk'];
-  var VLMODES  = ['ANCHOR','RELATIVE','PIANO'];
-  var VLMODE_MSG = ['anchored','relative','piano'];
+  var VLMODES  = ['ANCHOR','FLOW'];
+  var VLMODE_MSG = ['anchored','flow'];
   // Couleur par degré — légende écran ↔ pads Push. Plusieurs logiques, cyclables.
   var SCHEMES = [
     // 0 — Spectre : arc-en-ciel par degré, DÉMARRE AU BLEU (tonique) → magenta.
@@ -625,7 +625,8 @@
     var vl=document.getElementById('vl');
     vl.className='btn'+(state.vl?' gold':'');
     var vm=document.getElementById('vlmode');
-    vm.className='btn'+(state.vlmodeIdx===0?'':' gold');
+    vm.className='btn blue';                       // anchor/flow look egal (plus de gold sur flow)
+    vm.style.opacity=state.vl?'':'0.4';            // grise quand VL off (mode sans effet)
     vm.textContent=VLMODES[state.vlmodeIdx];
     renderOct();
   }
