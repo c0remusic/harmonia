@@ -208,13 +208,15 @@ export function realize(spec, voicing, opts = {}) {
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
-  // classic + VL off : position fondamentale STRICTE, registre ABSOLU aligné sur les
-  // voicings floored (base 48+octShift, octShift borné comme les ABSOLUTE) -> un cran
-  // d'OCTAVE = même décalage pour TOUS (descente uniforme, pas de clamp anti-boue qui
-  // remonterait classic). À l'octave 0, base=48=C3. Voir decisions.md.
+  // classic + VL off : position fondamentale STRICTE, registre ancré sur la TONIQUE de la
+  // gamme (keyRoot) -> I est toujours le plus bas, les autres degrés au-dessus dans l'ordre
+  // diatonique. cFloor=48+octShift (C3 à oct0) sert de plafond ; cBase recule jusqu'à la
+  // tonique la plus proche en-dessous. Voir decisions.md.
   if (vc === 'classic' && opts.rootPos) {
+    const keyRoot = opts.keyRoot ?? 0;
     const cShift = Math.max(-12, Math.min(24, Math.round((center - 60) / 12) * 12));
-    const cBase = 48 + cShift, rootMidi = cBase + mod(spec.rootPc - mod(cBase));
+    const cFloor = 48 + cShift, cBase = cFloor - mod(cFloor - keyRoot);
+    const rootMidi = cBase + mod(spec.rootPc - mod(cBase));
     const notes = vsort(closeFrom(spec, rootMidi)).slice(0, 6);
     if (Math.min(...notes) < 24 || Math.max(...notes) > 108) return [];
     if (checkIdentity(vc, notes, spec).length) return [];

@@ -1282,13 +1282,14 @@ function _vl2_realize(spec,voicing,opts){
 	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
-	// classic + VL off : position fondamentale STRICTE, registre ABSOLU aligné sur les
-	// voicings floored (base 48+octShift, octShift borné comme les ABSOLUTE) -> un cran
-	// d'OCTAVE = même décalage pour TOUS (descente uniforme, pas de clamp anti-boue qui
-	// remonterait classic). À l'octave 0, base=48=C3. Voir decisions.md.
+	// classic + VL off : position fondamentale STRICTE, registre ancré sur la TONIQUE de la
+	// gamme (root global) -> I est toujours le plus bas, les autres degrés au-dessus dans
+	// l'ordre diatonique. cFloor=48+octShift (C3 à oct0) sert de plafond ; cBase recule
+	// jusqu'à la tonique la plus proche en-dessous. Voir decisions.md.
 	if(vc==='classic'&&opts&&opts.rootPos){
 		var cShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
-		var cBase=48+cShift,cr=cBase+_vl2_m(spec.rootPc-_vl2_m(cBase));
+		var cFloor=48+cShift,cBase=cFloor-_vl2_m(cFloor-root);
+		var cr=cBase+_vl2_m(spec.rootPc-_vl2_m(cBase));
 		var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
 		if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)return[];
 		if(_vl2_checkIdentity(vc,cn,spec).length)return[];
@@ -1428,10 +1429,15 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	} else {
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
-	var center=(vc==='classic'&&voiceLeadingEnabled)?(48+currentOctave*12):(60+currentOctave*12),key=_vl2_specKey(spec)+'|'+vc+'|'+center;
-	var cands=_vl2_realize(spec,vc,{center:center,rootPos:!voiceLeadingEnabled});
+	// octCenter : centre C-ancré transmis à realize (calcul cFloor/rootPos correct)
+	// selCenter : centre tonique-ancré pour le sélecteur (gravité sur I, pas C)
+	var octCenter=60+currentOctave*12;
+	var cFloor=48+Math.max(-12,Math.min(24,currentOctave*12));
+	var selCenter=(vc==='classic')?(cFloor-_vl2_m(cFloor-root)):octCenter;
+	var key=_vl2_specKey(spec)+'|'+vc+'|'+selCenter;
+	var cands=_vl2_realize(spec,vc,{center:octCenter,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;
-	var notes=_vl2_select(cands,{mode:mode,center:center,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
+	var notes=_vl2_select(cands,{mode:mode,center:selCenter,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
 	_vl2_prevSpec=spec;
 	return notes;
 }

@@ -11,10 +11,11 @@ export function createEngine() {
   return {
     reset() { resetState(st); prevSpec = null; },
     // spec -> { notes, explain, voicing, fallback }
-    play(spec, voicing, { mode = 'flow', center = 60, targetVoices, rootPos = false } = {}) {
-      const cands = realize(spec, voicing, { center, targetVoices, rootPos });
+    play(spec, voicing, { mode = 'flow', center = 60, selCenter, targetVoices, rootPos = false, keyRoot = 0 } = {}) {
+      const sc = selCenter ?? center;
+      const cands = realize(spec, voicing, { center, targetVoices, rootPos, keyRoot });
       if (!cands.length) return { notes: [], explain: ['no-candidates'], voicing, fallback: null };
-      const r = select(cands, st, { mode, center, key: specKey(spec) + '|' + voicing + '|' + center, voicing, spec, prevSpec });
+      const r = select(cands, st, { mode, center: sc, key: specKey(spec) + '|' + voicing + '|' + sc, voicing, spec, prevSpec });
       prevSpec = spec;
       return r;
     }
