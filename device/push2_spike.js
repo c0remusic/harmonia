@@ -92,7 +92,10 @@ function enable() {
 	gridTask = new Task(doInit, this); gridTask.schedule(300);   // Task persistant
 	L("grab envoyé (CS id=" + theCS.id + " matrix=" + theMid + "), grille dans 300ms."); flush();
 }
-function doInit() { L("doInit: requestgrid"); flush(); if (enabled) outlet(0, "requestgrid"); }   // -> moteur rediffuse -> griddone -> refreshGrid
+// applyPalette RE-fait ici (et pas seulement dans enable l.90) : au moment du grab la
+// palette SysEx est perdue (contrôle pas encore actif) -> pads éteints jusqu'au 1er LAYOUT.
+// À +300ms le grab est stabilisé, on (re)programme la palette AVANT d'allumer la grille.
+function doInit() { L("doInit: applyPalette + requestgrid"); flush(); if (enabled) { applyPalette(); outlet(0, "requestgrid"); } }   // -> moteur rediffuse -> griddone -> refreshGrid
 
 function disable() {
 	if (!enabled) return;
