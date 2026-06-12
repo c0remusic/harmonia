@@ -1281,15 +1281,28 @@ function _vl2_realize(spec,voicing,opts){
 	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
+	// classic + VL off : position fondamentale STRICTE, fonda ancrée dans l'octave juste
+	// sous le centre (octave 3 a center=60) -> registre constant, fonda a la basse, aucun
+	// saut d'octave entre degres. OCTAVE decale la bande via `center`. Voir decisions.md.
+	if(vc==='classic'&&opts&&opts.rootPos){
+		var cout=[],bases=[center-12,center,center-24];
+		for(var bi=0;bi<bases.length;bi++){
+			var cb=bases[bi],cr=cb+_vl2_m(spec.rootPc-_vl2_m(cb));
+			var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
+			if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)continue;
+			if(_vl2_checkIdentity(vc,cn,spec).length)continue;
+			if(_vl2_lowIntervalViolations(cn).length)continue;
+			cout.push({notes:cn,voicing:vc,fallback:fallback});break;
+		}
+		return cout;
+	}
 	var rotUp=function(arr){var r=_vl2_vs(arr);r.push(r.shift()+12);return _vl2_vs(r);};
 	var octShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
 	var seen=new Set(),out=[];
 	for(var oct=-2;oct<=2;oct++){
 		var base=48+oct*12,rootMidi=base+_vl2_m(spec.rootPc-_vl2_m(base));
 		var inv=_vl2_closeFrom(spec,rootMidi);
-		// classic + VL off => position fondamentale stricte (pas d'inversion) ;
-		// VL on => toutes les inversions pour le lissage. Voir decisions.md.
-		var nInv=_vl2_ABSOLUTE.has(vc)?1:((vc==='classic'&&opts&&opts.rootPos)?1:spec.pcs.length);
+		var nInv=_vl2_ABSOLUTE.has(vc)?1:spec.pcs.length;
 		for(var k=0;k<nInv;k++){
 			var TF=_vl2_T[vc]||_vl2_T.classic;
 			var shapes=TF(inv,octShift);

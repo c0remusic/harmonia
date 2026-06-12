@@ -208,6 +208,23 @@ export function realize(spec, voicing, opts = {}) {
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
+  // classic + VL off : position fondamentale STRICTE, fonda ancrée dans l'octave juste
+  // sous le centre (octave 3 à center=60) -> registre constant, fonda à la basse, aucun
+  // saut d'octave entre degrés. La commande OCTAVE décale la bande via `center`. Voir decisions.md.
+  if (vc === 'classic' && opts.rootPos) {
+    const out = [];
+    for (const base of [center - 12, center, center - 24]) {   // bande cible, puis replis si filtrée
+      const rootMidi = base + mod(spec.rootPc - mod(base));
+      const notes = vsort(closeFrom(spec, rootMidi)).slice(0, 6);
+      if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
+      if (checkIdentity(vc, notes, spec).length) continue;
+      if (lowIntervalViolations(notes).length) continue;
+      out.push({ notes, voicing: vc, fallback });
+      break;
+    }
+    return out;
+  }
+
   // Inversions : monter la note la plus basse d'une octave. Indispensable au
   // voice leading — c'est ce qui permet de TENIR les notes communes.
   const rotateUp = arr => { const r = vsort(arr); r.push(r.shift() + 12); return vsort(r); };
