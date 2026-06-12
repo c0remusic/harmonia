@@ -317,9 +317,49 @@
   /* Range d'octaves affiché sous le clavier monitor (full uniquement) */
   .keys-range{display:none}
   body.full .keys-range{display:block;font-size:7px;font-family:var(--mono);color:var(--muted2);letter-spacing:.08em;text-align:center;margin-top:3px;line-height:1}
+
+  /* ── INFO OVERLAY ── */
+  #info-overlay{
+    display:none;position:fixed;inset:0;z-index:100;
+    background:rgba(30,28,26,.92);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;
+  }
+  #info-overlay.open{display:flex}
+  #info-box{
+    background:rgba(237,233,224,.06);border:1px solid rgba(237,233,224,.14);
+    border-radius:10px;padding:28px 32px;min-width:260px;max-width:320px;
+    display:flex;flex-direction:column;gap:14px;
+    font-family:var(--sans);color:var(--text);
+  }
+  #info-box .ib-logo{font-family:var(--display);font-weight:700;font-size:22px;color:var(--gold);letter-spacing:-.01em}
+  #info-box .ib-tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-top:-8px}
+  #info-box hr{border:none;border-top:1px solid rgba(237,233,224,.12);margin:0}
+  #info-box .ib-row{display:flex;flex-direction:column;gap:3px}
+  #info-box .ib-label{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,220,130,.45);font-weight:600}
+  #info-box .ib-val{font-size:12px;color:var(--text)}
+  #info-box .ib-val a{color:var(--blue);text-decoration:none}
+  #info-box .ib-close{margin-top:4px;height:30px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    border:1px solid rgba(237,233,224,.18);border-radius:5px;cursor:pointer;color:var(--muted2);
+    transition:background .1s,color .1s}
+  #info-box .ib-close:hover{background:rgba(237,233,224,.08);color:var(--text)}
 </style>
 </head>
 <body class="strip">
+  <!-- INFO OVERLAY (full mode, bouton ⓘ dans DEVICE) -->
+  <div id="info-overlay">
+    <div id="info-box">
+      <div class="ib-logo">Tuple</div>
+      <div class="ib-tag">Max for Live · Harmonic composition tool</div>
+      <hr>
+      <div class="ib-row"><div class="ib-label">Version</div><div class="ib-val">1.0 beta</div></div>
+      <div class="ib-row"><div class="ib-label">Creator</div><div class="ib-val">c0remusic</div></div>
+      <div class="ib-row"><div class="ib-label">Contact</div><div class="ib-val"><a href="mailto:c0re_m4l@proton.me">c0re_m4l@proton.me</a></div></div>
+      <div class="ib-row"><div class="ib-label">Community</div><div class="ib-val"><a href="https://discord.gg/N52jGhGE">discord.gg/N52jGhGE</a></div></div>
+      <div class="ib-row"><div class="ib-label">Website</div><div class="ib-val"><a href="https://tuple.live">tuple.live</a></div></div>
+      <div class="ib-close" id="infoClose">Close</div>
+    </div>
+  </div>
   <div class="bar">
 
     <!-- CONFIG -->
@@ -383,6 +423,7 @@
         <div class="lbl">Device</div>
         <div class="btn" id="pushBtn" title="Chord grid on Push 2 pads">PUSH</div>
         <div class="btn" id="colorBtn" title="Degree color logic">LAYOUT · Spectrum</div>
+        <div class="btn" id="infoBtn" title="About Tuple" style="color:var(--muted2);letter-spacing:.04em">ⓘ Info</div>
       </div>
 
       <!-- WINDOW : gestion de la fenêtre (séparée du groupe Device) -->
@@ -399,7 +440,7 @@
   // ── STATE ──
   var DEG      = [['I','Tonic'],['II','Supertonic'],['III','Mediant'],['IV','Subdominant'],['V','Dominant'],['VI','Submediant'],['VII','Leading']];
   var KEYS     = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  var SCALES   = ['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min'];
+  var SCALES   = ['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min','Mel.Min','Locrian'];
   var VOICINGS = ['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3','Jazz','Nu-House','Trap','Trance','Funk'];
   var VLMODES  = ['ANCHOR','FLOW'];
   var VLMODE_MSG = ['anchored','flow'];
@@ -851,6 +892,11 @@
     applyScheme();
     send('colorscheme', colorScheme);
   };
+
+  document.getElementById('infoBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
+  document.getElementById('infoBtn').onclick = function(){ document.getElementById('info-overlay').classList.add('open'); };
+  document.getElementById('infoClose').onclick = function(){ document.getElementById('info-overlay').classList.remove('open'); };
+  document.getElementById('info-overlay').onclick = function(e){ if(e.target===this) this.classList.remove('open'); };
 
   // ── DEMO ──
   var DEMO = {

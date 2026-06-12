@@ -93,7 +93,9 @@ var SCALES = {
 	"phrygian":   [0,1,3,5,7,8,10],
 	"lydian":     [0,2,4,6,7,9,11],
 	"mixolydian": [0,2,4,5,7,9,10],
-	"harmminor":  [0,2,3,5,7,8,11]
+	"harmminor":  [0,2,3,5,7,8,11],
+	"melminor":   [0,2,3,5,7,9,11],
+	"locrian":    [0,1,3,5,6,8,10]
 };
 
 var NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -267,7 +269,8 @@ function pushUIState() {
 // SYNC : relit la tonalité du set Live (bouton SYNC du jsui)
 var LIVE_SCALE_MAP = {
 	"major":0, "minor":1, "natural minor":1, "dorian":2, "phrygian":3,
-	"lydian":4, "mixolydian":5, "harmonic minor":6, "harmminor":6
+	"lydian":4, "mixolydian":5, "harmonic minor":6, "harmminor":6,
+	"melodic minor":7, "melminor":7, "locrian":8
 };
 function synclive() {
 	try {
@@ -300,7 +303,7 @@ function rootidx(v) {
 }
 
 // Reçoit un index int (0-6) depuis live.menu
-var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor"];
+var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor","melminor","locrian"];
 function scaleidx(v) {
 	setscale(SCALE_NAMES_ARR[parseInt(v)]);
 	pushUIState();
@@ -323,6 +326,8 @@ function phrygian()   { setscale("phrygian"); }
 function lydian()     { setscale("lydian"); }
 function mixolydian() { setscale("mixolydian"); }
 function harmminor()  { setscale("harmminor"); }
+function melminor()   { setscale("melminor"); }
+function locrian()    { setscale("locrian"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
@@ -443,9 +448,17 @@ var BORROWED_MINOR = [
 	{ roman:"V/iv", semis:0,  type:"dom7", suf:"7"    },
 	{ roman:"V/VI", semis:3,  type:"dom7", suf:"7"    }
 ];
+// Emprunts melodic minor : V7 (dominante naturelle) + bVII dominant (Lydian dominant)
+var BORROWED_MELMINOR = [
+	{ roman:"V7",    semis:7,  type:"dom7", suf:"7"    },
+	{ roman:"bVII7", semis:10, type:"dom7", suf:"7"    },
+	{ roman:"bII",   semis:1,  type:"maj",  suf:""     },
+	{ roman:"IV",    semis:5,  type:"maj",  suf:""     }
+];
 function borrowedFor() {
-	if (scaleName === "major") return BORROWED_MAJOR;
-	if (scaleName === "minor") return BORROWED_MINOR;
+	if (scaleName === "major")    return BORROWED_MAJOR;
+	if (scaleName === "minor")    return BORROWED_MINOR;
+	if (scaleName === "melminor") return BORROWED_MELMINOR;
 	return [];
 }
 
@@ -1407,7 +1420,6 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	var vc=currentVoicing,mode='anchor';
 	if(voiceLeadingEnabled){
 		mode=(vlMode==='anchored')?'anchor':'flow';
-		if(vlMode==='piano') vc='piano';
 	} else {
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
@@ -1614,10 +1626,14 @@ gridInitTask.schedule(700);
 (function _selfCheck(){
 	try {
 		var okSt = (typeof _vl2_st !== 'undefined' && _vl2_st && _vl2_st.recall);
+		// VOICING_NAMES doit avoir 15 entrées (classic..funk). Si on en ajoute sans
+		// mettre à jour l'UI (VOICINGS dans tuple_ui.html), le mapping par index diverge.
+		var vcOk = VOICING_NAMES.length === 15;
 		post("tuple selfcheck: Set=" + (typeof Set !== 'undefined') +
 		     " Map=" + (typeof Map !== 'undefined') +
 		     " _vl2_st=" + (okSt ? "ok" : "KO") +
-		     " STRUCT=" + (typeof _vl2_STRUCT !== 'undefined') + "\n");
+		     " STRUCT=" + (typeof _vl2_STRUCT !== 'undefined') +
+		     " VOICING_NAMES=" + VOICING_NAMES.length + (vcOk ? "" : " ⚠️ DESYNC UI") + "\n");
 	} catch(e) { post("tuple selfcheck ERROR: " + e + "\n"); }
 })();
 
