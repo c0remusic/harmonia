@@ -1282,14 +1282,14 @@ function _vl2_realize(spec,voicing,opts){
 	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
-	// classic + VL off : position fondamentale STRICTE, registre ancré sur la TONIQUE de la
-	// gamme (root global) -> I est toujours le plus bas, les autres degrés au-dessus dans
-	// l'ordre diatonique. cFloor=48+octShift (C3 à oct0) sert de plafond ; cBase recule
-	// jusqu'à la tonique la plus proche en-dessous. Voir decisions.md.
+	// classic + VL off : position fondamentale STRICTE. La tonique de la gamme (root) est
+	// placée dans [cBase, cBase+11] (ex. G3 en Sol maj à oct0), puis tous les degrés sont
+	// placés AU-DESSUS de la tonique -> I est toujours le plus bas, ordre ascendant I→VII.
+	// cBase=48+octShift (C3 à oct0). Voir decisions.md.
 	if(vc==='classic'&&opts&&opts.rootPos){
 		var cShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
-		var cFloor=48+cShift,cBase=cFloor-_vl2_m(cFloor-root);
-		var cr=cBase+_vl2_m(spec.rootPc-_vl2_m(cBase));
+		var cBase=48+cShift,tonicRoot=cBase+_vl2_m(root-_vl2_m(cBase));
+		var cr=tonicRoot+_vl2_m(spec.rootPc-_vl2_m(tonicRoot));
 		var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
 		if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)return[];
 		if(_vl2_checkIdentity(vc,cn,spec).length)return[];
@@ -1433,7 +1433,8 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	// selCenter : centre tonique-ancré pour le sélecteur (gravité sur I, pas C)
 	var octCenter=60+currentOctave*12;
 	var cFloor=48+Math.max(-12,Math.min(24,currentOctave*12));
-	var selCenter=(vc==='classic')?(cFloor-_vl2_m(cFloor-root)):octCenter;
+	var tonicRoot=cFloor+_vl2_m(root-_vl2_m(cFloor));
+	var selCenter=(vc==='classic')?tonicRoot:octCenter;
 	var key=_vl2_specKey(spec)+'|'+vc+'|'+selCenter;
 	var cands=_vl2_realize(spec,vc,{center:octCenter,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;

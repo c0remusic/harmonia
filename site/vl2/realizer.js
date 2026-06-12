@@ -208,15 +208,15 @@ export function realize(spec, voicing, opts = {}) {
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
-  // classic + VL off : position fondamentale STRICTE, registre ancré sur la TONIQUE de la
-  // gamme (keyRoot) -> I est toujours le plus bas, les autres degrés au-dessus dans l'ordre
-  // diatonique. cFloor=48+octShift (C3 à oct0) sert de plafond ; cBase recule jusqu'à la
-  // tonique la plus proche en-dessous. Voir decisions.md.
+  // classic + VL off : position fondamentale STRICTE. La tonique de la gamme (keyRoot) est
+  // placée dans [cBase, cBase+11] (ex. G3 en Sol maj à oct0), puis tous les degrés sont
+  // placés AU-DESSUS de la tonique -> I est toujours le plus bas, ordre ascendant I→VII.
+  // cBase=48+octShift (C3 à oct0). Voir decisions.md.
   if (vc === 'classic' && opts.rootPos) {
     const keyRoot = opts.keyRoot ?? 0;
     const cShift = Math.max(-12, Math.min(24, Math.round((center - 60) / 12) * 12));
-    const cFloor = 48 + cShift, cBase = cFloor - mod(cFloor - keyRoot);
-    const rootMidi = cBase + mod(spec.rootPc - mod(cBase));
+    const cBase = 48 + cShift, tonicRoot = cBase + mod(keyRoot - mod(cBase));
+    const rootMidi = tonicRoot + mod(spec.rootPc - mod(tonicRoot));
     const notes = vsort(closeFrom(spec, rootMidi)).slice(0, 6);
     if (Math.min(...notes) < 24 || Math.max(...notes) > 108) return [];
     if (checkIdentity(vc, notes, spec).length) return [];
