@@ -97,7 +97,8 @@ var SCALES = {
 	"melminor":   [0,2,3,5,7,9,11],
 	"locrian":    [0,1,3,5,6,8,10],
 	"pentamaj":   [0,2,4,5,7,9,11],   // parent = major;  active: I II III V VI (skip IV VII)
-	"pentamin":   [0,2,3,5,7,8,10]    // parent = minor;  active: I III IV V VII (skip II VI)
+	"pentamin":   [0,2,3,5,7,8,10],   // parent = minor;  active: I III IV V VII (skip II VI)
+	"lydiandom":  [0,2,4,6,7,9,10]    // Lydian Dominant — 4e mode mél. min. ; I7(#11) caractéristique
 };
 
 // Degrés actifs (0-6) pour les gammes pentatoniques.
@@ -281,7 +282,8 @@ var LIVE_SCALE_MAP = {
 	"lydian":4, "mixolydian":5, "harmonic minor":6, "harmminor":6,
 	"melodic minor":7, "melminor":7, "locrian":8,
 	"major pentatonic":9, "pentatonic major":9, "pentamaj":9,
-	"minor pentatonic":10, "pentatonic minor":10, "pentamin":10
+	"minor pentatonic":10, "pentatonic minor":10, "pentamin":10,
+	"lydian dominant":11, "lydiandom":11
 };
 function synclive() {
 	try {
@@ -314,7 +316,7 @@ function rootidx(v) {
 }
 
 // Reçoit un index int (0-6) depuis live.menu
-var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor","melminor","locrian","pentamaj","pentamin"];
+var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor","melminor","locrian","pentamaj","pentamin","lydiandom"];
 function scaleidx(v) {
 	setscale(SCALE_NAMES_ARR[parseInt(v)]);
 	pushUIState();
@@ -341,6 +343,7 @@ function melminor()   { setscale("melminor"); }
 function locrian()    { setscale("locrian"); }
 function pentamaj()   { setscale("pentamaj"); }
 function pentamin()   { setscale("pentamin"); }
+function lydiandom()  { setscale("lydiandom"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
@@ -468,10 +471,15 @@ var BORROWED_MELMINOR = [
 	{ roman:"bII",   semis:1,  type:"maj",  suf:""     },
 	{ roman:"IV",    semis:5,  type:"maj",  suf:""     }
 ];
+var BORROWED_LYDIANDOM = [
+	{ roman:"iv",   semis:5,  type:"min",  suf:"m"    },
+	{ roman:"bII7", semis:1,  type:"dom7", suf:"7"    }
+];
 function borrowedFor() {
-	if (scaleName === "major")    return BORROWED_MAJOR;
-	if (scaleName === "minor")    return BORROWED_MINOR;
-	if (scaleName === "melminor") return BORROWED_MELMINOR;
+	if (scaleName === "major")     return BORROWED_MAJOR;
+	if (scaleName === "minor")     return BORROWED_MINOR;
+	if (scaleName === "melminor")  return BORROWED_MELMINOR;
+	if (scaleName === "lydiandom") return BORROWED_LYDIANDOM;
 	return [];
 }
 
