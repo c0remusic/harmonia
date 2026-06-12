@@ -420,25 +420,9 @@ function isValid(d, type) {
 // Le moteur calcule la grille et la diffuse à l'UI / Push (outlet 7).
 // =====================================================
 
-// Lignes de types (ordre d'empilement)
-// Ordre = priorité d'affichage. Si une colonne dépasse MAX_PER_COL,
-// on garde les premiers (les plus utiles), on coupe les derniers (rares).
-// Chaque colonne affiche jusqu'à 8 accords valides pour ce degré.
-// Ordre : accords courants d'abord, puis alterés/jazz pour remplir.
-var GRID_TYPES   = ["triad","seven","nine","mmaj7","sus4","sus2","add9","six","sevensus4","sixnine","sevenflat9","sevensharp9","m7s5"];
-var MAX_PER_COL  = 8;
-var showExtended = false;
-
-// Grille : tous les types pour remplir les 8 cases au maximum
-function getActiveTypes() {
-	return GRID_TYPES;
-}
-
-// Reçoit "extended on" / "extended off" depuis le jsui
-function extended(v) {
-	showExtended = (String(v) === "on");
-	broadcastGrid();
-}
+// Types affichés dans la grille, ordre = priorité (courants d'abord, alterés/jazz après).
+// Tous les types valides au degré sont affichés — pas de cap.
+var GRID_TYPES = ["triad","seven","nine","mmaj7","sus4","sus2","add9","six","sevensus4","sixnine","sevenflat9","sevensharp9","m7s5"];
 
 // Accords empruntés par mode (déplacés ici : source de vérité)
 var BORROWED_MAJOR = [
@@ -544,16 +528,13 @@ function broadcastGrid() {
 	gCols = [[],[],[],[],[],[],[]];
 	gBor  = [];
 	outlet(7, "gridclear");
-	var activeTypes = getActiveTypes();
 	for (var d = 0; d < 7; d++) {
-		var count = 0;
-		for (var t = 0; t < activeTypes.length; t++) {
-			var fn = activeTypes[t];
+		for (var t = 0; t < GRID_TYPES.length; t++) {
+			var fn = GRID_TYPES[t];
 			if (gridTypeValid(d, fn)) {
 				outlet(7, "gridcell", d, fn, gridLabel(d, fn));
 				flatGrid.push({ kind:"d", fn:fn, degree:d });
 				gCols[d].push({ fn:fn });
-				count++;
 			}
 		}
 	}
