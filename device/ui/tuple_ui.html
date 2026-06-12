@@ -432,6 +432,7 @@
       <!-- DEVICE (fenêtre full uniquement) : réglages non-harmoniques -->
       <div class="devgrp">
         <div class="lbl">Device</div>
+        <div class="btn" id="extBtn" title="Show all chord types (beyond 8 per column)">EXT</div>
         <div class="btn" id="pushBtn" title="Chord grid on Push 2 pads">PUSH</div>
         <div class="btn" id="colorBtn" title="Degree color logic">LAYOUT · Spectrum</div>
       </div>
@@ -790,6 +791,7 @@
     M.bindInlet('voicing',   function(v){ var n=parseInt(v); if(!isNaN(n)) state.voicingIdx=n; renderConfig(); });
     M.bindInlet('vl',        function(v){ state.vl=(parseInt(v)===1); renderConfig(); });
     M.bindInlet('vlmode',    function(v){ var i=VLMODE_MSG.indexOf(String(v).toLowerCase()); if(i>=0) state.vlmodeIdx=i; renderConfig(); });
+    M.bindInlet('ext',       function(v){ extOn=(parseInt(v)===1); document.getElementById('extBtn').classList.toggle('on',extOn); });
     M.bindInlet('active',    function(fn,degree){
       var fnStr=String(fn);
       if(fnStr==='color'){
@@ -883,6 +885,14 @@
     onTop=!onTop;
     this.classList.toggle('on',onTop);   // libellé constant, l'état = surbrillance
     send('ontop', onTop?1:0);
+  };
+
+  var extOn=false;
+  document.getElementById('extBtn').onmousedown = function(e){ if(e)e.preventDefault(); };
+  document.getElementById('extBtn').onclick = function(){
+    extOn=!extOn;
+    this.classList.toggle('on',extOn);
+    send('ext',extOn?1:0);
   };
 
   // Toggle Push mode : ON = Tuple prend la grille du Push (grab) ; OFF = release.
