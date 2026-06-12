@@ -19,8 +19,7 @@ export function createEngine() {
       // tonicPos : root MIDI de la tonique dans ce registre (= regBase + keyRoot).
       // selCtr   : centre de gravité du sélecteur — tonique pour classic, C-ancré sinon.
       const regBase = 48 + Math.max(-12, Math.min(24, keyOct * 12));
-      const tonicPos = regBase + keyRoot;
-      const selCtr = (voicing === 'classic') ? tonicPos : (60 + keyOct * 12);
+      const selCtr = (voicing === 'classic') ? (regBase + keyRoot) : (60 + keyOct * 12);
       const cands = realize(spec, voicing, { regBase, targetVoices, rootPos, keyRoot });
       if (!cands.length) return { notes: [], explain: ['no-candidates'], voicing, fallback: null };
       const key = specKey(spec) + '|' + voicing + '|' + selCtr;

@@ -1430,11 +1430,10 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	} else {
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
-	// regBase : plancher de l'octave (multiple de 12). tonicPos : root MIDI de la tonique.
-	// selCtr  : centre de gravité du sélecteur — tonique pour classic, C-ancré pour autres.
+	// regBase : plancher de l'octave (multiple de 12, invariant).
+	// selCtr  : tonique pour classic (ancrage harmonique), C-ancré pour les autres voicings.
 	var regBase=48+Math.max(-12,Math.min(24,currentOctave*12));
-	var tonicPos=regBase+root;
-	var selCtr=(vc==='classic')?tonicPos:(60+currentOctave*12);
+	var selCtr=(vc==='classic')?(regBase+root):(60+currentOctave*12);
 	var key=_vl2_specKey(spec)+'|'+vc+'|'+selCtr;
 	var cands=_vl2_realize(spec,vc,{regBase:regBase,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;
