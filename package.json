@@ -4,14 +4,8 @@
   "description": "Tuple — chord device for Ableton (Max for Live)",
   "private": true,
   "workspaces": [
-    "device",
-    "website"
+    "device"
   ],
-  "scripts": {
-    "dev": "npm run -w website dev",
-    "build": "npm run -w website build",
-    "start": "npm run -w website start"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/c0remusic/tuple"

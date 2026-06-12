@@ -76,6 +76,10 @@
   .btn{background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;cursor:pointer;font-size:10px;letter-spacing:.06em;font-weight:500;
     color:var(--muted);text-align:center;transition:all .1s;height:32px;padding:0 10px;display:flex;align-items:center;justify-content:center}
   .btn:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
+  .btn.lblbtn{justify-content:space-between;gap:4px}
+  .btn.off{opacity:.4}
+  .btn.lblbtn .cl{font-size:9px;letter-spacing:.07em;color:var(--muted);font-weight:500}
+  .btn.lblbtn .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto}
   .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
   .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
 
@@ -125,7 +129,8 @@
   body.embed .page-h,body.embed .page-f{display:none}
   body.embed .device{max-width:none;height:100vh;border-radius:0;border:none;box-shadow:none}
   /* Hint "interactif" visible seulement en embed, disparaît au premier clic */
-  body.embed .embed-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  .embed-hint{display:none}
+  body.embed .embed-hint{display:block;position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
     background:rgba(255,220,130,.12);border:1px solid rgba(255,220,130,.25);border-radius:20px;
     padding:5px 14px;font-size:11px;color:rgba(255,220,130,.7);letter-spacing:.05em;
     pointer-events:none;white-space:nowrap;transition:opacity .4s}
@@ -160,9 +165,9 @@
 
       <div class="zone">
         <div class="lbl">Chord style</div>
-        <div class="csel" id="voicing"><span class="cl">VOICING</span><span class="cv" id="voicingV">Classic</span></div>
-        <div class="btn" id="vlmode">ANCHOR</div>
+        <div class="csel" id="voicing" style="flex:none"><span class="cl">VOICING</span><span class="cv" id="voicingV">Classic</span></div>
         <div class="btn" id="vl">VOICE LEADING</div>
+        <div class="btn lblbtn" id="vlmode"><span class="cl">VL MODE</span><span class="cv" id="vlmodeV">Anchor</span></div>
       </div>
     </div>
 
@@ -191,7 +196,6 @@
       <div class="devgrp">
         <div class="lbl">Device</div>
         <div class="btn" id="colorBtn">LAYOUT · Spectrum</div>
-        <div class="btn" id="engineBtn" title="A/B the voicing/voice-leading engine">ENGINE · v1</div>
         <div class="btn on" id="soundBtn">SOUND ON</div>
       </div>
     </div>
@@ -310,11 +314,24 @@
     for(var i=0;i<bot.length;i++)r.push(bot[i]+12); return r; }
   function drop2(n){ if(n.length<3)return n; var r=vsort(n); r[r.length-2]-=12; return vsort(r); }
   function drop3(n){ if(n.length<4)return n; var r=vsort(n); r[r.length-3]-=12; return vsort(r); }
+  // jazz : rootless, cluster serré stacké vers le haut.
+  function jazzVoicing(n){ return n.length<3?n:vsort(n.slice(1)); }
+  // nuhouse : rootless ouvert (2e voix +octave).
+  function nuhouseVoicing(n){ if(n.length<3)return n; var u=vsort(n).slice(1); if(u.length>=2)u[1]+=12; return vsort(u); }
+  // trap : root-inclus, serré, sans la 5te (dark) ; la basse vit dans le registre grave via le profil VL.
+  function trapVoicing(n){ if(n.length<4)return n; var s=vsort(n); s.splice(2,1); return vsort(s); }
+  // trance : anthem — fonda + 3ce (+7e) sans la 5te + fonda doublée à l'octave au sommet.
+  function tranceVoicing(n){ if(n.length<3)return n; var s=vsort(n),u=s.slice(1);
+    if(u.length>=3)u=u.filter(function(_,i){return i!==1;}); return vsort([s[0]].concat(u).concat([s[0]+12])); }
+  // funk : grip "10e" — 2e voix (3ce) montée d'une octave, fonda incluse.
+  function funkVoicing(n){ if(n.length<2)return n; var s=vsort(n); s[1]+=12; return vsort(s); }
   function applyVoicing(n){ switch(eVoicing){
     case 'piano':return pianoVoicing(n); case 'open':return openVoicing(n); case 'spread':return spreadVoicing(n);
     case 'house':return houseVoicing(n); case 'prog':return progHouseVoicing(n);
     case 'rootlessa':return rootlessA(n); case 'rootlessb':return rootlessB(n);
-    case 'drop2':return drop2(n); case 'drop3':return drop3(n); default:return n; } }
+    case 'drop2':return drop2(n); case 'drop3':return drop3(n);
+    case 'jazz':return jazzVoicing(n); case 'nuhouse':return nuhouseVoicing(n); case 'trap':return trapVoicing(n);
+    case 'trance':return tranceVoicing(n); case 'funk':return funkVoicing(n); default:return n; } }
 
   // ── Voice leading (port fidèle : anchored / relative / piano) ──
   function placeNearest(note,anchor){ var pc=((note%12)+12)%12; return pc+12*Math.round((anchor-pc)/12); }
@@ -325,7 +342,11 @@
     case 'house':return {pl:35,ph:85,ct:-5,jp:0.3,pp:4}; case 'spread':return {pl:30,ph:90,ct:-5,jp:0.4,pp:6};
     case 'prog':return {pl:40,ph:80,ct:-6,jp:0.6,pp:8}; case 'classic':return {pl:48,ph:72,ct:-7,jp:0.5,pp:12};
     case 'drop2': case 'drop3':return {pl:42,ph:78,ct:-6,jp:0.5,pp:10};
-    case 'rootlessa': case 'rootlessb':return {pl:50,ph:80,ct:-6,jp:0.4,pp:8};
+    case 'rootlessa': case 'rootlessb': case 'jazz':return {pl:50,ph:80,ct:-6,jp:0.4,pp:8};
+    case 'nuhouse':return {pl:55,ph:88,ct:-5,jp:0.3,pp:6};
+    case 'trap':return {pl:36,ph:64,ct:-7,jp:0.5,pp:10};
+    case 'trance':return {pl:50,ph:85,ct:-6,jp:0.5,pp:8};
+    case 'funk':return {pl:48,ph:90,ct:-5,jp:0.3,pp:6};
     default:return {pl:48,ph:72,ct:-6,jp:0.5,pp:8}; } }
   function vlDistance(a,b){ var aa=vsort(a),bb=vsort(b),n=Math.min(aa.length,bb.length),tot=0,p=vlProfile(eVoicing);
     for(var i=0;i<n;i++){ var d=Math.abs(bb[i]-aa[i]); tot+=d;
@@ -394,7 +415,7 @@
     voices=[]; }
 
   // ── Moteur sélectionnable : v1 (inline) ou v2 (module vl2) ──
-  var engineMode='v1';   // 'v1' | 'v2flow' | 'v2anchor'
+  var engineMode='v2';   // moteur du device (vl2) — piloté par Voice Leading + VL mode
   var v2eng=null;
   function v2() { if(!v2eng && window.VL2) v2eng=window.VL2.createEngine(); return v2eng; }
   function v2reset(){ if(v2eng) v2eng.reset(); }
@@ -411,7 +432,9 @@
   // v2 : le double moteur vl2 choisit la réalisation depuis le spec. false si vl2 pas prêt.
   function playV2(spec,name){
     var e=v2(); if(!e) return false;
-    var r=e.play(spec, eVoicing, { mode: engineMode==='v2anchor'?'anchor':'flow', center: 60+eOct*12 });
+    if(!eVL) e.reset();                                  // VL off → pas de mémoire de mouvement (plus proche du centre)
+    var mode=(eVlMode==='anchored')?'anchor':'flow';     // ANCHOR = loops verrouillés ; RELATIVE/PIANO = flow
+    var r=e.play(spec, eVoicing, { mode: mode, center: 60+eOct*12 });
     emit(name, r.notes); return true;
   }
 
@@ -453,9 +476,9 @@
   var DEG=[['I','Tonic'],['II','Supertonic'],['III','Mediant'],['IV','Subdominant'],['V','Dominant'],['VI','Submediant'],['VII','Leading']];
   var KEYS=NOTE_NAMES;
   var SCALES_UI=['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min'];
-  var VOICINGS=['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3'];
-  var VOICEKEYS=['classic','piano','open','spread','house','prog','rootlessa','rootlessb','drop2','drop3'];
-  var VLMODES=['ANCHOR','RELATIVE','PIANO']; var VLMODE_MSG=['anchored','relative','piano'];
+  var VOICINGS=['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3','Jazz','Nu House','Trap','Trance','Funk'];
+  var VOICEKEYS=['classic','piano','open','spread','house','prog','rootlessa','rootlessb','drop2','drop3','jazz','nuhouse','trap','trance','funk'];
+  var VLMODES=['ANCHOR','FLOW']; var VLMODE_MSG=['anchored','flow'];
   var SCHEMES=[
     ['#4F86C8','#3FA8C0','#55B05A','#C8BE50','#D8923C','#D05050','#C85AAA'],
     ['#4F86C8','#55B05A','#4F86C8','#55B05A','#D05050','#4F86C8','#D05050'],
@@ -544,7 +567,9 @@
     document.getElementById('scaleV').textContent=SCALES_UI[state.scaleIdx]||'Major';
     document.getElementById('voicingV').textContent=VOICINGS[state.voicingIdx]||'Classic';
     var vl=document.getElementById('vl'); vl.className='btn'+(state.vl?' gold':'');
-    var vm=document.getElementById('vlmode'); vm.className='btn'+(state.vlmodeIdx===0?'':' gold'); vm.textContent=VLMODES[state.vlmodeIdx];
+    var vm=document.getElementById('vlmode');
+    vm.className='btn lblbtn'+(state.vl&&state.vlmodeIdx!==0?' gold':'')+(state.vl?'':' off');
+    var vmv=VLMODES[state.vlmodeIdx]; document.getElementById('vlmodeV').textContent=vmv.charAt(0)+vmv.slice(1).toLowerCase();
     renderOct(); }
   function renderNotes(arr){ var midi=(arr||[]).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<128;});
     document.getElementById('chordName').textContent=activeChordName||'—';
@@ -601,13 +626,6 @@
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
     this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme]; applyScheme(); };
-  document.getElementById('engineBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
-  document.getElementById('engineBtn').onclick=function(){
-    engineMode = engineMode==='v1' ? 'v2flow' : engineMode==='v2flow' ? 'v2anchor' : 'v1';
-    this.textContent = 'ENGINE · ' + (engineMode==='v1' ? 'v1' : engineMode==='v2flow' ? 'v2 · FLOW' : 'v2 · ANCHOR');
-    this.classList.toggle('on', engineMode!=='v1');
-    v2reset(); prevChord=null; lockedV=null;
-  };
   document.getElementById('soundBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('soundBtn').onclick=function(){ soundOn=!soundOn;
     this.classList.toggle('on',soundOn); this.textContent=soundOn?'SOUND ON':'SOUND OFF';
@@ -629,11 +647,10 @@
     sync:'<b>Sync</b> — in Ableton, imports Live’s key &amp; scale in one click.',
     oct:'<b>Octave</b> — shifts the register of every chord. Mouse wheel works too.',
     voicing:'<b>Voicing</b> — how the chord’s notes are distributed: Classic, Piano, Open, Drop 2…',
-    vlmode:'<b>VL mode</b> — the voice-leading algorithm: Anchor, Relative or Piano.',
+    vlmode:'<b>VL mode</b> — the voice-leading algorithm: Anchor (locked loops) or Flow (living voice leading).',
     vl:'<b>Voice leading</b> — moves each voice the shortest distance between chords, for smooth changes.',
     colorBtn:'<b>Layout</b> — the color logic of the degree headers (mirrored on the Push 2 pads).',
     soundBtn:'<b>Sound</b> — toggles the demo synth on/off.',
-    engineBtn:'<b>Engine</b> — A/B the harmony engine: v1 (current) vs v2 (new dual engine). v2 has two modes: FLOW (living voice leading, bounded drift) and ANCHOR (stable loops).',
     chord:'<b>Monitor</b> — the chord you’re playing: degree, name and notes.',
     keys:'<b>Keyboard</b> — the exact notes coming out, after voicing &amp; voice leading.'
   };
