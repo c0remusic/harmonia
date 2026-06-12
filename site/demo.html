@@ -434,7 +434,7 @@
     var e=v2(); if(!e) return false;
     if(!eVL) e.reset();                                  // VL off → pas de mémoire de mouvement (plus proche du centre)
     var mode=(eVlMode==='anchored')?'anchor':'flow';     // ANCHOR = loops verrouillés ; RELATIVE/PIANO = flow
-    var r=e.play(spec, eVoicing, { mode: mode, center: 60+eOct*12 });
+    var r=e.play(spec, eVoicing, { mode: mode, center: 60+eOct*12, rootPos: !eVL });
     emit(name, r.notes); return true;
   }
 

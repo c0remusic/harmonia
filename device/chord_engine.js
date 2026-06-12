@@ -1287,7 +1287,9 @@ function _vl2_realize(spec,voicing,opts){
 	for(var oct=-2;oct<=2;oct++){
 		var base=48+oct*12,rootMidi=base+_vl2_m(spec.rootPc-_vl2_m(base));
 		var inv=_vl2_closeFrom(spec,rootMidi);
-		var nInv=_vl2_ABSOLUTE.has(vc)?1:spec.pcs.length;
+		// classic + VL off => position fondamentale stricte (pas d'inversion) ;
+		// VL on => toutes les inversions pour le lissage. Voir decisions.md.
+		var nInv=_vl2_ABSOLUTE.has(vc)?1:((vc==='classic'&&opts&&opts.rootPos)?1:spec.pcs.length);
 		for(var k=0;k<nInv;k++){
 			var TF=_vl2_T[vc]||_vl2_T.classic;
 			var shapes=TF(inv,octShift);
@@ -1416,7 +1418,7 @@ function _vl2_play(fn,d,colorSemis,colorType){
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
 	var center=60+currentOctave*12,key=_vl2_specKey(spec)+'|'+vc;
-	var cands=_vl2_realize(spec,vc,{center:center});
+	var cands=_vl2_realize(spec,vc,{center:center,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;
 	var notes=_vl2_select(cands,{mode:mode,center:center,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
 	_vl2_prevSpec=spec;

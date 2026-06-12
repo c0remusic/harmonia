@@ -222,7 +222,9 @@ export function realize(spec, voicing, opts = {}) {
     const base = 48 + oct * 12;
     const rootMidi = base + mod(spec.rootPc - mod(base));
     let inv = closeFrom(spec, rootMidi);
-    const nInv = ABSOLUTE.has(vc) ? 1 : spec.pcs.length;  // registre absolu -> pas d'inversions
+    // classic + VL off (rootPos) => position fondamentale stricte ; VL on => toutes
+    // les inversions pour le lissage. ABSOLUTE => registre fixe, pas d'inversion. Voir decisions.md.
+    const nInv = ABSOLUTE.has(vc) ? 1 : (vc === 'classic' && opts.rootPos ? 1 : spec.pcs.length);
     for (let k = 0; k < nInv; k++) {                       // toutes les inversions (sauf ABSOLUTE)
       for (const shape of T[vc](inv, octShift)) {
         let notes = (want != null && !STRUCT.has(vc)) ? stabilize(shape, spec, want) : vsort(shape).slice(0, 6);
