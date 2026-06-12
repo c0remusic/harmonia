@@ -688,11 +688,12 @@
     el.classList.add('flash');
     setTimeout(function(){el.classList.remove('flash');},180);
   }
-  // Flash tenu : allumé au mousedown, éteint au mouseup (pour les boutons pressables).
+  // Flash tenu : allumé au mousedown, éteint au mouseup ou mouseleave.
   function pressFlash(el){
     el.classList.add('flash');
-    function onUp(){ el.classList.remove('flash'); document.removeEventListener('mouseup',onUp); }
-    document.addEventListener('mouseup',onUp);
+    function off(){ el.classList.remove('flash'); document.removeEventListener('mouseup',off); el.removeEventListener('mouseleave',off); }
+    document.addEventListener('mouseup',off);
+    el.addEventListener('mouseleave',off);
   }
 
   // Bouton OPEN/CLOSE : le libellé porte l'état.
