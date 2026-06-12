@@ -1408,8 +1408,13 @@ function _vl2_select(cands,opts){
 function _vl2_play(fn,d,colorSemis,colorType){
 	var spec=(fn==='color')?_vl2_buildColorSpec(colorSemis,colorType):_vl2_buildSpec(fn,d);
 	if(!spec)return null;
-	var vc=currentVoicing,mode=(vlMode==='anchored')?'anchor':'flow';
-	if(vlMode==='piano') vc='piano';
+	var vc=currentVoicing,mode='anchor';
+	if(voiceLeadingEnabled){
+		mode=(vlMode==='anchored')?'anchor':'flow';
+		if(vlMode==='piano') vc='piano';
+	} else {
+		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
+	}
 	var center=60+currentOctave*12,key=_vl2_specKey(spec)+'|'+vc;
 	var cands=_vl2_realize(spec,vc,{center:center});
 	if(!cands.length)return null;
@@ -1431,13 +1436,10 @@ function sendNoteOff() {
 }
 
 function sendChord(name, notes) {
-	if (voiceLeadingEnabled) {
-		// VL2 : reconstruit depuis la spec (voicing + voice leading intégrés)
-		var v2 = _vl2_play(lastFn, lastDegree, lastColorSemis, lastColorType);
-		notes = (v2 && v2.length) ? v2 : applyVoicing(notes);  // fallback si pas de candidats
-	} else {
-		notes = applyVoicing(notes);
-	}
+	// Voicing TOUJOURS via vl2 (15 voicings) ; le bouton VL ne pilote que le lissage dynamique.
+	// applyVoicing (v1) = simple filet de secours si vl2 ne sort aucun candidat.
+	var v2 = _vl2_play(lastFn, lastDegree, lastColorSemis, lastColorType);
+	notes = (v2 && v2.length) ? v2 : applyVoicing(notes);
 	sendNoteOff();
 	activeNotes = notes.slice();
 	outlet(0, currentVelocity);
