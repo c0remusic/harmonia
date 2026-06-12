@@ -14,7 +14,7 @@ export function createEngine() {
     play(spec, voicing, { mode = 'flow', center = 60, targetVoices, rootPos = false } = {}) {
       const cands = realize(spec, voicing, { center, targetVoices, rootPos });
       if (!cands.length) return { notes: [], explain: ['no-candidates'], voicing, fallback: null };
-      const r = select(cands, st, { mode, center, key: specKey(spec) + '|' + voicing, voicing, spec, prevSpec });
+      const r = select(cands, st, { mode, center, key: specKey(spec) + '|' + voicing + '|' + center, voicing, spec, prevSpec });
       prevSpec = spec;
       return r;
     }

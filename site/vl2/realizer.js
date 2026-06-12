@@ -245,7 +245,7 @@ export function realize(spec, voicing, opts = {}) {
         if (checkIdentity(vc, notes, spec).length) continue;
         // Low-interval : exigé pour les voicings à candidats multiples ; best-effort pour
         // les ABSOLUTE (candidat unique -> ne jamais produire de silence aux octaves basses).
-        if (!ABSOLUTE.has(vc) && lowIntervalViolations(notes).length) continue;
+        if (!ABSOLUTE.has(vc) && lowIntervalViolations(notes, octShift).length) continue;
         const key = notes.join(',');
         if (seen.has(key)) continue;
         seen.add(key);

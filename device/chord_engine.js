@@ -1059,13 +1059,14 @@ function pianoVL(notes) {
 
 // --- rules ---
 var _vl2_LOW_LIMITS = [{iv:2,min:50},{iv:4,min:48},{iv:6,min:41}];
-function _vl2_lowIntervalViolations(notes) {
+function _vl2_lowIntervalViolations(notes, shift) {
+	var sh = shift || 0;
 	var r = notes.slice().sort(function(a,b){return a-b;}), v = [];
 	for (var i = 0; i < r.length-1; i++) {
 		var iv = r[i+1]-r[i];
 		for (var j = 0; j < _vl2_LOW_LIMITS.length; j++) {
 			var L = _vl2_LOW_LIMITS[j];
-			if (iv <= L.iv && r[i] < L.min) { v.push(iv+'st@'+r[i]); break; }
+			if (iv <= L.iv && r[i] < L.min + sh) { v.push(iv+'st@'+r[i]); break; }
 		}
 	}
 	return v;
@@ -1307,7 +1308,7 @@ function _vl2_realize(spec,voicing,opts){
 				var notes=(want!=null&&!_vl2_STRUCT.has(vc))?_vl2_stabilize(shapes[si],spec,want):_vl2_vs(shapes[si]).slice(0,6);
 				if(Math.min.apply(null,notes)<24||Math.max.apply(null,notes)>108)continue;
 				if(_vl2_checkIdentity(vc,notes,spec).length)continue;
-				if(!_vl2_ABSOLUTE.has(vc)&&_vl2_lowIntervalViolations(notes).length)continue;
+				if(!_vl2_ABSOLUTE.has(vc)&&_vl2_lowIntervalViolations(notes,octShift).length)continue;
 				var key=notes.join(',');if(seen.has(key))continue;seen.add(key);
 				out.push({notes:notes,voicing:vc,fallback:fallback});
 			}
@@ -1427,7 +1428,7 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	} else {
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
-	var center=60+currentOctave*12,key=_vl2_specKey(spec)+'|'+vc;
+	var center=(vc==='classic'&&voiceLeadingEnabled)?(48+currentOctave*12):(60+currentOctave*12),key=_vl2_specKey(spec)+'|'+vc+'|'+center;
 	var cands=_vl2_realize(spec,vc,{center:center,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;
 	var notes=_vl2_select(cands,{mode:mode,center:center,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
