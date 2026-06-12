@@ -22,9 +22,9 @@
       --gold-dim: rgba(255, 220, 130, 0.14);
       --blue: #8ECCE8;
       --blue-dim: rgba(142, 204, 232, 0.12);
-      --white: #f0eee8;
-      --muted: rgba(240,238,232,0.5);
-      --muted2: rgba(240,238,232,0.22);
+      --white: #ede9e0;
+      --muted: rgba(237,233,224,0.45);
+      --muted2: rgba(237,233,224,0.35);
     }
     html { scroll-behavior: smooth; }
     body {
@@ -107,6 +107,7 @@
     /* FEATURES */
     .features-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; margin-bottom: 48px; }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    #live .features-grid { grid-template-columns: repeat(2, 1fr); }   /* 4 cartes -> 2x2 equilibre */
     .feature { padding: 36px 32px; transition: all .2s; position: relative; overflow: hidden; border-radius: 16px;
       background: rgba(255,255,255,0.02);
       backdrop-filter: blur(2.5px) saturate(120%); -webkit-backdrop-filter: blur(2.5px) saturate(120%);
@@ -288,7 +289,7 @@
       .nav-hamburger { display: flex; }
       .mobile-callouts { display: block; }
       .features-head { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
+      .features-grid, #live .features-grid { grid-template-columns: 1fr; }
       .voicings-grid { grid-template-columns: repeat(2, 1fr); }
       .legal-grid { grid-template-columns: 1fr; }
       .contact-grid { grid-template-columns: 1fr; }
@@ -360,14 +361,6 @@
         <span class="frame-title">tuple &mdash; interactive demo</span>
       </div>
       <iframe src="demo.html" class="demo-frame" title="Tuple Interactive Demo" allow="autoplay" loading="lazy"></iframe>
-    </div>
-    <div class="demo-callouts">
-      <div class="dc blue"><div class="dc-n">01</div><div class="dc-t">Chord Grid</div><div class="dc-x">7 diatonic degrees &mdash; every valid chord, always visible.</div></div>
-      <div class="dc"><div class="dc-n">02</div><div class="dc-t">Voice Leading</div><div class="dc-x">3 algorithms with common-tone detection for smooth progressions.</div></div>
-      <div class="dc blue"><div class="dc-n">03</div><div class="dc-t">15 Voicings</div><div class="dc-x">Classic, Piano, Open, Spread, House, Prog, Rootless A/B, Drop 2/3, Jazz, Nu-House, Trap, Trance, Funk.</div></div>
-      <div class="dc"><div class="dc-n">04</div><div class="dc-t">Live Scale Sync</div><div class="dc-x">Import key &amp; scale from Ableton Live in one click.</div></div>
-      <div class="dc"><div class="dc-n">05</div><div class="dc-t">Borrowed Chords</div><div class="dc-x">Secondary dominants &amp; modal interchange, right in the grid.</div></div>
-      <div class="dc blue"><div class="dc-n">06</div><div class="dc-t">MIDI &amp; Hold</div><div class="dc-x">Mini-keyboard feedback and Hold/Latch for live performance.</div></div>
     </div>
   </section>
 
@@ -528,9 +521,9 @@
         <p>A question, a bug, a feature idea? Send a message &mdash; feedback shapes where Tuple goes next.</p>
         <!-- Formspree endpoint (form id mwvjnjwg) -->
         <form class="contact-form" id="contact-form" action="https://formspree.io/f/mwvjnjwg" method="POST">
-          <input type="text" name="name" placeholder="Your name" required>
-          <input type="email" name="email" placeholder="Your email" required>
-          <textarea name="message" placeholder="Your message" required></textarea>
+          <input type="text" name="name" placeholder="Your name" aria-label="Your name" required>
+          <input type="email" name="email" placeholder="Your email" aria-label="Your email" required>
+          <textarea name="message" placeholder="Your message" aria-label="Your message" required></textarea>
           <button type="submit" class="btn-primary">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.7"/></svg>
             Send message
