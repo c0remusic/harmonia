@@ -58,8 +58,9 @@
     transition:background .1s,border-color .1s;
   }
   .csel .cl{font-size:9px;letter-spacing:.07em;color:var(--muted);flex-shrink:0;font-weight:500}
-  .csel .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .row .csel{min-width:0}
+  .csel .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto}
+  body.strip .csel .cv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.strip .row .csel{min-width:0}
   .csel::after{content:'▾';color:var(--muted2);font-size:8px;flex-shrink:0;margin-left:3px}
   .csel:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
 
