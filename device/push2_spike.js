@@ -18,6 +18,17 @@ autowatch = 1;
 inlets  = 1;
 outlets = 1;
 
+// =====================================================================
+// LOGGER FICHIER — tee des logs Push vers device/push_console.log,
+// lisible hors Max (debug automatisé). Tronqué à chaque (re)chargement.
+// Même mécanique que le logger du moteur (chord_engine.js), éprouvée.
+// =====================================================================
+var PSPK_LOG = "C:/Users/LEETJ/Desktop/CHORD SELECTOR/device/push_console.log";
+function _plog(s) {
+	try { var f = new File(PSPK_LOG, "readwrite"); if (f.isopen) { f.position = f.eof; f.writestring(s); f.close(); } } catch(e) {}
+}
+(function(){ try { var f = new File(PSPK_LOG, "write"); if (f.isopen) { f.writestring("=== push2_spike.js (re)chargé ===\n"); f.close(); } } catch(e){} })();
+
 var USE_CS  = 1;                              // CS1 pilote le Push
 var OFFIDX = 0;
 // On reprogramme 8 entrées de palette (slots 1..8) avec les RGB EXACTS de l'UI,
@@ -42,6 +53,7 @@ var degQual = [0,0,0,0,0,0,0];
 
 var enabled   = false;
 var gridTask  = null;            // Task persistant (sinon GC -> ne fire pas)
+var redrawTicks = 0;             // compteur de redraws différés (settle du grab)
 var theCS = null, theMatrix = null, theMid = null;
 var pressed = {}, pressedPitch = {};
 var colLen = [0,0,0,0,0,0,0], borLen = 0, colTmp = null, borTmp = 0;
@@ -52,7 +64,7 @@ var REC = false, lastNotes = [], writePos = 0, entries = [], theClip = null;
 function noop() {}
 
 // ---- LOG (console Max uniquement ; le logger fichier a été retiré) ----
-function L(s) { post("PSPK: " + s + "\n"); }
+function L(s) { post("PSPK: " + s + "\n"); _plog("PSPK: " + s + "\n"); }
 function flush() {}   // no-op conservé pour ne pas toucher tous les appels
 
 // =====================================================================
@@ -88,14 +100,28 @@ function enable() {
 	try { theMatrix.property = "value"; } catch (e) {}
 	enabled = true;
 	applyPalette();   // reprogramme la palette aux RGB de l'UI
+	L("grab envoyé (CS id=" + theCS.id + " matrix=" + theMid + ")."); flush();
+	refreshGrid();    // tentative immédiate (souvent écrasée : grab pas encore actif)
+	// Le grab n'est pas actif dans le tour courant -> redraw DIFFÉRÉ répété pour couvrir
+	// le settle. On loggue chaque tick pour vérifier que le Task se déclenche vraiment.
 	if (gridTask) { try { gridTask.cancel(); } catch (e) {} }
-	gridTask = new Task(doInit, this); gridTask.schedule(300);   // Task persistant
-	L("grab envoyé (CS id=" + theCS.id + " matrix=" + theMid + "), grille dans 300ms."); flush();
+	redrawTicks = 0;
+	gridTask = new Task(redrawDeferred, this);
+	gridTask.interval = 150; gridTask.repeat(6);   // ~150..900ms
 }
 // applyPalette RE-fait ici (et pas seulement dans enable l.90) : au moment du grab la
 // palette SysEx est perdue (contrôle pas encore actif) -> pads éteints jusqu'au 1er LAYOUT.
 // À +300ms le grab est stabilisé, on (re)programme la palette AVANT d'allumer la grille.
 function doInit() { L("doInit: applyPalette + requestgrid"); flush(); if (enabled) { applyPalette(); outlet(0, "requestgrid"); } }   // -> moteur rediffuse -> griddone -> refreshGrid
+
+// Redraw différé répété : couvre le délai de "settle" du grab (la matrice n'est pas
+// à nous dans le tour de enable()). On réapplique palette + grille à chaque tick.
+function redrawDeferred() {
+	redrawTicks++;
+	if (!enabled) { if (gridTask) { try { gridTask.cancel(); } catch (e) {} } return; }
+	L("redraw différé tick " + redrawTicks);
+	applyPalette(); refreshGrid();
+}
 
 function disable() {
 	if (!enabled) return;

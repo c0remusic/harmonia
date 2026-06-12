@@ -571,7 +571,7 @@ function broadcastGrid() {
 	outlet(7, "griddone");
 }
 
-// L'UI demande la grille (au chargement)
+// L'UI demande la grille (au chargement) — aussi appelé par Push (doInit -> requestgrid)
 function requestgrid() {
 	broadcastGrid();
 }
