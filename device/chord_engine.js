@@ -1058,7 +1058,7 @@ function pianoVL(notes) {
 // =====================================================
 
 // --- rules ---
-var _vl2_LOW_LIMITS = [{iv:2,min:50},{iv:4,min:45},{iv:6,min:41}];
+var _vl2_LOW_LIMITS = [{iv:2,min:50},{iv:4,min:48},{iv:6,min:41}];
 function _vl2_lowIntervalViolations(notes) {
 	var r = notes.slice().sort(function(a,b){return a-b;}), v = [];
 	for (var i = 0; i < r.length-1; i++) {

@@ -2,7 +2,7 @@
 
 // Low interval limits pragmatiques : un intervalle ≤ iv est interdit si la note
 // BASSE de la paire est sous min. (Constantes à affiner au banc.)
-const LOW_LIMITS = [ { iv: 2, min: 50 }, { iv: 4, min: 45 }, { iv: 6, min: 41 } ];
+const LOW_LIMITS = [ { iv: 2, min: 50 }, { iv: 4, min: 48 }, { iv: 6, min: 41 } ];
 
 export function lowIntervalViolations(notes) {
   const r = [...notes].sort((a, b) => a - b), v = [];
