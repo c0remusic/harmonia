@@ -218,9 +218,14 @@
   var SCALES = {
     major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10], dorian:[0,2,3,5,7,9,10],
     phrygian:[0,1,3,5,7,8,10], lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10],
-    harmminor:[0,2,3,5,7,8,11], melminor:[0,2,3,5,7,9,11], locrian:[0,1,3,5,6,8,10]
+    harmminor:[0,2,3,5,7,8,11], melminor:[0,2,3,5,7,9,11], locrian:[0,1,3,5,6,8,10],
+    pentamaj:[0,2,4,5,7,9,11], pentamin:[0,2,3,5,7,8,10]
   };
-  var SCALEKEYS = ['major','minor','dorian','phrygian','lydian','mixolydian','harmminor','melminor','locrian'];
+  var SCALEKEYS = ['major','minor','dorian','phrygian','lydian','mixolydian','harmminor','melminor','locrian','pentamaj','pentamin'];
+  var SCALE_VALID_DEGREES = {
+    pentamaj: {0:1, 1:1, 2:1, 4:1, 5:1},
+    pentamin: {0:1, 2:1, 3:1, 4:1, 6:1}
+  };
   var NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   var GRID_TYPES = ['triad','seven','nine','mmaj7','sus4','sus2','add9','six','sevensus4','sixnine','sevenflat9','sevensharp9','m7s5'];
   var STEPS = { triad:[0,2,4], seven:[0,2,4,6], nine:[0,2,4,6,8], add9:[0,2,4,8], sus2:[0,1,4], sus4:[0,3,4],
@@ -463,7 +468,8 @@
 
   // ── Reconstruction de la grille (équivalent broadcastGrid) ──
   function rebuildGrid(){ cols=[[],[],[],[],[],[],[]]; bor=[]; flatGrid=[];
-    for(var d=0;d<7;d++){ for(var t=0;t<GRID_TYPES.length;t++){ var fn=GRID_TYPES[t];
+    var degMask=SCALE_VALID_DEGREES[eScaleName];
+    for(var d=0;d<7;d++){ if(degMask&&!degMask[d])continue; for(var t=0;t<GRID_TYPES.length;t++){ var fn=GRID_TYPES[t];
       if(gridTypeValid(d,fn)){ cols[d].push({label:gridLabel(d,fn),fn:fn}); flatGrid.push({kind:'d',fn:fn,degree:d}); } } }
     var bl=borrowedFor();
     for(var i=0;i<bl.length;i++){ var c=bl[i];
@@ -478,7 +484,7 @@
   // =====================================================================
   var DEG=[['I','Tonic'],['II','Supertonic'],['III','Mediant'],['IV','Subdominant'],['V','Dominant'],['VI','Submediant'],['VII','Leading']];
   var KEYS=NOTE_NAMES;
-  var SCALES_UI=['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min','Mel.Min','Locrian'];
+  var SCALES_UI=['Major','Minor','Dorian','Phrygian','Lydian','Mixolydian','Harm.Min','Mel.Min','Locrian','Penta Maj','Penta Min'];
   var VOICINGS=['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3','Jazz','Nu-House','Trap','Trance','Funk'];
   var VOICEKEYS=['classic','piano','open','spread','house','prog','rootlessa','rootlessb','drop2','drop3','jazz','nuhouse','trap','trance','funk'];
   var VLMODES=['ANCHOR','FLOW']; var VLMODE_MSG=['anchored','flow'];

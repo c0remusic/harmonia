@@ -95,7 +95,16 @@ var SCALES = {
 	"mixolydian": [0,2,4,5,7,9,10],
 	"harmminor":  [0,2,3,5,7,8,11],
 	"melminor":   [0,2,3,5,7,9,11],
-	"locrian":    [0,1,3,5,6,8,10]
+	"locrian":    [0,1,3,5,6,8,10],
+	"pentamaj":   [0,2,4,5,7,9,11],   // parent = major;  active: I II III V VI (skip IV VII)
+	"pentamin":   [0,2,3,5,7,8,10]    // parent = minor;  active: I III IV V VII (skip II VI)
+};
+
+// Degrés actifs (0-6) pour les gammes pentatoniques.
+// Les degrés absents sont ignorés dans broadcastGrid → colonnes vides.
+var SCALE_VALID_DEGREES = {
+	"pentamaj": {0:1, 1:1, 2:1, 4:1, 5:1},   // I  II  III  V   VI
+	"pentamin": {0:1, 2:1, 3:1, 4:1, 6:1}    // I  bIII IV  V  bVII
 };
 
 var NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -270,7 +279,9 @@ function pushUIState() {
 var LIVE_SCALE_MAP = {
 	"major":0, "minor":1, "natural minor":1, "dorian":2, "phrygian":3,
 	"lydian":4, "mixolydian":5, "harmonic minor":6, "harmminor":6,
-	"melodic minor":7, "melminor":7, "locrian":8
+	"melodic minor":7, "melminor":7, "locrian":8,
+	"major pentatonic":9, "pentatonic major":9, "pentamaj":9,
+	"minor pentatonic":10, "pentatonic minor":10, "pentamin":10
 };
 function synclive() {
 	try {
@@ -303,7 +314,7 @@ function rootidx(v) {
 }
 
 // Reçoit un index int (0-6) depuis live.menu
-var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor","melminor","locrian"];
+var SCALE_NAMES_ARR = ["major","minor","dorian","phrygian","lydian","mixolydian","harmminor","melminor","locrian","pentamaj","pentamin"];
 function scaleidx(v) {
 	setscale(SCALE_NAMES_ARR[parseInt(v)]);
 	pushUIState();
@@ -328,6 +339,8 @@ function mixolydian() { setscale("mixolydian"); }
 function harmminor()  { setscale("harmminor"); }
 function melminor()   { setscale("melminor"); }
 function locrian()    { setscale("locrian"); }
+function pentamaj()   { setscale("pentamaj"); }
+function pentamin()   { setscale("pentamin"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
@@ -541,7 +554,9 @@ function broadcastGrid() {
 	gCols = [[],[],[],[],[],[],[]];
 	gBor  = [];
 	outlet(7, "gridclear");
+	var degMask = SCALE_VALID_DEGREES[scaleName];
 	for (var d = 0; d < 7; d++) {
+		if (degMask && !degMask[d]) continue;
 		for (var t = 0; t < GRID_TYPES.length; t++) {
 			var fn = GRID_TYPES[t];
 			if (gridTypeValid(d, fn)) {
