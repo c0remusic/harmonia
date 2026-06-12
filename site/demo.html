@@ -90,11 +90,11 @@
   .head .r{color:var(--gold);font-family:var(--mono);font-size:11px;font-weight:600}
   .head .f{color:var(--muted2);font-size:8.5px}
   .col.bor .head{color:var(--blue)}
-  .cell{position:relative;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);border-radius:5px;
+  .cell{position:relative;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.15);border-radius:5px;
     flex:0 0 30px;height:30px;padding:0 2px;display:flex;align-items:center;justify-content:center;
-    font-size:11px;letter-spacing:-.02em;text-align:center;color:rgba(237,233,224,.65);
+    font-size:11px;letter-spacing:-.02em;text-align:center;color:rgba(237,233,224,.82);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:background .1s,border-color .1s,color .1s}
-  .cell:hover{background-color:rgba(255,255,255,.09);border-color:rgba(255,255,255,.14);color:var(--txt)}
+  .cell:hover{background-color:rgba(255,255,255,.17);border-color:rgba(255,255,255,.22);color:var(--txt)}
   .cell.active{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
   .cell.pressed{background-color:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);transform:translateY(1px)}
 
@@ -568,7 +568,7 @@
     document.getElementById('voicingV').textContent=VOICINGS[state.voicingIdx]||'Classic';
     var vl=document.getElementById('vl'); vl.className='btn'+(state.vl?' gold':'');
     var vm=document.getElementById('vlmode');
-    vm.className='btn lblbtn'+(state.vl&&state.vlmodeIdx!==0?' gold':'')+(state.vl?'':' off');
+    vm.className='btn lblbtn'+(state.vl?'':' off');
     var vmv=VLMODES[state.vlmodeIdx]; document.getElementById('vlmodeV').textContent=vmv.charAt(0)+vmv.slice(1).toLowerCase();
     renderOct(); }
   function renderNotes(arr){ var midi=(arr||[]).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<128;});
