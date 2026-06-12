@@ -1275,28 +1275,29 @@ function _vl2_stabilize(notes,spec,target){
 	}
 	return _vl2_vs(out);
 }
+// regBase : plancher de l'octave, TOUJOURS multiple de 12 (48=C3 à oct0, 36=C2 à oct-1…).
+// Conséquence : m(regBase)=0, donc tonicPos = regBase + root (addition directe, pas de modulo).
+// octShift = regBase - 48 (décalage pour le filtre basse et les shape functions).
 function _vl2_realize(spec,voicing,opts){
-	var center=(opts&&opts.center!=null)?opts.center:60;
+	var regBase=(opts&&opts.regBase!=null)?opts.regBase:48;
+	var octShift=regBase-48;
 	var want=(opts&&opts.targetVoices!=null)?opts.targetVoices:null;
 	var vc=voicing,fallback=null;
 	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
-	// classic + VL off : position fondamentale STRICTE. La tonique de la gamme (root) est
-	// placée dans [cBase, cBase+11] (ex. G3 en Sol maj à oct0), puis tous les degrés sont
-	// placés AU-DESSUS de la tonique -> I est toujours le plus bas, ordre ascendant I→VII.
-	// cBase=48+octShift (C3 à oct0). Voir decisions.md.
+	// classic VL off : tonique de la gamme en bas, tous les degrés strictement au-dessus.
+	// tonicPos = regBase + root (root de la tonique dans ce registre).
+	// cr      = tonicPos + m(pc - root) -> chaque degré placé au-dessus de la tonique.
 	if(vc==='classic'&&opts&&opts.rootPos){
-		var cShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
-		var cBase=48+cShift,tonicRoot=cBase+_vl2_m(root-_vl2_m(cBase));
-		var cr=tonicRoot+_vl2_m(spec.rootPc-_vl2_m(tonicRoot));
+		var tonicPos=regBase+root;
+		var cr=tonicPos+_vl2_m(spec.rootPc-root);
 		var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
 		if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)return[];
 		if(_vl2_checkIdentity(vc,cn,spec).length)return[];
 		return[{notes:cn,voicing:vc,fallback:fallback}];
 	}
 	var rotUp=function(arr){var r=_vl2_vs(arr);r.push(r.shift()+12);return _vl2_vs(r);};
-	var octShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
 	var seen=new Set(),out=[];
 	for(var oct=-2;oct<=2;oct++){
 		var base=48+oct*12,rootMidi=base+_vl2_m(spec.rootPc-_vl2_m(base));
@@ -1429,16 +1430,15 @@ function _vl2_play(fn,d,colorSemis,colorType){
 	} else {
 		_vl2_reset();   // VL OFF : pas de mémoire de mouvement -> chaque accord au plus proche du centre
 	}
-	// octCenter : centre C-ancré transmis à realize (calcul cFloor/rootPos correct)
-	// selCenter : centre tonique-ancré pour le sélecteur (gravité sur I, pas C)
-	var octCenter=60+currentOctave*12;
-	var cFloor=48+Math.max(-12,Math.min(24,currentOctave*12));
-	var tonicRoot=cFloor+_vl2_m(root-_vl2_m(cFloor));
-	var selCenter=(vc==='classic')?tonicRoot:octCenter;
-	var key=_vl2_specKey(spec)+'|'+vc+'|'+selCenter;
-	var cands=_vl2_realize(spec,vc,{center:octCenter,rootPos:!voiceLeadingEnabled});
+	// regBase : plancher de l'octave (multiple de 12). tonicPos : root MIDI de la tonique.
+	// selCtr  : centre de gravité du sélecteur — tonique pour classic, C-ancré pour autres.
+	var regBase=48+Math.max(-12,Math.min(24,currentOctave*12));
+	var tonicPos=regBase+root;
+	var selCtr=(vc==='classic')?tonicPos:(60+currentOctave*12);
+	var key=_vl2_specKey(spec)+'|'+vc+'|'+selCtr;
+	var cands=_vl2_realize(spec,vc,{regBase:regBase,rootPos:!voiceLeadingEnabled});
 	if(!cands.length)return null;
-	var notes=_vl2_select(cands,{mode:mode,center:selCenter,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
+	var notes=_vl2_select(cands,{mode:mode,center:selCtr,key:key,voicing:vc,spec:spec,prevSpec:_vl2_prevSpec});
 	_vl2_prevSpec=spec;
 	return notes;
 }

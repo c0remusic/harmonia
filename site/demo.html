@@ -434,11 +434,7 @@
     var e=v2(); if(!e) return false;
     if(!eVL) e.reset();                                  // VL off → pas de mémoire de mouvement (plus proche du centre)
     var mode=(eVlMode==='anchored')?'anchor':'flow';     // ANCHOR = loops verrouillés ; RELATIVE/PIANO = flow
-    var octCenter=60+eOct*12;
-    var cFloor=48+Math.max(-12,Math.min(24,eOct*12));
-    var tonicRoot=cFloor+((eRoot-(cFloor%12)+12)%12);
-    var selCenter=(eVoicing==='classic')?tonicRoot:octCenter;
-    var r=e.play(spec, eVoicing, { mode: mode, center: octCenter, selCenter: selCenter, rootPos: !eVL, keyRoot: eRoot });
+    var r=e.play(spec, eVoicing, { mode: mode, keyOct: eOct, keyRoot: eRoot, rootPos: !eVL });
     emit(name, r.notes); return true;
   }
 

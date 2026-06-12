@@ -11,11 +11,20 @@ export function createEngine() {
   return {
     reset() { resetState(st); prevSpec = null; },
     // spec -> { notes, explain, voicing, fallback }
-    play(spec, voicing, { mode = 'flow', center = 60, selCenter, targetVoices, rootPos = false, keyRoot = 0 } = {}) {
-      const sc = selCenter ?? center;
-      const cands = realize(spec, voicing, { center, targetVoices, rootPos, keyRoot });
+    // keyOct  : octave courante (entier, 0=défaut).
+    // keyRoot : tonique de la gamme (0-11, 0=C).
+    // rootPos : true = VL off (position fondamentale stricte, pas de mémoire).
+    play(spec, voicing, { mode = 'flow', keyOct = 0, keyRoot = 0, targetVoices, rootPos = false } = {}) {
+      // regBase : plancher de l'octave, multiple de 12 (48=C3 à oct0, 36=C2 à oct-1…).
+      // tonicPos : root MIDI de la tonique dans ce registre (= regBase + keyRoot).
+      // selCtr   : centre de gravité du sélecteur — tonique pour classic, C-ancré sinon.
+      const regBase = 48 + Math.max(-12, Math.min(24, keyOct * 12));
+      const tonicPos = regBase + keyRoot;
+      const selCtr = (voicing === 'classic') ? tonicPos : (60 + keyOct * 12);
+      const cands = realize(spec, voicing, { regBase, targetVoices, rootPos, keyRoot });
       if (!cands.length) return { notes: [], explain: ['no-candidates'], voicing, fallback: null };
-      const r = select(cands, st, { mode, center: sc, key: specKey(spec) + '|' + voicing + '|' + sc, voicing, spec, prevSpec });
+      const key = specKey(spec) + '|' + voicing + '|' + selCtr;
+      const r = select(cands, st, { mode, center: selCtr, key, voicing, spec, prevSpec });
       prevSpec = spec;
       return r;
     }
