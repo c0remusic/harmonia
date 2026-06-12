@@ -5,14 +5,13 @@
 //
 // ON  : grab CS1 → grille colorée par degré (cases valides) → pads = accords
 //       (via midinote, le moteur gère le note-off).
-// OFF : release_control → le Push revient à Live. (Aussi au unload : notifydeleted.)
+// OFF : release_control → le Push revient à Live.
 //
 // RECORDING : 2-PISTES — les accords sortent par les noteout du moteur → piste →
 // enregistrables sur une 2e piste (MIDI From: piste Tuple, Post FX). Aucun code ici.
 // L'écriture-clip 1-piste est CONSERVÉE mais DORMANTE (REC=false) pour plus tard.
 //
 // NB recette Push (empirique, sur hardware) : voir docs/decisions.md § Push RÉSOLU.
-// NB couleurs DEGCOL = indices placeholder, à caler sur la vraie palette Push 2.
 
 autowatch = 1;
 inlets  = 1;
@@ -72,7 +71,6 @@ function flush() {}   // no-op conservé pour ne pas toucher tous les appels
 // =====================================================================
 function pushmode(v) { if (parseInt(v)) enable(); else disable(); }
 function bang() { /* pas d'auto-grab */ }
-function notifydeleted() { disable(); }   // release si le device est supprimé/rechargé
 
 function enable() {
 	if (enabled) return;
