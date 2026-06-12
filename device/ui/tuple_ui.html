@@ -683,10 +683,16 @@
   }
 
   var syncClickPending=false;
-  // Flash doré bref (feedback de clic). transition:none sur .flash → instantané.
+  // Flash doré bref (feedback serveur — ex. sync depuis Max). transition:none → instantané.
   function flash(el){
     el.classList.add('flash');
     setTimeout(function(){el.classList.remove('flash');},180);
+  }
+  // Flash tenu : allumé au mousedown, éteint au mouseup (pour les boutons pressables).
+  function pressFlash(el){
+    el.classList.add('flash');
+    function onUp(){ el.classList.remove('flash'); document.removeEventListener('mouseup',onUp); }
+    document.addEventListener('mouseup',onUp);
   }
 
   // Bouton OPEN/CLOSE : le libellé porte l'état.
@@ -770,7 +776,7 @@
   document.getElementById('sync').onmousedown = function(){
     syncClickPending=true;
     setTimeout(function(){ syncClickPending=false; },400);
-    flash(this); send('synclive');
+    pressFlash(this); send('synclive');
   };
 
   document.getElementById('key').onclick = function(e){
@@ -795,7 +801,7 @@
   document.getElementById('vl').onmousedown     = function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onmousedown = function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
   // Feedback OPEN/CLOSE : flash doré bref au mousedown, identique au sync.
-  document.getElementById('toggleBtn').onmousedown = function(){ flash(this); };
+  document.getElementById('toggleBtn').onmousedown = function(){ pressFlash(this); };
   document.getElementById('toggleBtn').onclick = function(){
     if(!M){
       // demo: toggle mode locally for browser preview
