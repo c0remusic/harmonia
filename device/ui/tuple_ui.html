@@ -131,6 +131,11 @@
   .btn:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
   .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
   .btn.blue{color:var(--blue);background:var(--blue-dim);border-color:var(--blue-bd)}
+  /* VL MODE = case label+valeur (miroir démo) : neutre, valeur dorée, grisée si VL off */
+  .btn.lblbtn{display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left}
+  .btn.lblbtn .cl{font-size:9px;letter-spacing:.07em;color:var(--muted);font-weight:500;flex-shrink:0}
+  .btn.lblbtn .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto}
+  .btn.lblbtn.off{opacity:.4}
   /* état actif d'un toggle (PUSH, ALWAYS ON TOP) — surbrillance dorée homogène */
   .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
   /* pousse Device + CLOSE en bas de la colonne monitor (réserve le milieu) */
@@ -254,7 +259,7 @@
   /* Strip — voicing zone */
   body.strip #voicing      {flex:none;height:20px;padding:0 7px;font-size:10px}
   body.strip #vl           {flex:none;height:20px;padding:0;font-size:8.5px;display:flex;align-items:center;justify-content:center}
-  body.strip #vlmode       {flex:none;height:20px;padding:0;font-size:8.5px;display:flex;align-items:center;justify-content:center}
+  body.strip #vlmode       {flex:none;height:20px;padding:0 7px;font-size:8.5px;display:flex;align-items:center;justify-content:space-between}
 
   /* Strip — monitor */
   body.strip .toggle       {height:46px;margin-top:0}
@@ -286,7 +291,7 @@
 
   body.full #voicing       {flex:none;height:32px;padding:0 10px;font-size:11px}
   body.full #vl            {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
-  body.full #vlmode        {height:32px;padding:0;font-size:10px;display:flex;align-items:center;justify-content:center}
+  body.full #vlmode        {height:32px;padding:0 10px;font-size:10px;display:flex;align-items:center;justify-content:space-between}
 
   body.full .dd-ov         {width:230px}
   body.full .grid          {padding:18px 14px;gap:5px}
@@ -339,8 +344,8 @@
         <div class="lbl">Voicing</div>
         <div class="oct" id="oct"></div>
         <div class="csel" id="voicing"><span class="cl">VOICING</span><span class="cv" id="voicingV">Classic</span></div>
-        <div class="btn" id="vl">VL</div>
-        <div class="btn blue" id="vlmode">ANCHOR</div>
+        <div class="btn" id="vl">VOICE LEADING</div>
+        <div class="btn lblbtn" id="vlmode"><span class="cl">VL MODE</span><span class="cv" id="vlmodeV">Anchor</span></div>
       </div>
 
       <div class="cfg-spacer"></div>
@@ -625,9 +630,9 @@
     var vl=document.getElementById('vl');
     vl.className='btn'+(state.vl?' gold':'');
     var vm=document.getElementById('vlmode');
-    vm.className='btn blue';                       // anchor/flow look egal (plus de gold sur flow)
-    vm.style.opacity=state.vl?'':'0.4';            // grise quand VL off (mode sans effet)
-    vm.textContent=VLMODES[state.vlmodeIdx];
+    vm.className='btn lblbtn'+(state.vl?'':' off');   // neutre, anchor/flow egal ; grise si VL off
+    var mv=VLMODES[state.vlmodeIdx];
+    document.getElementById('vlmodeV').textContent=mv.charAt(0)+mv.slice(1).toLowerCase();
     renderOct();
   }
 
