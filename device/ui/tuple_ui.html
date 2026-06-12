@@ -87,6 +87,8 @@
     display:flex;align-items:center;
     transition:background .07s,color .07s,border-color .07s;
   }
+  body.strip .dd-cell{padding:4px 6px;font-size:9px;letter-spacing:0}
+  body.strip .dd-ov{padding:8px 8px;gap:6px}
   .dd-cell:hover{background-color:rgba(255,255,255,.08);color:var(--txt);border-color:rgba(255,255,255,.15)}
   .dd-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
 
@@ -836,7 +838,7 @@
   };
   document.getElementById('scale').onclick = function(e){
     e.stopPropagation();
-    openDrop('scale','SCALE',SCALES,state.scaleIdx,2,function(i,name){
+    openDrop('scale','SCALE',SCALES,state.scaleIdx,mode==='strip'?3:2,function(i,name){
       state.scaleIdx=i; document.getElementById('scaleV').textContent=name; send('scaleidx',i);
     });
   };
