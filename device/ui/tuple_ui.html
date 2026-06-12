@@ -58,7 +58,8 @@
     transition:background .1s,border-color .1s;
   }
   .csel .cl{font-size:9px;letter-spacing:.07em;color:var(--muted);flex-shrink:0;font-weight:500}
-  .csel .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto}
+  .csel .cv{color:var(--gold);font-size:10px;font-weight:500;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .csel{min-width:0}
   .csel::after{content:'▾';color:var(--muted2);font-size:8px;flex-shrink:0;margin-left:3px}
   .csel:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
 
@@ -222,16 +223,19 @@
   .cfg-spacer{display:none}
   /* DEVICE group (Push · Layout) — full uniquement, colonne droite. Caché en strip. */
   .devgrp{display:none}
-  body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;
-    border-top:1px solid rgba(255,255,255,.10);padding-top:12px;margin-top:10px}
+  body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;margin-top:10px}
   /* boutons Device/Window = même hauteur standard (32px) que les autres contrôles full */
   body.full .devgrp .btn,body.full .wingrp .btn{height:32px;padding:0 10px;display:flex;align-items:center;justify-content:center;font-size:10px}
   body.full .devgrp .lbl,body.full .wingrp .lbl{display:block;font-size:9px;letter-spacing:.15em;font-weight:600;
     color:rgba(255,220,130,.3);text-transform:uppercase;margin-bottom:2px}
-  /* WINDOW group (Always on top · Open/Close) — séparateur dédié en full ;
-     en strip seul le CTA OPEN DEVICE reste visible (label + ontop cachés). */
+  /* Séparateur dégradé avant devgrp et wingrp (full uniquement) */
+  body.full .devgrp::before,body.full .wingrp::before{
+    content:'';display:block;height:1px;margin-bottom:12px;
+    background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.12) 25%, rgba(255,255,255,.12) 75%, transparent 100%);
+  }
+  /* WINDOW group (Always on top · Open/Close) */
   .wingrp{display:flex;flex-direction:column;gap:8px;flex:none}
-  body.full .wingrp{border-top:1px solid rgba(255,255,255,.10);padding-top:12px;margin-top:2px}
+  body.full .wingrp{margin-top:2px}
   body.strip #ontopBtn{display:none}
   body.full  #infoBtn{display:none}
   body.strip .wingrp{border-top:1px solid rgba(237,233,224,.08);padding-top:6px;margin-bottom:2px}

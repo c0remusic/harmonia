@@ -475,11 +475,47 @@ var BORROWED_LYDIANDOM = [
 	{ roman:"iv",   semis:5,  type:"min",  suf:"m"    },
 	{ roman:"bII7", semis:1,  type:"dom7", suf:"7"    }
 ];
+var BORROWED_DORIAN = [
+	{ roman:"V7",   semis:7,  type:"dom7", suf:"7"    },
+	{ roman:"bVI",  semis:8,  type:"maj",  suf:""     },
+	{ roman:"bII",  semis:1,  type:"maj",  suf:""     }
+];
+var BORROWED_PHRYGIAN = [
+	{ roman:"I",    semis:0,  type:"maj",  suf:""     },
+	{ roman:"V7",   semis:7,  type:"dom7", suf:"7"    },
+	{ roman:"IV",   semis:5,  type:"maj",  suf:""     }
+];
+var BORROWED_LYDIAN = [
+	{ roman:"IV",   semis:5,  type:"maj",  suf:""     },
+	{ roman:"bVII", semis:10, type:"maj",  suf:""     },
+	{ roman:"v",    semis:7,  type:"min",  suf:"m"    }
+];
+var BORROWED_MIXOLYDIAN = [
+	{ roman:"vii°7",semis:11, type:"dim7", suf:"dim7" },
+	{ roman:"bVI",  semis:8,  type:"maj",  suf:""     },
+	{ roman:"bIII", semis:3,  type:"maj",  suf:""     }
+];
+var BORROWED_HARMMINOR = [
+	{ roman:"IV",   semis:5,  type:"maj",  suf:""     },
+	{ roman:"bVII", semis:10, type:"maj",  suf:""     },
+	{ roman:"bII",  semis:1,  type:"maj",  suf:""     }
+];
+var BORROWED_LOCRIAN = [
+	{ roman:"I",    semis:0,  type:"maj",  suf:""     },
+	{ roman:"V7",   semis:7,  type:"dom7", suf:"7"    },
+	{ roman:"IV",   semis:5,  type:"maj",  suf:""     }
+];
 function borrowedFor() {
-	if (scaleName === "major")     return BORROWED_MAJOR;
-	if (scaleName === "minor")     return BORROWED_MINOR;
-	if (scaleName === "melminor")  return BORROWED_MELMINOR;
-	if (scaleName === "lydiandom") return BORROWED_LYDIANDOM;
+	if (scaleName === "major")      return BORROWED_MAJOR;
+	if (scaleName === "minor")      return BORROWED_MINOR;
+	if (scaleName === "melminor")   return BORROWED_MELMINOR;
+	if (scaleName === "lydiandom")  return BORROWED_LYDIANDOM;
+	if (scaleName === "dorian")     return BORROWED_DORIAN;
+	if (scaleName === "phrygian")   return BORROWED_PHRYGIAN;
+	if (scaleName === "lydian")     return BORROWED_LYDIAN;
+	if (scaleName === "mixolydian") return BORROWED_MIXOLYDIAN;
+	if (scaleName === "harmminor")  return BORROWED_HARMMINOR;
+	if (scaleName === "locrian")    return BORROWED_LOCRIAN;
 	return [];
 }
 
