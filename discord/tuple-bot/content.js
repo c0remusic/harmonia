@@ -7,6 +7,11 @@
 // Remplace [LINK] par tes vraies URLs.
 
 import { EMOJI } from "./emojis.js";
+import { INFO } from "./config.js";
+
+// Liens canoniques (édités dans config.js > INFO) — plus de [LINK] en dur.
+const SITE = INFO.site;
+const M4L = INFO.maxforlive ?? "coming with the final release";
 
 export const CHANNEL_CONTENT = {
   welcome: {
@@ -15,6 +20,8 @@ export const CHANNEL_CONTENT = {
     build: () =>
       `${EMOJI.welcome}**Welcome to Tuple**\n\n` +
       "Tuple is a MIDI chord device for Ableton Live — built to put harmony at your fingertips.\n\n" +
+      "Pick a key, see every in-key chord on one grid, and play full progressions with one hand. " +
+      "15 voicings, dynamic voice leading, and scale sync straight from Live.\n\n" +
       "This is the official community: support, updates, and sharing what you make with it.\n\n" +
       `${EMOJI.rules}Read the **#rules** (takes 30 seconds)\n` +
       `${EMOJI.faq}Check **#faq** before asking\n` +
@@ -44,11 +51,13 @@ export const CHANNEL_CONTENT = {
     build: () =>
       `${EMOJI.faq}**Frequently Asked Questions**\n\n` +
       `${EMOJI.faq}**What is Tuple?**\n` +
-      "A MIDI effect device for Ableton Live that helps you build, explore, and play chords and progressions in key.\n\n" +
+      "A MIDI effect device for Ableton Live that helps you build, explore, and play chords and progressions in key. " +
+      "Every in-key chord — diatonic and borrowed — sits on one grid, with **15 voicings** (each a one-hand grip; only Piano mode spans two hands), " +
+      "**dynamic voice leading** for smooth changes, and **scale sync** that pulls the key straight from Live.\n\n" +
       `${EMOJI.infos}**What do I need to run it?**\n` +
       "Ableton Live with **Max for Live** (included in Live Suite, or an add-on for Standard). Works on macOS and Windows.\n\n" +
       `${EMOJI.announcements}**Where do I download it?**\n` +
-      "Official site: [LINK] · maxforlive.com: [LINK]\n\n" +
+      `Official site: ${SITE} · maxforlive.com: ${M4L}\n\n` +
       `${EMOJI.harmony}**How do I install it?**\n` +
       "Drag the \`.amxd\` file onto a MIDI track in Live. That's it.\n\n" +
       `${EMOJI.bug_reports}**I found a bug.**\n` +
@@ -95,11 +104,15 @@ export const CHANNEL_CONTENT = {
     channelEnv: "ANNOUNCEMENTS_CHANNEL_ID",
     topic: "Official Tuple releases and news.",
     build: () =>
-      `${EMOJI.announcements}**Tuple v1.0 is out**\n\n` +
-      "The first release is now available.\n\n" +
-      `${EMOJI.infos}Official site: [LINK]\n` +
-      `${EMOJI.infos}maxforlive.com: [LINK]\n\n` +
-      "Details in #welcome. Bug or idea? #bug-reports · #feature-requests. 🟡",
+      `${EMOJI.announcements}**Tuple — what's in the current build**\n\n` +
+      "Here's where Tuple stands right now:\n\n" +
+      `${EMOJI.harmony}**15 voicings** — each a coherent one-hand grip in a single register, ready to layer over your own bass line. Only Piano mode spans two hands.\n` +
+      `${EMOJI.harmony}**Dynamic voice leading** — notes move the shortest distance between chords for smooth changes; toggle it off for closest-to-center picks.\n` +
+      `${EMOJI.infos}**Scale sync** — pull the current key and scale straight from Live.\n` +
+      `${EMOJI.faq}**Full in-key grid** — diatonic and borrowed chords together, no menu digging.\n\n` +
+      `${EMOJI.infos}Official site: ${SITE}\n` +
+      `${EMOJI.infos}maxforlive.com: ${M4L}\n\n` +
+      "More in #welcome. Bug or idea? #bug-reports · #feature-requests. 🟡",
   },
 
   harmony: {

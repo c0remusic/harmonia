@@ -27,7 +27,7 @@ export const FAQ = [
   {
     emoji: "faq",
     q: "What is Tuple?",
-    a: "Tuple is a MIDI effect device for Ableton Live that helps you build, explore, and play chords and progressions in key.",
+    a: "A MIDI effect device for Ableton Live that helps you build, explore, and play chords and progressions in key. Every in-key chord (diatonic and borrowed) sits on one grid, with 15 one-hand voicings (only Piano mode spans two hands), dynamic voice leading, and scale sync from Live.",
   },
   {
     emoji: "infos",
