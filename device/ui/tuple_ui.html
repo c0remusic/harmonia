@@ -233,6 +233,7 @@
   .wingrp{display:flex;flex-direction:column;gap:8px;flex:none}
   body.full .wingrp{border-top:1px solid rgba(255,255,255,.10);padding-top:12px;margin-top:2px}
   body.strip #ontopBtn{display:none}
+  body.full  #infoBtn{display:none}
 
   /* ── STRIP MODE ── */
   body.strip .grid{display:none}
@@ -423,13 +424,13 @@
         <div class="lbl">Device</div>
         <div class="btn" id="pushBtn" title="Chord grid on Push 2 pads">PUSH</div>
         <div class="btn" id="colorBtn" title="Degree color logic">LAYOUT · Spectrum</div>
-        <div class="btn" id="infoBtn" title="About Tuple" style="color:var(--muted2);letter-spacing:.04em">ⓘ Info</div>
       </div>
 
       <!-- WINDOW : gestion de la fenêtre (séparée du groupe Device) -->
       <div class="wingrp">
         <div class="lbl">Window</div>
         <div class="btn on" id="ontopBtn" title="Keep this window above others">ALWAYS ON TOP</div>
+        <div class="btn" id="infoBtn" title="About Tuple">About</div>
         <div class="toggle" id="toggleBtn" title="Open full view">OPEN DEVICE</div>
       </div>
     </div>
