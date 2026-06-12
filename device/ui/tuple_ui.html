@@ -732,13 +732,19 @@
     M.bindInlet('vl',        function(v){ state.vl=(parseInt(v)===1); renderConfig(); });
     M.bindInlet('vlmode',    function(v){ var i=VLMODE_MSG.indexOf(String(v).toLowerCase()); if(i>=0) state.vlmodeIdx=i; renderConfig(); });
     M.bindInlet('active',    function(fn,degree){
-      var col=parseInt(degree);
-      if(!isNaN(col)){
-        activeCol=col;
-        var fnStr=String(fn);
-        if(fnStr==='color'){
-          if(bor[col]) activeChordName=bor[col].label;
-        } else {
+      var fnStr=String(fn);
+      if(fnStr==='color'){
+        // Pour les accords empruntés : degree = semis (pas un index de colonne).
+        // On cherche l'entrée bor[] par semis pour avoir le bon nom + le bon rang.
+        var semisVal=parseInt(degree);
+        activeCol=7;  // colonne borrowed toujours = 7
+        for(var bi=0;bi<bor.length;bi++){
+          if(bor[bi].semis===semisVal){ activeRow=bi; activeChordName=bor[bi].label; break; }
+        }
+      } else {
+        var col=parseInt(degree);
+        if(!isNaN(col)){
+          activeCol=col;
           var arr=cols[col]||[];
           for(var r=0;r<arr.length;r++){
             if(arr[r].fn===fnStr){ activeRow=r; activeChordName=arr[r].label; break; }

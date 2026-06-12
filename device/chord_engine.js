@@ -1168,12 +1168,12 @@ var _vl2_T={
 	classic:function(c){return[c];},
 	open:function(c){return c.length<2?[c]:[_vl2_vs(c.map(function(n,i){return i===1?n+12:n;}))];},
 	spread:function(c){return c.length<3?[c]:[_vl2_vs(c.map(function(n,i){return i%2===1?n+12:n;}))];},
-	// house : stab deep-house ROOTLESS (basse jouée à part), cluster serré verrouillé C4.
+	// house : stab deep-house ROOTLESS (basse jouée à part), cluster serré ancré C3.
 	house:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
 		var hm=function(n){return((n%12)+12)%12;},pcs=c.slice(1).map(hm);
 		if(c.length>=5)pcs=pcs.filter(function(p,i){return i!==1;});
-		var floor=60+oct;
+		var floor=48+oct;
 		var cluster=pcs.map(function(pc){return floor+hm(pc);}).sort(function(a,b){return a-b;})
 			.filter(function(n,i,a){return i===0||n!==a[i-1];});
 		return _vl2_rotOf(_vl2_vs(cluster));
@@ -1213,10 +1213,10 @@ var _vl2_T={
 		for(i=0;i<upperPc.length;i++){n=cur+1+pm(upperPc[i]-pm(cur+1));cl.push(n);cur=n;}
 		return[_vl2_vs(cl)];
 	},
-	// nuhouse : rootless OUVERT aéré (2e voix +octave), 1 main, verrouillé C4, suit OCT.
+	// nuhouse : rootless OUVERT aéré (2e voix +octave), 1 main, ancré C3, suit OCT.
 	nuhouse:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
-		var pm=function(n){return((n%12)+12)%12;},pcs=c.slice(1).map(pm),floor=60+oct;
+		var pm=function(n){return((n%12)+12)%12;},pcs=c.slice(1).map(pm),floor=48+oct;
 		var cl=pcs.map(function(pc){return floor+pm(pc);}).sort(function(a,b){return a-b;})
 			.filter(function(n,i,a){return i===0||n!==a[i-1];});
 		if(cl.length>=2)cl[1]+=12;
@@ -1244,10 +1244,10 @@ var _vl2_T={
 		cl.push(root+12);
 		return[_vl2_vs(cl).slice(0,6)];
 	},
-	// funk : grip "10e" root-inclus — accord mappé en C4, 2e voix (3ce) montée d'une octave. 1 main.
+	// funk : grip "10e" root-inclus — accord mappé en C3, 2e voix (3ce) montée d'une octave. 1 main.
 	funk:function(c,oct){
 		if(c.length<3)return[_vl2_vs(c)];oct=oct||0;
-		var pm=function(n){return((n%12)+12)%12;},floor=60+oct;
+		var pm=function(n){return((n%12)+12)%12;},floor=48+oct;
 		var notes=c.map(function(n){return floor+pm(n);}).sort(function(a,b){return a-b;})
 			.filter(function(n,i,a){return i===0||n!==a[i-1];});
 		if(notes.length>=2)notes[1]+=12;
@@ -1281,20 +1281,17 @@ function _vl2_realize(spec,voicing,opts){
 	if((vc==='rootlessa'||vc==='rootlessb'||vc==='jazz'||vc==='nuhouse'||vc==='house')&&!spec.hasSeventh){fallback=vc;vc='classic';}
 	if(vc==='drop3'&&spec.pcs.length<4){fallback=vc;vc='drop2';}
 	if(vc==='drop2'&&spec.pcs.length<4){fallback=fallback||vc;vc='classic';}
-	// classic + VL off : position fondamentale STRICTE, fonda ancrée dans l'octave juste
-	// sous le centre (octave 3 a center=60) -> registre constant, fonda a la basse, aucun
-	// saut d'octave entre degres. OCTAVE decale la bande via `center`. Voir decisions.md.
+	// classic + VL off : position fondamentale STRICTE, registre ABSOLU aligné sur les
+	// voicings floored (base 48+octShift, octShift borné comme les ABSOLUTE) -> un cran
+	// d'OCTAVE = même décalage pour TOUS (descente uniforme, pas de clamp anti-boue qui
+	// remonterait classic). À l'octave 0, base=48=C3. Voir decisions.md.
 	if(vc==='classic'&&opts&&opts.rootPos){
-		var cout=[],bases=[center-12,center,center-24];
-		for(var bi=0;bi<bases.length;bi++){
-			var cb=bases[bi],cr=cb+_vl2_m(spec.rootPc-_vl2_m(cb));
-			var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
-			if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)continue;
-			if(_vl2_checkIdentity(vc,cn,spec).length)continue;
-			if(_vl2_lowIntervalViolations(cn).length)continue;
-			cout.push({notes:cn,voicing:vc,fallback:fallback});break;
-		}
-		return cout;
+		var cShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));
+		var cBase=48+cShift,cr=cBase+_vl2_m(spec.rootPc-_vl2_m(cBase));
+		var cn=_vl2_vs(_vl2_closeFrom(spec,cr)).slice(0,6);
+		if(Math.min.apply(null,cn)<24||Math.max.apply(null,cn)>108)return[];
+		if(_vl2_checkIdentity(vc,cn,spec).length)return[];
+		return[{notes:cn,voicing:vc,fallback:fallback}];
 	}
 	var rotUp=function(arr){var r=_vl2_vs(arr);r.push(r.shift()+12);return _vl2_vs(r);};
 	var octShift=Math.max(-12,Math.min(24,Math.round((center-60)/12)*12));

@@ -37,14 +37,14 @@ const T = {
   open:    c => c.length < 2 ? [c] : [vsort(c.map((n, i) => i === 1 ? n + 12 : n))],
   spread:  c => c.length < 3 ? [c] : [vsort(c.map((n, i) => i % 2 === 1 ? n + 12 : n))],
   // house : stab deep-house ROOTLESS (la basse joue la fonda à part). Cluster serré
-  // brillant verrouillé dans l'octave C4 ; toutes les rotations pour le VL. 1 main.
+  // brillant ancré dans l'octave C3 ; toutes les rotations pour le VL. 1 main.
   house:   (c, oct) => {
     if (c.length < 3) return [vsort(c)];
     oct = oct || 0;
     var hm = n => ((n % 12) + 12) % 12;
     var pcs = c.slice(1).map(hm);                                 // rootless
     if (c.length >= 5) pcs = pcs.filter((p, i) => i !== 1);       // 9th+ : lâche la quinte
-    var floor = 60 + oct;                                         // verrouillé C4
+    var floor = 48 + oct;                                         // ancré C3
     var cluster = pcs.map(function (pc) { return floor + hm(pc); })
       .sort(function (a, b) { return a - b; })
       .filter(function (n, i, a) { return i === 0 || n !== a[i - 1]; });
@@ -106,7 +106,7 @@ const T = {
     for (const pc of upperPc) { let n = cur + 1 + pm(pc - pm(cur + 1)); cl.push(n); cur = n; }
     return [vsort(cl)];
   },
-  // nuhouse : voicing rootless OUVERT et aéré (nu-house). Cluster rootless en C4, une
+  // nuhouse : voicing rootless OUVERT et aéré (nu-house). Cluster rootless en C3, une
   // voix sur deux montée d'une octave → écartement aéré (≠ stab serré de house), mais
   // jouable d'une main (plus de split 2 octaves). Suit la commande OCTAVE.
   nuhouse: (c, oct) => {
@@ -114,7 +114,7 @@ const T = {
     const pm = n => ((n % 12) + 12) % 12;
     oct = oct || 0;
     const pcs = c.slice(1).map(pm);
-    const floor = 60 + oct;
+    const floor = 48 + oct;
     let cl = pcs.map(pc => floor + pm(pc)).sort((a, b) => a - b).filter((n, i, a) => i === 0 || n !== a[i - 1]);
     if (cl.length >= 2) cl[1] += 12;   // aéré : 2e voix montée d'une octave (reste 1 main)
     return [vsort(cl)];
@@ -158,14 +158,14 @@ const T = {
     cl.push(root + 12);                                          // octave de fonda au sommet
     return [vsort(cl).slice(0, 6)];
   },
-  // funk : grip "10e" root-inclus (soul/funk, Rhodes). Accord mappé dans l'octave C4
+  // funk : grip "10e" root-inclus (soul/funk, Rhodes). Accord mappé dans l'octave C3
   // puis la 2e voix (la 3ce) montée d'une octave → la dixième caractéristique. 1 main,
   // tonique dans le registre. Suit la commande OCTAVE.
   funk: (c, oct) => {
     if (c.length < 3) return [vsort(c)];
     oct = oct || 0;
     const pm = n => ((n % 12) + 12) % 12;
-    const floor = 60 + oct;
+    const floor = 48 + oct;
     let notes = c.map(n => floor + pm(n)).sort((a, b) => a - b).filter((n, i, a) => i === 0 || n !== a[i - 1]);
     if (notes.length >= 2) notes[1] += 12;                       // 2e voix +octave = la "10e"
     return [vsort(notes)];
@@ -208,21 +208,17 @@ export function realize(spec, voicing, opts = {}) {
   if (vc === 'drop3' && spec.pcs.length < 4) { fallback = vc; vc = 'drop2'; }
   if (vc === 'drop2' && spec.pcs.length < 4) { fallback = fallback || vc; vc = 'classic'; }
 
-  // classic + VL off : position fondamentale STRICTE, fonda ancrée dans l'octave juste
-  // sous le centre (octave 3 à center=60) -> registre constant, fonda à la basse, aucun
-  // saut d'octave entre degrés. La commande OCTAVE décale la bande via `center`. Voir decisions.md.
+  // classic + VL off : position fondamentale STRICTE, registre ABSOLU aligné sur les
+  // voicings floored (base 48+octShift, octShift borné comme les ABSOLUTE) -> un cran
+  // d'OCTAVE = même décalage pour TOUS (descente uniforme, pas de clamp anti-boue qui
+  // remonterait classic). À l'octave 0, base=48=C3. Voir decisions.md.
   if (vc === 'classic' && opts.rootPos) {
-    const out = [];
-    for (const base of [center - 12, center, center - 24]) {   // bande cible, puis replis si filtrée
-      const rootMidi = base + mod(spec.rootPc - mod(base));
-      const notes = vsort(closeFrom(spec, rootMidi)).slice(0, 6);
-      if (Math.min(...notes) < 24 || Math.max(...notes) > 108) continue;
-      if (checkIdentity(vc, notes, spec).length) continue;
-      if (lowIntervalViolations(notes).length) continue;
-      out.push({ notes, voicing: vc, fallback });
-      break;
-    }
-    return out;
+    const cShift = Math.max(-12, Math.min(24, Math.round((center - 60) / 12) * 12));
+    const cBase = 48 + cShift, rootMidi = cBase + mod(spec.rootPc - mod(cBase));
+    const notes = vsort(closeFrom(spec, rootMidi)).slice(0, 6);
+    if (Math.min(...notes) < 24 || Math.max(...notes) > 108) return [];
+    if (checkIdentity(vc, notes, spec).length) return [];
+    return [{ notes, voicing: vc, fallback }];
   }
 
   // Inversions : monter la note la plus basse d'une octave. Indispensable au
