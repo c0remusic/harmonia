@@ -73,7 +73,7 @@
     z-index:50;
     display:none;flex-direction:column;
     padding:12px 10px;gap:10px;
-    border-right:1px solid rgba(255,220,130,.10);
+    border-right:1px solid rgba(255,255,255,.07);   /* neutre : plus de double ligne dorée à l'ouverture */
     pointer-events:none;
   }
   body.strip .dd-ov{width:205px}
@@ -97,6 +97,10 @@
   body.strip .dd-grid{align-content:stretch}
   .dd-cell:hover{background-color:rgba(255,255,255,.08);color:var(--txt);border-color:rgba(255,255,255,.15)}
   .dd-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+  /* Full : options plus grandes + bloc centré (la fenêtre est haute → fini le vide en bas) */
+  body.full .dd-ov{padding:16px 14px;gap:12px}
+  body.full .dd-grid{align-content:center;gap:7px}
+  body.full .dd-cell{padding:12px 12px;font-size:12px;justify-content:flex-start}
 
   /* ── GENERIC CONTROLS ── */
   .sel{
