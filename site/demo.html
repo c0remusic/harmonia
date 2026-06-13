@@ -174,6 +174,18 @@
         <div class="btn" id="vl">VOICE LEADING</div>
         <div class="btn lblbtn" id="vlmode"><span class="cl">VL MODE</span><span class="cv" id="vlmodeV">Anchor</span></div>
       </div>
+
+      <div class="sep"></div>
+
+      <div class="zone">
+        <div class="lbl">Expression</div>
+        <div class="row">
+          <div class="btn" id="strumBtn" style="flex:1" title="Strum: notes play in sequence">STRUM</div>
+          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity variation">
+            <span class="cl">HUM</span><span class="cv" id="humanizeV">OFF</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="dd-ov" id="ddOv">
@@ -540,7 +552,8 @@
   function borColorFor(){ return BORCOLOR; }
 
   var cols=[[],[],[],[],[],[],[]], bor=[];
-  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0};
+  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strum:false,humanizeIdx:0};
+  var HUM_PCTS=[0,25,50,75,100];
   var activeCol=-1, activeRow=-1, activeChordName='';
 
   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
@@ -617,7 +630,13 @@
     var vm=document.getElementById('vlmode');
     vm.className='btn lblbtn'+(state.vl?'':' off');
     var vmv=VLMODES[state.vlmodeIdx]; document.getElementById('vlmodeV').textContent=vmv.charAt(0)+vmv.slice(1).toLowerCase();
-    renderOct(); }
+    renderOct(); renderExpr(); }
+  function renderExpr(){
+    var sb=document.getElementById('strumBtn');
+    if(sb) sb.className='btn'+(state.strum?' on':'');
+    var hv=document.getElementById('humanizeV');
+    if(hv) hv.textContent=HUM_PCTS[state.humanizeIdx]===0?'OFF':HUM_PCTS[state.humanizeIdx]+'%';
+  }
   function renderNotes(arr){ var midi=(arr||[]).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<128;});
     document.getElementById('chordName').textContent=activeChordName||'—';
     document.getElementById('noteNames').textContent=midi.map(midiToName).join(' · ');
@@ -671,6 +690,8 @@
     openDrop('voicing','VOICING',VOICINGS,state.voicingIdx,2,function(i,name){ state.voicingIdx=i; document.getElementById('voicingV').textContent=name; send('voicingidx',i); }); };
   document.getElementById('vl').onmousedown=function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onmousedown=function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
+  document.getElementById('strumBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strum=!state.strum; renderExpr(); };
+  document.getElementById('humanizeBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.humanizeIdx=(state.humanizeIdx+1)%HUM_PCTS.length; renderExpr(); };
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
     this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme]; applyScheme(); };

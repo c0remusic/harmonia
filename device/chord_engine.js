@@ -123,6 +123,10 @@ var activeNotes         = [];
 var vlMode              = "anchored";  // "anchored" | "flow"
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
+var strumEnabled        = false;
+var _strumMs            = 25;         // ms entre chaque note du strum
+var humanizeAmt         = 0;          // 0-100 : variation de vélocité ±25%
+var _strumTasks         = [];         // Tasks actives du strum en cours
 
 function loadbang() {
 	try {
@@ -180,7 +184,8 @@ function list() {
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
 		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
-		colorscheme: colorscheme
+		colorscheme: colorscheme, strumset: strumset, strumdelay: strumdelay,
+		humanizeamt: humanizeamt
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
@@ -248,6 +253,8 @@ function pushConfigState() {
 	if (vi >= 0) outlet(7, "voicing", vi);
 	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
 	outlet(7, "vlmode", vlMode);
+	outlet(7, "strum",    strumEnabled ? 1 : 0);
+	outlet(7, "humanize", humanizeAmt);
 }
 
 // Relaie l'état complet (tonalité + config) ET rebuilde la grille.
@@ -634,6 +641,18 @@ function playcell(col, row) {
 
 // Vélocité reçue avant un playcell (pad pressé)
 function padvel(v) { currentVelocity = parseInt(v); }
+
+function strumset(v) {
+	strumEnabled = !!parseInt(v);
+	outlet(7, "strum", strumEnabled ? 1 : 0);
+}
+function strumdelay(v) {
+	_strumMs = Math.max(5, Math.min(200, parseInt(v)));
+}
+function humanizeamt(v) {
+	humanizeAmt = Math.max(0, Math.min(100, parseInt(v)));
+	outlet(7, "humanize", humanizeAmt);
+}
 
 // Relais du toggle Push mode (UI jweb → module Push, via la sortie 7 déjà câblée).
 function pushmode(v) { outlet(7, "pushmode", parseInt(v)); }
@@ -1219,7 +1238,33 @@ function _vl2_play(fn,d,colorSemis,colorType){
 
 // =====================================================
 
+function humanizeVel(v) {
+	if (!humanizeAmt) return v;
+	var spread = Math.floor(humanizeAmt * 0.25);
+	var off = Math.floor((Math.random() * 2 - 1) * spread);
+	return Math.max(1, Math.min(127, v + off));
+}
+
+function _cancelStrum() {
+	for (var ci = 0; ci < _strumTasks.length; ci++) {
+		try { _strumTasks[ci].cancel(); } catch(e) {}
+	}
+	_strumTasks = [];
+}
+
+function _scheduleStrum(notes) {
+	for (var si = 0; si < notes.length && si < 6; si++) {
+		(function(idx, n) {
+			var nv = humanizeVel(currentVelocity);
+			var t = new Task(function() { outlet(0, nv); outlet(idx + 1, n); });
+			_strumTasks.push(t);
+			t.schedule(idx * _strumMs);
+		})(si, notes[si]);
+	}
+}
+
 function sendNoteOff() {
+	_cancelStrum();
 	if (activeNotes.length === 0) return;
 	outlet(0, 0);  // velocity=0 arrive en PREMIER dans tous les noteout
 	for (var i = 0; i < activeNotes.length && i < 6; i++) {
@@ -1236,9 +1281,13 @@ function sendChord(name, notes) {
 	notes = (v2 && v2.length) ? v2 : applyVoicing(notes);
 	sendNoteOff();
 	activeNotes = notes.slice();
-	outlet(0, currentVelocity);
-	for (var i = 0; i < notes.length && i < 6; i++) {
-		outlet(i + 1, notes[i]);
+	if (strumEnabled && notes.length > 1) {
+		_scheduleStrum(notes);
+	} else {
+		outlet(0, humanizeVel(currentVelocity));
+		for (var i = 0; i < notes.length && i < 6; i++) {
+			outlet(i + 1, notes[i]);
+		}
 	}
 	outlet(7, "active", lastFn, lastDegree);   // highlight grille
 	outlet(7, ["notes"].concat(activeNotes));  // → clavier moniteur

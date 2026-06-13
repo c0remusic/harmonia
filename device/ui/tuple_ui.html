@@ -228,6 +228,10 @@
   .toggle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
 
   .cfg-spacer{display:none}
+  /* EXPRESSION zone — full uniquement (pas assez de place en strip) */
+  body.strip .expr-sep  {display:none}
+  body.strip .expr-zone {display:none!important}
+  body.full  #strumBtn.on {color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
   /* DEVICE group (Push · Layout) — full uniquement, colonne droite. Caché en strip. */
   .devgrp{display:none}
   body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;margin-top:10px}
@@ -407,6 +411,19 @@
         <div class="btn lblbtn" id="vlmode"><span class="cl">VL MODE</span><span class="cv" id="vlmodeV">Anchor</span></div>
       </div>
 
+      <div class="sep expr-sep"></div>
+
+      <!-- Zone EXPRESSION (full uniquement) -->
+      <div class="zone expr-zone">
+        <div class="lbl">Expression</div>
+        <div class="row">
+          <div class="btn" id="strumBtn" style="flex:1" title="Strum: notes play in sequence">STRUM</div>
+          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity variation">
+            <span class="cl">HUM</span><span class="cv" id="humanizeV">OFF</span>
+          </div>
+        </div>
+      </div>
+
       <div class="cfg-spacer"></div>
 
     </div>
@@ -487,7 +504,8 @@
   var cols = [[],[],[],[],[],[],[]];
   var bor  = [];
   var tmpCols = null, tmpBor = null;
-  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0 };
+  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0, strum:false, humanizeIdx:0 };
+  var HUM_PCTS = [0,25,50,75,100];
   var activeCol = -1, activeRow = -1, activeChordName = '';
   var mode = 'strip';
   var windowOpen = false;
@@ -694,6 +712,14 @@
     var mv=VLMODES[state.vlmodeIdx];
     document.getElementById('vlmodeV').textContent=mv.charAt(0)+mv.slice(1).toLowerCase();
     renderOct();
+    renderExpr();
+  }
+
+  function renderExpr(){
+    var sb=document.getElementById('strumBtn');
+    if(sb) sb.className='btn'+(state.strum?' on':'');
+    var hv=document.getElementById('humanizeV');
+    if(hv) hv.textContent=HUM_PCTS[state.humanizeIdx]===0?'OFF':HUM_PCTS[state.humanizeIdx]+'%';
   }
 
   function renderNotes(arr){
@@ -823,6 +849,8 @@
     M.bindInlet('notes',     function(){ renderNotes(Array.prototype.slice.call(arguments)); });
     M.bindInlet('clearnotes',function(){ activeCol=-1;activeRow=-1;activeChordName=''; renderNotes([]); updateActive(); });
     M.bindInlet('sync',      function(){ if(!syncClickPending) flash(document.getElementById('sync')); });
+    M.bindInlet('strum',     function(v){ state.strum=(parseInt(v)===1); renderExpr(); });
+    M.bindInlet('humanize',  function(v){ var p=parseInt(v); var i=HUM_PCTS.indexOf(p); state.humanizeIdx=(i>=0?i:0); renderExpr(); });
     M.bindInlet('mode',      function(m){ setMode(String(m)); });
     // Resynchronise le bouton du strip quand la fenêtre est fermée/ouverte ailleurs
     // (ex. bouton CLOSE de la grande fenêtre). Le X Windows n'émet rien → non couvert.
@@ -916,6 +944,9 @@
   document.getElementById('infoBtn').onclick = function(){ document.getElementById('info-overlay').classList.add('open'); };
   document.getElementById('infoClose').onclick = function(){ document.getElementById('info-overlay').classList.remove('open'); };
   document.getElementById('info-overlay').onclick = function(e){ if(e.target===this) this.classList.remove('open'); };
+
+  document.getElementById('strumBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.strum=!state.strum; renderExpr(); send('strumset',state.strum?1:0); };
+  document.getElementById('humanizeBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.humanizeIdx=(state.humanizeIdx+1)%HUM_PCTS.length; renderExpr(); send('humanizeamt',HUM_PCTS[state.humanizeIdx]); };
 
   // ── DEMO ──
   var DEMO = {
