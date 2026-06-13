@@ -749,6 +749,7 @@
         if (res.ok) {
           form.reset();
           status.textContent = 'Thanks! Your message has been sent.';
+          submitBtn.disabled = false;   // re-enable so a returning visitor can send again
         } else {
           status.style.color = '#ff8080';
           const msg = (data.errors && data.errors[0] && data.errors[0].message) || data.error || 'Something went wrong. Try emailing c0re_m4l@proton.me directly.';

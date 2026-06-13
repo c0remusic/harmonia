@@ -64,7 +64,7 @@
   .dd-grid{display:grid;gap:7px;flex:1;align-content:center}
   .dd-cell{background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;padding:12px 12px;cursor:pointer;text-align:left;
     font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:center;transition:background .07s,color .07s;pointer-events:auto}
-  .dd-cell:hover{background-color:rgba(255,255,255,.08);color:var(--txt)}
+  .dd-cell:hover{background-color:rgba(255,255,255,.08);color:var(--txt);border-color:rgba(255,255,255,.15)}
   .dd-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
   body.dd-open .vsep, body.dd-open .sep{opacity:0}   /* menu ouvert : pas de séparateur dégradé */
 
@@ -142,7 +142,8 @@
   .bk.lit{background:var(--blue);opacity:.9}
   .keys-range{font-size:7px;font-family:var(--mono);color:var(--muted2);letter-spacing:.08em;text-align:center;margin-top:3px;line-height:1}
   .mon-spacer{flex:1;min-height:0}
-  .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;border-top:1px solid rgba(255,255,255,.10);padding-top:12px}
+  .devgrp{display:flex;flex-direction:column;gap:8px;flex:none}
+  .devgrp::before{content:'';display:block;height:1px;margin-bottom:12px;background:linear-gradient(to right, transparent 0%, rgba(255,255,255,.12) 25%, rgba(255,255,255,.12) 75%, transparent 100%)}
   .kbd-hint{font-size:9px;color:var(--muted2);line-height:1.5;text-align:center}
   .kbd-hint b{color:var(--muted);font-family:var(--mono);font-weight:500}
 
