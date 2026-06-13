@@ -38,6 +38,9 @@
   .bar{display:flex;height:100%;position:relative}
   .vsep{flex:none;width:1px;margin:8px 0;background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.12) 30%, rgba(255,255,255,.12) 70%, transparent 100%)}
   .lbl{display:block;font-size:9px;letter-spacing:.15em;color:rgba(255,220,130,.3);text-transform:uppercase;margin-bottom:4px;font-weight:600}
+  .lbl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .lbl-row .lbl{margin-bottom:0}
+  .lbl-row .sync{flex:none;height:24px;width:32px;font-size:11px}
 
   .config{width:230px;flex:0 0 230px;padding:18px 14px;display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.016)}
   .brand{font-family:var(--display);font-weight:700;font-size:18px;color:var(--gold);line-height:1}
@@ -152,11 +155,13 @@
       <div class="brand">Tuple</div>
 
       <div class="zone">
-        <div class="lbl">Tonality</div>
+        <div class="lbl-row">
+          <div class="lbl">Tonality</div>
+          <div class="sync" id="sync" title="In Ableton: imports the Live scale">♭<span style="font-size:.72em;vertical-align:super;line-height:0;margin-left:1px">♯</span></div>
+        </div>
         <div class="row">
           <div class="csel" id="key" style="flex:1"><span class="cl">KEY</span><span class="cv" id="keyV">C</span></div>
           <div class="csel" id="scale" style="flex:2"><span class="cl">SCALE</span><span class="cv" id="scaleV">Major</span></div>
-          <div class="sync" id="sync" title="In Ableton: imports the Live scale">♭<span style="font-size:.72em;vertical-align:super;line-height:0;margin-left:1px">♯</span></div>
         </div>
         <div class="oct" id="oct"></div>
       </div>

@@ -48,6 +48,7 @@
   }
   body.strip .vsep-l{display:none}  /* pas de séparateur gauche en strip (grille cachée) */
   .lbl{font-size:8px;letter-spacing:.14em;color:rgba(255,220,130,.3);text-transform:uppercase;margin-bottom:2px;font-weight:600}
+  .lbl-row{display:flex;align-items:center;justify-content:space-between}
   .row{display:flex;gap:5px}
 
   /* ── CUSTOM SELECT ── */
@@ -263,7 +264,9 @@
   /* Strip — key row (20px = hauteur STANDARD de tous les contrôles du strip) */
   body.strip .row          {height:20px;flex:none;display:flex;gap:5px}
   body.strip .row .csel    {flex:1;height:100%;padding:0 7px;font-size:10px}
-  body.strip .row .sync    {flex:0 0 20px;height:100%;font-size:10px}
+  body.strip .lbl-row      {height:0;overflow:visible;position:relative;flex:none}
+  body.strip .lbl-row .sync{position:absolute;top:5px;right:0;height:20px;width:26px;font-size:10px}
+  body.strip .krow         {padding-right:31px}
 
   /* Strip — octave */
   body.strip .oct          {height:20px;flex:none;display:flex;gap:5px}
@@ -297,7 +300,8 @@
   /* Full : 32px = hauteur STANDARD de tous les contrôles ; gaps uniformes 8px */
   body.full .row           {height:32px;flex:none;display:flex;gap:8px}
   body.full .row .csel     {flex:1;height:100%;padding:0 10px;font-size:11px}
-  body.full .row .sync     {flex:0 0 32px;height:100%;font-size:13px}
+  body.full .lbl-row .lbl  {margin-bottom:0}
+  body.full .lbl-row .sync {flex:none;height:24px;width:32px;font-size:11px}
 
   body.full .oct           {height:32px;flex:none;display:flex;gap:8px}
   body.full .oct span      {font-size:11px;padding:0;display:flex;align-items:center;justify-content:center}
@@ -382,11 +386,13 @@
 
       <!-- Zone KEY -->
       <div class="zone">
-        <div class="lbl">Key</div>
-        <div class="row">
+        <div class="lbl-row">
+          <div class="lbl">Key</div>
+          <div class="sync" id="sync">♭<span style="font-size:.72em;vertical-align:super;line-height:0;margin-left:1px">♯</span></div>
+        </div>
+        <div class="row krow">
           <div class="csel" id="key" style="flex:1"><span class="cl">KEY</span><span class="cv" id="keyV">E</span></div>
           <div class="csel" id="scale" style="flex:2"><span class="cl">SCALE</span><span class="cv" id="scaleV">Minor</span></div>
-          <div class="sync" id="sync">♭<span style="font-size:.72em;vertical-align:super;line-height:0;margin-left:1px">♯</span></div>
         </div>
       </div>
 
