@@ -606,7 +606,7 @@ function broadcastGrid() {
 	}
 	var quals = [];
 	for (var qd = 0; qd < 7; qd++) quals.push(chordQuality(qd));
-	outlet.apply(null, [7, "qualities"].concat(quals));
+	outlet(7, "qualities", quals[0], quals[1], quals[2], quals[3], quals[4], quals[5], quals[6]);
 	outlet(7, "griddone");
 }
 

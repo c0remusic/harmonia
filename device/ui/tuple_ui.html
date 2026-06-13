@@ -974,7 +974,7 @@
     bind(); renderConfig(); renderNotes([]);
     send('requeststate'); send('requestgrid');   // une seule fois, APRÈS bind()
   }
-  else  { loadDemo(); }
+  else  { setMode('full'); loadDemo(); }
 </script>
 </body>
 </html>
