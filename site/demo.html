@@ -89,22 +89,26 @@
   .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
   .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
 
-  /* Sliders Expression (drag + molette, 0 = off) — miroir device */
-  .exslider{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
-  .exslider.dim{opacity:.35;pointer-events:none}
-  .exs-lbl{font-size:9px;letter-spacing:.06em;color:var(--muted);flex:0 0 56px;font-weight:500}
-  .exs-track{flex:1;height:8px;background:var(--cell);border:1px solid var(--cell-bd);border-radius:4px;position:relative;cursor:ew-resize;touch-action:none}
-  .exs-track:hover{border-color:rgba(255,255,255,.18)}
-  .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:1px;bottom:1px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.22);pointer-events:none}
-  .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.85;border-radius:3px;pointer-events:none}
-  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 40px;text-align:right}
+  /* Sliders Expression — cellule bordée 32px comme les autres contrôles (miroir device) */
+  .exslider{display:flex;align-items:center;gap:9px;height:32px;padding:0 10px;
+    background:var(--cell);border:1px solid var(--cell-bd);border-radius:5px;
+    transition:opacity .12s,border-color .1s,background .1s}
+  .exslider:hover{border-color:rgba(255,255,255,.13)}
+  .exslider.dim{opacity:.4;pointer-events:none}
+  .exs-lbl{font-size:9px;letter-spacing:.07em;color:var(--muted);flex:0 0 52px;font-weight:500}
+  .exs-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;position:relative;cursor:ew-resize;touch-action:none}
+  .exs-track:hover{background:rgba(255,255,255,.11)}
+  .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.25);pointer-events:none}
+  .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.9;border-radius:3px;pointer-events:none}
+  .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 48px;text-align:right}
   .exs-val.off{color:var(--muted)}
-  .exrow-curve{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
-  .exrow-curve.off{opacity:.35;pointer-events:none}
-  .exseg{flex:1;display:flex;gap:4px}
-  .exseg-cell{flex:1;text-align:center;font-size:9px;padding:4px 0;border-radius:4px;cursor:pointer;
+  .exrow-curve{display:flex;align-items:center;gap:9px;height:32px;padding:0 0 0 10px;transition:opacity .12s}
+  .exrow-curve.off{opacity:.4;pointer-events:none}
+  .exrow-curve .exs-lbl{flex:0 0 52px}
+  .exseg{flex:1;display:flex;gap:5px;height:100%}
+  .exseg-cell{flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;border-radius:5px;cursor:pointer;
     background:var(--cell);border:1px solid var(--cell-bd);color:var(--muted);transition:all .1s;font-weight:500}
-  .exseg-cell:hover{background-color:rgba(255,255,255,.08)}
+  .exseg-cell:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
   .exseg-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
 
   .grid{flex:1;display:flex;gap:5px;padding:18px 14px;min-width:0}
