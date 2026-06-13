@@ -430,7 +430,6 @@ function isValid(d, type) {
 		case "maj9":      return iv[4] === 7  && iv[6] === 11 && iv[8] === 2;
 		case "min9":      return iv[2] === 3  && iv[4] === 7  && iv[6] === 10 && iv[8] === 2;
 		case "add9":      return iv[4] === 7  && iv[8] === 2;
-		case "sixtynine": return iv[4] === 7  && iv[8] === 2;
 		default: return false;
 	}
 }

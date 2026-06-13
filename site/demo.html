@@ -21,6 +21,8 @@
     --display:'Syne',var(--sans);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;outline:none}
+  /* anneau de focus clavier (le * outline:none ci-dessus le retire au pointeur) */
+  a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
   body{background:#1a1a1a;color:var(--txt);font-family:var(--sans);min-height:100vh;
     display:flex;flex-direction:column;align-items:center;padding:28px 16px 40px}
   .page-h{max-width:1080px;width:100%;margin-bottom:14px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
