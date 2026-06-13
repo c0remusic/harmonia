@@ -231,7 +231,22 @@
   /* EXPRESSION zone — full uniquement (pas assez de place en strip) */
   body.strip .expr-sep  {display:none}
   body.strip .expr-zone {display:none!important}
-  body.full  #strumBtn.on {color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
+  /* Sliders Expression (drag + molette, 0 = off) */
+  .exslider{display:flex;align-items:center;gap:8px;height:24px}
+  .exs-lbl{font-size:9px;letter-spacing:.06em;color:var(--muted);flex:0 0 56px;font-weight:500}
+  .exs-track{flex:1;height:8px;background:var(--cell);border:1px solid var(--cell-bd);border-radius:4px;position:relative;cursor:ew-resize;touch-action:none}
+  .exs-track:hover{border-color:rgba(255,255,255,.18)}
+  .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.85;border-radius:3px;pointer-events:none}
+  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 36px;text-align:right}
+  .exs-val.off{color:var(--muted)}
+  /* Sélecteur de courbe (3 segments) */
+  .exrow-curve{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
+  .exrow-curve.off{opacity:.35;pointer-events:none}
+  .exseg{flex:1;display:flex;gap:4px}
+  .exseg-cell{flex:1;text-align:center;font-size:9px;padding:4px 0;border-radius:4px;cursor:pointer;
+    background:var(--cell);border:1px solid var(--cell-bd);color:var(--muted);transition:all .1s;font-weight:500}
+  .exseg-cell:hover{background-color:rgba(255,255,255,.08)}
+  .exseg-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
   /* DEVICE group (Push · Layout) — full uniquement, colonne droite. Caché en strip. */
   .devgrp{display:none}
   body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;margin-top:10px}
@@ -413,22 +428,26 @@
 
       <div class="sep expr-sep"></div>
 
-      <!-- Zone EXPRESSION (full uniquement) -->
+      <!-- Zone EXPRESSION (full uniquement) — sliders drag + molette, 0 = off -->
       <div class="zone expr-zone">
         <div class="lbl">Expression</div>
-        <div class="row">
-          <div class="btn" id="strumBtn" style="flex:1" title="Strum: notes play in sequence">STRUM</div>
-          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity + timing variation">
-            <span class="cl">HUM</span><span class="cv" id="humanizeV">OFF</span>
+        <div class="exslider" id="strumSld" title="Strum spread — drag or scroll. 0 = off">
+          <div class="exs-lbl">Strum</div>
+          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-val off">OFF</div>
+        </div>
+        <div class="exrow-curve off" id="curveRow" title="Strum shape">
+          <div class="exs-lbl">Curve</div>
+          <div class="exseg" id="curveSeg">
+            <div class="exseg-cell on" data-i="0" title="Linear">Lin</div>
+            <div class="exseg-cell" data-i="1" title="Accelerate">Acc</div>
+            <div class="exseg-cell" data-i="2" title="Decelerate">Dec</div>
           </div>
         </div>
-        <div class="row">
-          <div class="btn lblbtn" id="strumSpeedBtn" style="flex:1" title="Strum speed">
-            <span class="cl">SPD</span><span class="cv" id="strumSpeedV">Med</span>
-          </div>
-          <div class="btn lblbtn" id="strumCurveBtn" style="flex:1" title="Strum shape: linear / accelerate / decelerate">
-            <span class="cl">CRV</span><span class="cv" id="strumCurveV">Linear</span>
-          </div>
+        <div class="exslider" id="humanSld" title="Humanize — velocity + timing. Drag or scroll. 0 = off">
+          <div class="exs-lbl">Humanize</div>
+          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-val off">OFF</div>
         </div>
       </div>
 
@@ -512,10 +531,8 @@
   var cols = [[],[],[],[],[],[],[]];
   var bor  = [];
   var tmpCols = null, tmpBor = null;
-  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0, strum:false, humanizeIdx:0, strumSpeedIdx:1, strumCurveIdx:0 };
-  var HUM_PCTS = [0,25,50,75,100];
-  var STRUM_SPEEDS_UI = ['Slow','Med','Fast'];
-  var STRUM_CURVES_UI = ['Linear','Accel','Decel'];
+  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0, strumMs:0, strumCurveIdx:0, humanize:0 };
+  var STRUM_MAX = 60;   // ms/note max du slider Strum
   var activeCol = -1, activeRow = -1, activeChordName = '';
   var mode = 'strip';
   var windowOpen = false;
@@ -725,20 +742,54 @@
     renderExpr();
   }
 
+  // Slider générique : drag (pointer capture) + molette. 0 = off.
+  // onChange(v) appelé à chaque variation ; fmt(v) → texte affiché.
+  var _strumSld=null, _humanSld=null;
+  function makeSlider(rootId, min, max, fmt, onChange){
+    var root=document.getElementById(rootId);
+    var track=root.querySelector('.exs-track');
+    var fill=root.querySelector('.exs-fill');
+    var valEl=root.querySelector('.exs-val');
+    var cur=min, dragging=false;
+    function clamp(v){ return Math.max(min, Math.min(max, v)); }
+    function paint(){
+      var pct=(cur-min)/(max-min)*100;
+      fill.style.width=pct+'%';
+      valEl.textContent=fmt(cur);
+      if(cur===min) valEl.classList.add('off'); else valEl.classList.remove('off');
+    }
+    function fromX(x){ var r=track.getBoundingClientRect(); return clamp(Math.round(min+(x-r.left)/r.width*(max-min))); }
+    function apply(v){ var nv=clamp(v); if(nv!==cur){ cur=nv; paint(); onChange(cur); } else paint(); }
+    track.addEventListener('pointerdown',function(e){ e.preventDefault(); dragging=true;
+      try{ track.setPointerCapture(e.pointerId); }catch(_){} apply(fromX(e.clientX)); });
+    track.addEventListener('pointermove',function(e){ if(dragging) apply(fromX(e.clientX)); });
+    track.addEventListener('pointerup',function(e){ dragging=false; try{ track.releasePointerCapture(e.pointerId); }catch(_){} });
+    track.addEventListener('wheel',function(e){ e.preventDefault(); e.stopPropagation();
+      var step=(max-min)>=50?2:1; apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
+    return { set:function(v){ cur=clamp(v); paint(); } };
+  }
+
   function renderExpr(){
-    var sb=document.getElementById('strumBtn');
-    if(sb) sb.className='btn'+(state.strum?' on':'');
-    var hv=document.getElementById('humanizeV');
-    if(hv) hv.textContent=HUM_PCTS[state.humanizeIdx]===0?'OFF':HUM_PCTS[state.humanizeIdx]+'%';
-    // SPD/CRV : grisés quand le strum est off (miroir du dimming de VL MODE)
-    var sp=document.getElementById('strumSpeedBtn');
-    if(sp) sp.className='btn lblbtn'+(state.strum?'':' off');
-    var cb=document.getElementById('strumCurveBtn');
-    if(cb) cb.className='btn lblbtn'+(state.strum?'':' off');
-    var spv=document.getElementById('strumSpeedV');
-    if(spv) spv.textContent=STRUM_SPEEDS_UI[state.strumSpeedIdx];
-    var cvv=document.getElementById('strumCurveV');
-    if(cvv) cvv.textContent=STRUM_CURVES_UI[state.strumCurveIdx];
+    if(_strumSld) _strumSld.set(state.strumMs);
+    if(_humanSld) _humanSld.set(state.humanize);
+    var seg=document.getElementById('curveSeg');
+    if(seg){ var c=seg.children; for(var i=0;i<c.length;i++) c[i].className='exseg-cell'+(i===state.strumCurveIdx?' on':''); }
+    var crow=document.getElementById('curveRow');
+    if(crow) crow.className='exrow-curve'+(state.strumMs>0?'':' off');   // courbe grisée si strum off
+  }
+
+  function initExpr(){
+    _strumSld=makeSlider('strumSld',0,STRUM_MAX,
+      function(v){ return v===0?'OFF':v+'ms'; },
+      function(v){ state.strumMs=v; renderExpr(); send('strumms',v); });
+    _humanSld=makeSlider('humanSld',0,100,
+      function(v){ return v===0?'OFF':v+'%'; },
+      function(v){ state.humanize=v; send('humanizeamt',v); });
+    var seg=document.getElementById('curveSeg');
+    Array.prototype.forEach.call(seg.children,function(cell){
+      cell.onmousedown=function(e){ if(e)e.preventDefault();
+        state.strumCurveIdx=parseInt(this.getAttribute('data-i')); renderExpr(); send('strumcurve',state.strumCurveIdx); };
+    });
   }
 
   function renderNotes(arr){
@@ -868,10 +919,9 @@
     M.bindInlet('notes',     function(){ renderNotes(Array.prototype.slice.call(arguments)); });
     M.bindInlet('clearnotes',function(){ activeCol=-1;activeRow=-1;activeChordName=''; renderNotes([]); updateActive(); });
     M.bindInlet('sync',      function(){ if(!syncClickPending) flash(document.getElementById('sync')); });
-    M.bindInlet('strum',     function(v){ state.strum=(parseInt(v)===1); renderExpr(); });
-    M.bindInlet('strumspeed',function(v){ var i=parseInt(v); if(i>=0&&i<STRUM_SPEEDS_UI.length) state.strumSpeedIdx=i; renderExpr(); });
-    M.bindInlet('strumcurve',function(v){ var i=parseInt(v); if(i>=0&&i<STRUM_CURVES_UI.length) state.strumCurveIdx=i; renderExpr(); });
-    M.bindInlet('humanize',  function(v){ var p=parseInt(v); var i=HUM_PCTS.indexOf(p); state.humanizeIdx=(i>=0?i:0); renderExpr(); });
+    M.bindInlet('strumms',   function(v){ state.strumMs=parseInt(v)||0; renderExpr(); });
+    M.bindInlet('strumcurve',function(v){ var i=parseInt(v); if(i>=0&&i<3) state.strumCurveIdx=i; renderExpr(); });
+    M.bindInlet('humanize',  function(v){ state.humanize=parseInt(v)||0; renderExpr(); });
     M.bindInlet('mode',      function(m){ setMode(String(m)); });
     // Resynchronise le bouton du strip quand la fenêtre est fermée/ouverte ailleurs
     // (ex. bouton CLOSE de la grande fenêtre). Le X Windows n'émet rien → non couvert.
@@ -966,10 +1016,7 @@
   document.getElementById('infoClose').onclick = function(){ document.getElementById('info-overlay').classList.remove('open'); };
   document.getElementById('info-overlay').onclick = function(e){ if(e.target===this) this.classList.remove('open'); };
 
-  document.getElementById('strumBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.strum=!state.strum; renderExpr(); send('strumset',state.strum?1:0); };
-  document.getElementById('strumSpeedBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.strumSpeedIdx=(state.strumSpeedIdx+1)%STRUM_SPEEDS_UI.length; renderExpr(); send('strumspeed',state.strumSpeedIdx); };
-  document.getElementById('strumCurveBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.strumCurveIdx=(state.strumCurveIdx+1)%STRUM_CURVES_UI.length; renderExpr(); send('strumcurve',state.strumCurveIdx); };
-  document.getElementById('humanizeBtn').onmousedown = function(e){ if(e)e.preventDefault(); state.humanizeIdx=(state.humanizeIdx+1)%HUM_PCTS.length; renderExpr(); send('humanizeamt',HUM_PCTS[state.humanizeIdx]); };
+  initExpr();
 
   // ── DEMO ──
   var DEMO = {

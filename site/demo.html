@@ -86,6 +86,22 @@
   .btn.gold{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd)}
   .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
 
+  /* Sliders Expression (drag + molette, 0 = off) — miroir device */
+  .exslider{display:flex;align-items:center;gap:8px;height:24px}
+  .exs-lbl{font-size:9px;letter-spacing:.06em;color:var(--muted);flex:0 0 56px;font-weight:500}
+  .exs-track{flex:1;height:8px;background:var(--cell);border:1px solid var(--cell-bd);border-radius:4px;position:relative;cursor:ew-resize;touch-action:none}
+  .exs-track:hover{border-color:rgba(255,255,255,.18)}
+  .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.85;border-radius:3px;pointer-events:none}
+  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 36px;text-align:right}
+  .exs-val.off{color:var(--muted)}
+  .exrow-curve{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
+  .exrow-curve.off{opacity:.35;pointer-events:none}
+  .exseg{flex:1;display:flex;gap:4px}
+  .exseg-cell{flex:1;text-align:center;font-size:9px;padding:4px 0;border-radius:4px;cursor:pointer;
+    background:var(--cell);border:1px solid var(--cell-bd);color:var(--muted);transition:all .1s;font-weight:500}
+  .exseg-cell:hover{background-color:rgba(255,255,255,.08)}
+  .exseg-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+
   .grid{flex:1;display:flex;gap:5px;padding:18px 14px;min-width:0}
   .col{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
   .head{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:30px;gap:2px;line-height:1.1;padding-bottom:6px;
@@ -179,19 +195,23 @@
 
       <div class="zone">
         <div class="lbl">Expression</div>
-        <div class="row">
-          <div class="btn" id="strumBtn" style="flex:1" title="Strum: notes play in sequence">STRUM</div>
-          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity + timing variation">
-            <span class="cl">HUM</span><span class="cv" id="humanizeV">OFF</span>
+        <div class="exslider" id="strumSld" title="Strum spread — drag or scroll. 0 = off">
+          <div class="exs-lbl">Strum</div>
+          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-val off">OFF</div>
+        </div>
+        <div class="exrow-curve off" id="curveRow" title="Strum shape">
+          <div class="exs-lbl">Curve</div>
+          <div class="exseg" id="curveSeg">
+            <div class="exseg-cell on" data-i="0" title="Linear">Lin</div>
+            <div class="exseg-cell" data-i="1" title="Accelerate">Acc</div>
+            <div class="exseg-cell" data-i="2" title="Decelerate">Dec</div>
           </div>
         </div>
-        <div class="row">
-          <div class="btn lblbtn" id="strumSpeedBtn" style="flex:1" title="Strum speed">
-            <span class="cl">SPD</span><span class="cv" id="strumSpeedV">Med</span>
-          </div>
-          <div class="btn lblbtn" id="strumCurveBtn" style="flex:1" title="Strum shape: linear / accelerate / decelerate">
-            <span class="cl">CRV</span><span class="cv" id="strumCurveV">Linear</span>
-          </div>
+        <div class="exslider" id="humanSld" title="Humanize — velocity + timing. Drag or scroll. 0 = off">
+          <div class="exs-lbl">Humanize</div>
+          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-val off">OFF</div>
         </div>
       </div>
     </div>
@@ -491,18 +511,18 @@
   var _emitTimers=[];
   function _clearEmit(){ for(var i=0;i<_emitTimers.length;i++)clearTimeout(_emitTimers[i]); _emitTimers=[]; }
   function _bell(){ return Math.random()+Math.random()-1; }
-  function humVel(v){ if(!state.humanizeIdx)return v; var amt=HUM_PCTS[state.humanizeIdx];
-    return Math.max(1,Math.min(127,Math.round(v+_bell()*amt*0.25))); }
-  function humTime(){ if(!state.humanizeIdx)return 0; return _bell()*(HUM_PCTS[state.humanizeIdx]/100*15); }
+  function humVel(v){ if(!state.humanize)return v;
+    return Math.max(1,Math.min(127,Math.round(v+_bell()*state.humanize*0.25))); }
+  function humTime(){ if(!state.humanize)return 0; return _bell()*(state.humanize/100*15); }
 
   // Émission audio + moniteur (notes déjà voicées/voice-led en amont).
   function emit(name,notes){ notes=notes.slice(0,6);
     allNotesOff(); _clearEmit(); eActiveNotes=notes.slice();
-    var n=notes.length, strum=state.strum&&n>1;
-    if(!strum && !state.humanizeIdx){
+    var n=notes.length, strum=state.strumMs>0&&n>1;
+    if(!strum && !state.humanize){
       for(var i=0;i<n;i++)noteOn(notes[i],curVel);
     } else {
-      var T=strum?(n-1)*STRUM_SPEEDS[state.strumSpeedIdx]:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
+      var T=strum?(n-1)*state.strumMs:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
       for(var k=0;k<n;k++){ (function(idx){
         var off=(strum?T*Math.pow(idx/(n-1),p):0)+humTime(); if(off<0)off=0;
         var nv=humVel(curVel);
@@ -580,10 +600,8 @@
   function borColorFor(){ return BORCOLOR; }
 
   var cols=[[],[],[],[],[],[],[]], bor=[];
-  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strum:false,humanizeIdx:0,strumSpeedIdx:1,strumCurveIdx:0};
-  var HUM_PCTS=[0,25,50,75,100];
-  var STRUM_SPEEDS_UI=['Slow','Med','Fast'], STRUM_SPEEDS=[50,25,10];
-  var STRUM_CURVES_UI=['Linear','Accel','Decel'], STRUM_CURVE_P=[1.0,0.55,1.8];
+  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strumMs:0,strumCurveIdx:0,humanize:0};
+  var STRUM_MAX=60, STRUM_CURVE_P=[1.0,0.55,1.8];
   var activeCol=-1, activeRow=-1, activeChordName='';
 
   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
@@ -661,19 +679,39 @@
     vm.className='btn lblbtn'+(state.vl?'':' off');
     var vmv=VLMODES[state.vlmodeIdx]; document.getElementById('vlmodeV').textContent=vmv.charAt(0)+vmv.slice(1).toLowerCase();
     renderOct(); renderExpr(); }
+  var _strumSld=null, _humanSld=null;
+  function makeSlider(rootId,min,max,fmt,onChange){
+    var root=document.getElementById(rootId);
+    var track=root.querySelector('.exs-track'), fill=root.querySelector('.exs-fill'), valEl=root.querySelector('.exs-val');
+    var cur=min, dragging=false;
+    function clamp(v){ return Math.max(min,Math.min(max,v)); }
+    function paint(){ fill.style.width=((cur-min)/(max-min)*100)+'%'; valEl.textContent=fmt(cur);
+      if(cur===min) valEl.classList.add('off'); else valEl.classList.remove('off'); }
+    function fromX(x){ var r=track.getBoundingClientRect(); return clamp(Math.round(min+(x-r.left)/r.width*(max-min))); }
+    function apply(v){ var nv=clamp(v); if(nv!==cur){ cur=nv; paint(); onChange(cur); } else paint(); }
+    track.addEventListener('pointerdown',function(e){ e.preventDefault(); dragging=true;
+      try{ track.setPointerCapture(e.pointerId); }catch(_){} apply(fromX(e.clientX)); });
+    track.addEventListener('pointermove',function(e){ if(dragging) apply(fromX(e.clientX)); });
+    track.addEventListener('pointerup',function(e){ dragging=false; try{ track.releasePointerCapture(e.pointerId); }catch(_){} });
+    track.addEventListener('wheel',function(e){ e.preventDefault(); e.stopPropagation();
+      var step=(max-min)>=50?2:1; apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
+    return { set:function(v){ cur=clamp(v); paint(); } };
+  }
   function renderExpr(){
-    var sb=document.getElementById('strumBtn');
-    if(sb) sb.className='btn'+(state.strum?' on':'');
-    var hv=document.getElementById('humanizeV');
-    if(hv) hv.textContent=HUM_PCTS[state.humanizeIdx]===0?'OFF':HUM_PCTS[state.humanizeIdx]+'%';
-    var sp=document.getElementById('strumSpeedBtn');
-    if(sp) sp.className='btn lblbtn'+(state.strum?'':' off');
-    var cb=document.getElementById('strumCurveBtn');
-    if(cb) cb.className='btn lblbtn'+(state.strum?'':' off');
-    var spv=document.getElementById('strumSpeedV');
-    if(spv) spv.textContent=STRUM_SPEEDS_UI[state.strumSpeedIdx];
-    var cvv=document.getElementById('strumCurveV');
-    if(cvv) cvv.textContent=STRUM_CURVES_UI[state.strumCurveIdx];
+    if(_strumSld) _strumSld.set(state.strumMs);
+    if(_humanSld) _humanSld.set(state.humanize);
+    var seg=document.getElementById('curveSeg');
+    if(seg){ var c=seg.children; for(var i=0;i<c.length;i++) c[i].className='exseg-cell'+(i===state.strumCurveIdx?' on':''); }
+    var crow=document.getElementById('curveRow');
+    if(crow) crow.className='exrow-curve'+(state.strumMs>0?'':' off');
+  }
+  function initExpr(){
+    _strumSld=makeSlider('strumSld',0,STRUM_MAX,function(v){ return v===0?'OFF':v+'ms'; },function(v){ state.strumMs=v; renderExpr(); });
+    _humanSld=makeSlider('humanSld',0,100,function(v){ return v===0?'OFF':v+'%'; },function(v){ state.humanize=v; });
+    var seg=document.getElementById('curveSeg');
+    Array.prototype.forEach.call(seg.children,function(cell){
+      cell.onmousedown=function(e){ if(e)e.preventDefault(); state.strumCurveIdx=parseInt(this.getAttribute('data-i')); renderExpr(); };
+    });
   }
   function renderNotes(arr){ var midi=(arr||[]).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<128;});
     document.getElementById('chordName').textContent=activeChordName||'—';
@@ -728,10 +766,7 @@
     openDrop('voicing','VOICING',VOICINGS,state.voicingIdx,2,function(i,name){ state.voicingIdx=i; document.getElementById('voicingV').textContent=name; send('voicingidx',i); }); };
   document.getElementById('vl').onmousedown=function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onmousedown=function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
-  document.getElementById('strumBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strum=!state.strum; renderExpr(); };
-  document.getElementById('strumSpeedBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strumSpeedIdx=(state.strumSpeedIdx+1)%STRUM_SPEEDS_UI.length; renderExpr(); };
-  document.getElementById('strumCurveBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strumCurveIdx=(state.strumCurveIdx+1)%STRUM_CURVES_UI.length; renderExpr(); };
-  document.getElementById('humanizeBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.humanizeIdx=(state.humanizeIdx+1)%HUM_PCTS.length; renderExpr(); };
+  initExpr();
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
     this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme]; applyScheme(); };

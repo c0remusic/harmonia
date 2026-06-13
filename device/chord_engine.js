@@ -123,13 +123,10 @@ var activeNotes         = [];
 var vlMode              = "anchored";  // "anchored" | "flow"
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
-var strumEnabled        = false;
-var STRUM_SPEEDS        = [50, 25, 10];   // ms/note : Slow · Med · Fast
-var strumSpeedIdx       = 1;          // Med par défaut
-var _strumMs            = 25;         // = STRUM_SPEEDS[strumSpeedIdx]
+var _strumMs            = 0;          // ms/note : 0 = off, sinon espacement du strum (slider 0-60)
 var STRUM_CURVE_P       = [1.0, 0.55, 1.8];  // exposant : Linear · Accel · Decel
 var strumCurve          = 0;          // Linear par défaut
-var humanizeAmt         = 0;          // 0-100 : variation vélocité ±25% + timing ±15ms
+var humanizeAmt         = 0;          // 0-100 : 0 = off ; variation vélocité ±25% + timing ±15ms
 var _emitTasks          = [];         // Tasks de notes différées (strum/humanize) en cours
 
 function loadbang() {
@@ -188,7 +185,7 @@ function list() {
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
 		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
-		colorscheme: colorscheme, strumset: strumset, strumspeed: strumspeed,
+		colorscheme: colorscheme, strumms: strumms,
 		strumcurve: strumcurve, humanizeamt: humanizeamt
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
@@ -257,8 +254,7 @@ function pushConfigState() {
 	if (vi >= 0) outlet(7, "voicing", vi);
 	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
 	outlet(7, "vlmode", vlMode);
-	outlet(7, "strum",      strumEnabled ? 1 : 0);
-	outlet(7, "strumspeed", strumSpeedIdx);
+	outlet(7, "strumms",    _strumMs);
 	outlet(7, "strumcurve", strumCurve);
 	outlet(7, "humanize",   humanizeAmt);
 }
@@ -648,14 +644,9 @@ function playcell(col, row) {
 // Vélocité reçue avant un playcell (pad pressé)
 function padvel(v) { currentVelocity = parseInt(v); }
 
-function strumset(v) {
-	strumEnabled = !!parseInt(v);
-	outlet(7, "strum", strumEnabled ? 1 : 0);
-}
-function strumspeed(v) {
-	var i = parseInt(v);
-	if (i >= 0 && i < STRUM_SPEEDS.length) { strumSpeedIdx = i; _strumMs = STRUM_SPEEDS[i]; }
-	outlet(7, "strumspeed", strumSpeedIdx);
+function strumms(v) {
+	_strumMs = Math.max(0, Math.min(60, parseInt(v) || 0));
+	outlet(7, "strumms", _strumMs);
 }
 function strumcurve(v) {
 	var i = parseInt(v);
@@ -1279,7 +1270,7 @@ function _cancelEmit() {
 // Chemin rapide (tout à 0) si ni strum ni humanize → aucun Task créé.
 function _emitNotes(notes) {
 	var n = notes.length;
-	var strum = strumEnabled && n > 1;
+	var strum = _strumMs > 0 && n > 1;
 	if (!strum && !humanizeAmt) {
 		outlet(0, currentVelocity);
 		for (var i = 0; i < n && i < 6; i++) outlet(i + 1, notes[i]);
