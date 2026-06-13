@@ -350,6 +350,8 @@ function lydiandom()  { setscale("lydiandom"); }
 
 function octave(v) {
 	currentOctave = parseInt(v);
+	_vl2_reset();        // le registre change : on repart à zéro (sinon la mémoire VL de
+	                     // l'ancienne octave biaise le 1er accord du nouveau registre)
 	pushConfigState();   // pas de rebuild grille : l'octave n'affecte pas les cellules
 }
 
@@ -776,8 +778,7 @@ function progHouseVoicing(notes) {
 	var s = vsort(notes);
 	var r = [];
 
-	r.push(s[0] - 12);               // fondamentale grave (basse détachée)
-	r.push(s[0]);                    // fondamentale
+	r.push(s[0]);                    // fondamentale (en registre — basse = instrument séparé)
 	if (s.length >= 3) r.push(s[2]); // quinte au milieu (ancrage)
 	r.push(s[1] + 12);               // 3ce projetée dans l'aigu
 

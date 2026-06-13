@@ -7,17 +7,18 @@
 <meta name="description" content="Play Tuple in your browser — the Max for Live chord device for Ableton Live. Real chord engine, real voicings, real voice leading.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ── Palette / base : identiques au device (device/ui/index.html) ── */
+  /* ── Palette / base : identiques au device (device/ui/tuple_ui.html) ── */
   :root{
     --gold:#FFdc82; --gold-dim:rgba(255,220,130,.11); --gold-bd:rgba(255,220,130,.28);
     --blue:#8ECCE8; --blue-dim:rgba(142,204,232,.12); --blue-bd:rgba(142,204,232,.32);
     --txt:#ede9e0; --muted:rgba(237,233,224,.45); --muted2:rgba(237,233,224,.22);
     --cell:rgba(255,255,255,.10); --cell-bd:rgba(255,255,255,.16);
-    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    /* Brand fonts: Syne (display) + Space Grotesk (body) — identique au site. Mono pour les notes. */
+    --sans:'Space Grotesk',system-ui,-apple-system,sans-serif;
     --mono:'JetBrains Mono',ui-monospace,monospace;
-    --display:'Unbounded',var(--sans);
+    --display:'Syne',var(--sans);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;outline:none}
   body{background:#1a1a1a;color:var(--txt);font-family:var(--sans);min-height:100vh;
@@ -179,13 +180,13 @@
           <div class="csel" id="key" style="flex:1"><span class="cl">KEY</span><span class="cv" id="keyV">C</span></div>
           <div class="csel" id="scale" style="flex:2"><span class="cl">SCALE</span><span class="cv" id="scaleV">Major</span></div>
         </div>
-        <div class="oct" id="oct"></div>
       </div>
 
       <div class="sep"></div>
 
       <div class="zone">
         <div class="lbl">Chord style</div>
+        <div class="oct" id="oct"></div>
         <div class="csel" id="voicing" style="flex:none"><span class="cl">VOICING</span><span class="cv" id="voicingV">Classic</span></div>
         <div class="btn" id="vl">VOICE LEADING</div>
         <div class="btn lblbtn" id="vlmode"><span class="cl">VL MODE</span><span class="cv" id="vlmodeV">Anchor</span></div>
@@ -391,7 +392,7 @@
   function spreadVoicing(n){ if(n.length<3)return n; var s=vsort(n),r=[]; for(var i=0;i<s.length;i++)r.push(i%2===1?s[i]+12:s[i]); return vsort(r); }
   function houseVoicing(n){ if(n.length<3)return n; var s=vsort(n); return s.concat([s[0]+12]); }
   function progHouseVoicing(n){ if(n.length<3)return n; var s=vsort(n),r=[];
-    r.push(s[0]-12); r.push(s[0]); if(s.length>=3)r.push(s[2]); r.push(s[1]+12);
+    r.push(s[0]); if(s.length>=3)r.push(s[2]); r.push(s[1]+12);
     for(var i=3;i<s.length;i++)r.push(s[i]+12);
     if(s.length===3)r.push(s[2]+12);
     r=vsort(r); if(r.length>6)r=r.slice(0,6); return r; }
@@ -697,6 +698,7 @@
       try{ track.setPointerCapture(e.pointerId); }catch(_){} apply(fromX(e.clientX)); });
     track.addEventListener('pointermove',function(e){ if(dragging) apply(fromX(e.clientX)); });
     track.addEventListener('pointerup',function(e){ dragging=false; try{ track.releasePointerCapture(e.pointerId); }catch(_){} });
+    track.addEventListener('pointercancel',function(){ dragging=false; });
     track.addEventListener('wheel',function(e){ e.preventDefault(); e.stopPropagation();
       var step=(max-min)>=50?2:1; apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
     return { set:function(v){ cur=clamp(v); paint(); } };
