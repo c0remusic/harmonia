@@ -79,8 +79,6 @@ if (typeof Map === 'undefined') {
 
 var lastFn           = "triad";
 var lastDegree       = 0;
-var lastFnLocked     = null;    // Dernier accord avec voicing verrouillée
-var lastDegreeLocked = null;
 
 // =====================================================
 // GAMMES
@@ -96,8 +94,8 @@ var SCALES = {
 	"harmminor":  [0,2,3,5,7,8,11],
 	"melminor":   [0,2,3,5,7,9,11],
 	"locrian":    [0,1,3,5,6,8,10],
-	"pentamaj":   [0,2,4,5,7,9,11],   // parent = major;  active: I II III V VI (skip IV VII)
-	"pentamin":   [0,2,3,5,7,8,10],   // parent = minor;  active: I III IV V VII (skip II VI)
+	"pentamaj":   [0,2,4,5,7,9,11],   // intervals = full major scale; SCALE_VALID_DEGREES mask hides IV+VII columns → pentatonic layout, major-scale voicings
+	"pentamin":   [0,2,3,5,7,8,10],   // intervals = full natural minor scale; mask hides II+VI columns → pentatonic layout, minor-scale voicings
 	"lydiandom":  [0,2,4,6,7,9,10]    // Lydian Dominant — 4e mode mél. min. ; I7(#11) caractéristique
 };
 
@@ -121,10 +119,8 @@ var currentOctave       = 0;
 var currentVelocity     = 100;
 var currentVoicing      = "classic";
 var voiceLeadingEnabled = false;
-var previousChord       = null;  // v1 fallback uniquement
 var activeNotes         = [];
-var vlMode              = "anchored";  // "anchored" | "flow"  (relative/piano retirés de l'UI — obsolètes sur v2)
-var lockedVoicing       = null;       // v1 : lock renversement sur accord répété
+var vlMode              = "anchored";  // "anchored" | "flow"
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
 
@@ -310,7 +306,6 @@ function synclive() {
 // Reçoit un index int (0-11) depuis live.menu
 function rootidx(v) {
 	root = parseInt(v);
-	lockedVoicing = null;
 	_vl2_reset();
 	pushUIState();
 }
@@ -327,7 +322,6 @@ function setscale(s) {
 	if (SCALES[s]) {
 		scale = SCALES[s];
 		scaleName = s;
-		lockedVoicing = null;
 		_vl2_reset();
 	}
 }
@@ -359,7 +353,6 @@ function voicing(v) {
 var VOICING_NAMES = ["classic","piano","open","spread","house","prog","rootlessa","rootlessb","drop2","drop3","jazz","nuhouse","trap","trance","funk"];
 function voicingidx(v) {
 	currentVoicing = VOICING_NAMES[parseInt(v)] || "classic";
-	lockedVoicing = null;
 	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
@@ -368,24 +361,17 @@ function voiceleading(v) {
 	// Accepte "on"/"off" (toggle jsui) ET 1/0 (toggle jweb)
 	var s = String(v).toLowerCase();
 	voiceLeadingEnabled = (s === "on" || s === "1" || s === "true");
-	// Repart à zéro à chaque activation/désactivation
-	previousChord = null;
-	lockedVoicing = null;
 	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
 
 function resetvoiceleading() {
-	previousChord = null;
-	lockedVoicing = null;
 	_vl2_reset();
 }
 
 // Reçoit "vlmode anchored" ou "vlmode relative"
 function vlmode(m) {
 	vlMode = String(m);
-	previousChord = null;
-	lockedVoicing = null;
 	_vl2_reset();
 	pushConfigState();   // pas de rebuild grille
 }
@@ -491,7 +477,7 @@ var BORROWED_LYDIAN = [
 	{ roman:"v",    semis:7,  type:"min",  suf:"m"    }
 ];
 var BORROWED_MIXOLYDIAN = [
-	{ roman:"vii°7",semis:11, type:"dim7", suf:"dim7" },
+	{ roman:"vii°7",semis:11, type:"dim7", suf:"dim7" }, // leading-tone dim7 borrowed from parallel major (not Mixolydian's own bVII)
 	{ roman:"bVI",  semis:8,  type:"maj",  suf:""     },
 	{ roman:"bIII", semis:3,  type:"maj",  suf:""     }
 ];
@@ -620,7 +606,7 @@ function broadcastGrid() {
 	}
 	var quals = [];
 	for (var qd = 0; qd < 7; qd++) quals.push(chordQuality(qd));
-	outlet(7, ["qualities"].concat(quals));
+	outlet.apply(null, [7, "qualities"].concat(quals));
 	outlet(7, "griddone");
 }
 
@@ -836,269 +822,6 @@ function applyVoicing(notes) {
 		case "drop3":     return drop3Voicing(notes);
 		default:          return notes;
 	}
-}
-
-// =====================================================
-// VOICE LEADING
-// Principe unifié : on garde la FORME du voicing courant et on
-// choisit le renversement (rotation de la forme) + l'octave le
-// plus proche de la cible.
-//   - mode "anchored" : cible = centre de registre fixe (déterministe,
-//     boucles stables, accords groupés autour du centre).
-//   - mode "relative"  : cible = accord précédent (transitions plus
-//     réactives, mais peut dériver en boucle).
-// =====================================================
-
-function asc(a, b) { return a - b; }
-
-// Place la classe de hauteur de `note` dans l'octave la plus proche de `anchor`
-function placeNearest(note, anchor) {
-	var pc = ((note % 12) + 12) % 12;
-	var k  = Math.round((anchor - pc) / 12);
-	return pc + 12 * k;
-}
-
-// Renversement : monte la note la plus basse d'une octave
-function rotateUp(arr) {
-	var r = arr.slice().sort(asc);
-	r.push(r.shift() + 12);
-	r.sort(asc);
-	return r;
-}
-
-function shiftAll(arr, delta) {
-	var r = [];
-	for (var i = 0; i < arr.length; i++) r.push(arr[i] + delta);
-	return r;
-}
-
-// Distance de voice leading (amélioré) :
-// - Minimiser la distance voix à voix
-// - Favoriser les notes communes (même PC)
-// - Pénaliser les grands sauts (> tierce)
-// - Pénaliser les octaves/quintes parallèles
-// - Pénaliser notes hors de la "preferred zone" (48-72 = Do2 à Do4)
-// Profils de voice leading par voicing
-function getVoicingProfile(voicingName) {
-	switch(voicingName) {
-		case "piano":
-			return { prefLow: 45, prefHigh: 75, commonToneBonus: -8, jumpPenalty: 0.7, parallelPenalty: 12 };
-		case "open":
-			return { prefLow: 20, prefHigh: 100, commonToneBonus: -4, jumpPenalty: 0.2, parallelPenalty: 4 };
-		case "house":
-			return { prefLow: 35, prefHigh: 85, commonToneBonus: -5, jumpPenalty: 0.3, parallelPenalty: 4 };
-		case "spread":
-			return { prefLow: 30, prefHigh: 90, commonToneBonus: -5, jumpPenalty: 0.4, parallelPenalty: 6 };
-		case "prog":
-			return { prefLow: 40, prefHigh: 80, commonToneBonus: -6, jumpPenalty: 0.6, parallelPenalty: 8 };
-		case "classic":
-			return { prefLow: 48, prefHigh: 72, commonToneBonus: -7, jumpPenalty: 0.5, parallelPenalty: 12 };
-		case "drop2":
-		case "drop3":
-			return { prefLow: 42, prefHigh: 78, commonToneBonus: -6, jumpPenalty: 0.5, parallelPenalty: 10 };
-		case "rootlessa":
-		case "rootlessb":
-			return { prefLow: 50, prefHigh: 80, commonToneBonus: -6, jumpPenalty: 0.4, parallelPenalty: 8 };
-		default:
-			return { prefLow: 48, prefHigh: 72, commonToneBonus: -6, jumpPenalty: 0.5, parallelPenalty: 8 };
-	}
-}
-
-function vlDistance(a, b) {
-	var aa = a.slice().sort(asc);
-	var bb = b.slice().sort(asc);
-	var n  = Math.min(aa.length, bb.length);
-	var tot = 0;
-
-	// Adapter les paramètres selon le voicing courant
-	var profile = getVoicingProfile(currentVoicing);
-	var PREF_LOW = profile.prefLow, PREF_HIGH = profile.prefHigh;
-	var COMMON_TONE_BONUS = profile.commonToneBonus;
-	var JUMP_PENALTY_FACTOR = profile.jumpPenalty;
-	var PARALLEL_PENALTY = profile.parallelPenalty;
-
-	for (var i = 0; i < n; i++) {
-		var dist = Math.abs(bb[i] - aa[i]);
-		tot += dist;
-
-		// Pénalité pour grands sauts (> 4 semitones = tierce)
-		if (dist > 4) {
-			tot += (dist - 4) * JUMP_PENALTY_FACTOR;
-		}
-
-		// Bonus pour note commune (même pitch class)
-		if ((aa[i] % 12) === (bb[i] % 12)) {
-			tot += COMMON_TONE_BONUS;  // valeur négative = bonus
-		}
-
-		// Pénalité pour notes en dehors de la zone préférée
-		if (bb[i] < PREF_LOW) {
-			tot += (PREF_LOW - bb[i]) * 0.3;  // trop bas
-		} else if (bb[i] > PREF_HIGH) {
-			tot += (bb[i] - PREF_HIGH) * 0.3;  // trop haut
-		}
-	}
-
-	tot += Math.abs(aa.length - bb.length) * 6;
-
-	// Pénaliser octaves/quintes parallèles sur l'ordre des voix (pas trié)
-	if (a.length >= 2) {
-		for (var j = 0; j < a.length - 1; j++) {
-			var int1 = ((a[j+1] - a[j]) % 12 + 12) % 12;
-			var int2 = ((b[j+1] - b[j]) % 12 + 12) % 12;
-			// Quinte = 7, octave = 0
-			if (int1 === int2 && (int1 === 0 || int1 === 7)) {
-				tot += PARALLEL_PENALTY;
-			}
-		}
-	}
-
-	return Math.max(0, tot);
-}
-
-// Garde l'accord dans une plage MIDI utile (décale par octaves)
-function clampRange(arr) {
-	var r = arr.slice().sort(asc);
-	while (r.length && r[r.length - 1] > 108) r = shiftAll(r, -12).sort(asc);
-	while (r.length && r[0] < 24)             r = shiftAll(r, 12).sort(asc);
-	return r;
-}
-
-// Cherche le renversement + octave de `notes` (forme du voicing)
-// le plus proche de `target`
-function bestRotation(notes, target) {
-	var base = notes.slice().sort(asc);
-	var best = base, bestD = 1e9;
-	var rot = base.slice();
-	for (var i = 0; i < base.length; i++) {
-		for (var oct = -2; oct <= 2; oct++) {
-			var cand = shiftAll(rot, oct * 12);
-			var d = vlDistance(target, cand);
-			if (d < bestD) { bestD = d; best = cand; }
-		}
-		rot = rotateUp(rot);
-	}
-	return clampRange(best);
-}
-
-function applyVoiceLeading(notes) {
-	if (!voiceLeadingEnabled) return notes;
-
-	// Si c'est le MÊME accord et une voicing est verrouillée, la réutiliser
-	// (c'est-à-dire qu'on a changé vlMode mais on joue le même accord)
-	if (lockedVoicing !== null && lastFn === lastFnLocked && lastDegree === lastDegreeLocked) {
-		previousChord = lockedVoicing.slice();
-		return lockedVoicing.slice();
-	}
-
-	// Sinon, on joue un nouvel accord — réinitialiser le lock
-	lockedVoicing = null;
-	lastFnLocked = null;
-	lastDegreeLocked = null;
-
-	if (vlMode === "piano") {
-		var pianoResult = pianoVL(notes);
-		// Mémoriser cette voicing comme verrouillée pour ce nouvel accord
-		lockedVoicing = pianoResult.slice();
-		lastFnLocked = lastFn;
-		lastDegreeLocked = lastDegree;
-		return pianoResult;
-	}
-
-	var target;
-	var center = 60 + currentOctave * 12;
-
-	if (vlMode === "relative" && previousChord !== null) {
-		// Mode RELATIVE : suit l'accord précédent (100% fluide, moindre mouvement)
-		// Pas de "center pull" — la voicing va dériver vers le haut/bas selon la progression
-		// mais chaque note se rapproche au maximum du point d'ancrage précédent
-		target = previousChord.slice();  // Cible = accord précédent exactement
-	} else if (vlMode === "anchored") {
-		// Mode ANCHOR : toujours recentrer sur le center (statique, mécanique)
-		// Aucune mémoire de l'accord précédent — on recommence à zéro chaque fois
-		target = [];
-		for (var i = 0; i < notes.length; i++) target.push(center);
-		previousChord = null;  // Oublier l'accord précédent en mode ANCHOR
-	} else {
-		// Par défaut (premier accord, etc.)
-		target = [];
-		for (var i = 0; i < notes.length; i++) target.push(center);
-	}
-
-	var best = bestRotation(notes, target);
-	if (vlMode !== "anchored") previousChord = best.slice();  // Garder la mémoire en RELAT
-
-	// Mémoriser cette voicing comme verrouillée pour ce nouvel accord
-	lockedVoicing = best.slice();
-	lastFnLocked = lastFn;
-	lastDegreeLocked = lastDegree;
-
-	return best;
-}
-
-// Pitch class de la fondamentale de l'accord courant
-function chordRootPc() {
-	if (lastFn === "color") return (((root + lastDegree) % 12) + 12) % 12;
-	return (((root + scale[lastDegree % 7]) % 12) + 12) % 12;
-}
-
-// MODE PIANO : voicing "deux mains" pensé pour la prod électro.
-//  - Main gauche : fondamentale dans le bas-médium (jamais sous Do2 / MIDI 48),
-//    pour ne pas empiéter sur la basse.
-//  - Main droite : structure de l'accord voicée en douceur autour du Do4,
-//    mouvement minimal note-à-note (les notes communes restent fixes).
-function pianoVL(notes) {
-	var rootPc = chordRootPc();
-
-	// --- Main gauche : la fondamentale, bas-médium (~Do2 à octave 0, suit OCT) ---
-	var bassCenter = 48 + currentOctave * 12;
-	var bass = placeNearest(rootPc, bassCenter);
-
-	// --- Main droite : classes de hauteur de l'accord ---
-	var pcs = [];
-	for (var i = 0; i < notes.length; i++) {
-		var pc = ((notes[i] % 12) + 12) % 12;
-		if (pcs.indexOf(pc) < 0) pcs.push(pc);
-	}
-	pcs.sort(function(a,b){ return a-b; });
-
-	var center = 55 + currentOctave * 12;   // ~Si2/Do3, plus bas pour éviter les hauteurs excessives
-	var upper  = [];
-	var prevUpper = (previousChord && previousChord.length > 1)
-	              ? previousChord.slice(1).sort(asc) : null;
-
-	// voice leading : suit l'accord précédent pour la fluidité
-	for (var k = 0; k < pcs.length; k++) {
-		var anchor = prevUpper ? prevUpper[Math.min(k, prevUpper.length - 1)] : center;
-		upper.push(placeNearest(pcs[k], anchor));
-	}
-
-	upper.sort(asc);
-	for (var j = 1; j < upper.length; j++) {
-		if (upper[j] <= upper[j - 1]) upper[j] += 12 * Math.ceil((upper[j-1] + 1 - upper[j]) / 12);
-	}
-
-	// RECALAGE sur l'octave : on transpose le bloc pour que sa moyenne
-	// retombe près du centre → OCT redevient effectif + pas de dérive.
-	var sum = 0;
-	for (var m = 0; m < upper.length; m++) sum += upper[m];
-	var mean  = sum / upper.length;
-	var shift = Math.round((center - mean) / 12) * 12;
-	for (var n = 0; n < upper.length; n++) upper[n] += shift;
-
-	// la main droite reste au-dessus de la basse ET en-dessous de Do5
-	while (upper.length && upper[0] <= bass) {
-		for (var a = 0; a < upper.length; a++) upper[a] += 12;
-	}
-	// Limiter max à Do5 (72) pour éviter les notes trop hautes
-	while (upper.length && upper[upper.length - 1] > 72) {
-		for (var b = 0; b < upper.length; b++) upper[b] -= 12;
-	}
-
-	var result = [bass].concat(upper);
-	result.sort(asc);
-	previousChord = result.slice();
-	return result;
 }
 
 // =====================================================
