@@ -24,9 +24,9 @@
   <meta name="twitter:description" content="A free, open-source Max for Live chord device — fast, musical chord selection, voicing and voice leading inside Ableton Live.">
   <meta name="twitter:image" content="https://tuple.live/chord_selector_screenshot.png">
 
-  <!-- Preload self-hosted brand fonts (TTF — see note: WOFF2 conversion pending) -->
-  <link rel="preload" href="./fonts/Syne-Variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="./fonts/SpaceGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
+  <!-- Preload self-hosted brand fonts (WOFF2, with TTF fallback in @font-face) -->
+  <link rel="preload" href="./fonts/Syne-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./fonts/SpaceGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- Structured data -->
   <script type="application/ld+json">
@@ -50,9 +50,9 @@
   </script>
   <style>
     /* Brand typography (self-hosted) — Syne (display) + Space Grotesk (text) */
-    @font-face { font-family: 'Syne'; src: url('./fonts/Syne-Variable.ttf') format('truetype');
+    @font-face { font-family: 'Syne'; src: url('./fonts/Syne-Variable.woff2') format('woff2'), url('./fonts/Syne-Variable.ttf') format('truetype');
       font-weight: 400 800; font-style: normal; font-display: swap; }
-    @font-face { font-family: 'Space Grotesk'; src: url('./fonts/SpaceGrotesk-Variable.ttf') format('truetype');
+    @font-face { font-family: 'Space Grotesk'; src: url('./fonts/SpaceGrotesk-Variable.woff2') format('woff2'), url('./fonts/SpaceGrotesk-Variable.ttf') format('truetype');
       font-weight: 300 700; font-style: normal; font-display: swap; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -362,7 +362,7 @@
       <a href="#features">Features</a>
       <a href="#voicings">Voicings</a>
       <a href="#download">Download</a>
-      <a href="#support">Support</a>
+      <a href="#support">Donate</a>
       <a href="#contact">Contact</a>
     </div>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
@@ -377,7 +377,7 @@
     <a href="#features"  id="mn-feat">Features</a>
     <a href="#voicings"  id="mn-voic">Voicings</a>
     <a href="#download"  id="mn-dl">Download</a>
-    <a href="#support"   id="mn-sup">Support</a>
+    <a href="#support"   id="mn-sup">Donate</a>
     <a href="#contact"   id="mn-con">Contact</a>
   </div>
 
