@@ -648,7 +648,7 @@ function playcell(col, row) {
 function padvel(v) { currentVelocity = parseInt(v); }
 
 function strumms(v) {
-	_strumMs = Math.max(-60, Math.min(60, parseInt(v) || 0));   // signé : <0 descendant, >0 montant
+	_strumMs = Math.max(-250, Math.min(250, parseInt(v) || 0));  // signé : <0 descendant, >0 montant. >~60ms = arpège
 	outlet(7, "strumms", _strumMs);
 }
 function strumramp(v) {

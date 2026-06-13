@@ -435,7 +435,7 @@
       <!-- Zone EXPRESSION (full uniquement) — sliders drag + molette, 0 = off -->
       <div class="zone expr-zone">
         <div class="lbl">Expression</div>
-        <div class="exslider" id="strumSld" title="Strum — drag or scroll. Left = down (high→low), center = off, right = up (low→high)">
+        <div class="exslider" id="strumSld" title="Strum — drag or scroll. Left = down (high→low), center = off, right = up (low→high). High values = arpeggio">
           <div class="exs-lbl">Strum</div>
           <div class="exs-track bipolar"><div class="exs-fill"></div></div>
           <div class="exs-val off">OFF</div>
@@ -778,7 +778,7 @@
     track.addEventListener('pointerup',function(e){ dragging=false; try{ track.releasePointerCapture(e.pointerId); }catch(_){} });
     track.addEventListener('pointercancel',function(){ dragging=false; });
     track.addEventListener('wheel',function(e){ e.preventDefault(); e.stopPropagation();
-      var step=(max-min)>=50?2:1; apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
+      var step=Math.max(1,Math.round((max-min)/100)); apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
     return { set:function(v){ cur=clamp(v); paint(); } };
   }
 
@@ -794,7 +794,7 @@
   }
 
   function initExpr(){
-    _strumSld=makeSlider('strumSld',-60,60,
+    _strumSld=makeSlider('strumSld',-250,250,
       function(v){ return v===0?'OFF':(Math.abs(v)+'ms '+(v>0?'↑':'↓')); },
       function(v){ state.strumMs=v; renderExpr(); send('strumms',v); }, true);
     _rampSld=makeSlider('rampSld',-100,100,
