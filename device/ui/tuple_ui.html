@@ -101,6 +101,8 @@
   body.full .dd-ov{padding:16px 14px;gap:12px}
   body.full .dd-grid{align-content:center;gap:7px}
   body.full .dd-cell{padding:12px 12px;font-size:12px;justify-content:flex-start}
+  /* menu ouvert : on masque les séparateurs dégradés (vsep/sep) pour un panneau propre */
+  body.dd-open .vsep, body.dd-open .sep{opacity:0}
 
   /* ── GENERIC CONTROLS ── */
   .sel{
@@ -250,8 +252,9 @@
   /* repère central pour les sliders bipolaires (off/flat au milieu) */
   .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.25);pointer-events:none}
   .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.9;border-radius:3px;pointer-events:none}
-  .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 48px;text-align:right}
+  .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 54px;text-align:right;white-space:nowrap}
   .exs-val.off{color:var(--muted)}
+  .exs-lbl{white-space:nowrap}
   /* Sélecteur de courbe (3 segments) — même idiome que la rangée Octave */
   .exrow-curve{display:flex;align-items:center;gap:9px;height:32px;padding:0 0 0 10px;transition:opacity .12s}
   .exrow-curve.off{opacity:.4;pointer-events:none}
@@ -625,6 +628,7 @@
 
   function closeDrop(){
     document.getElementById('ddOv').classList.remove('open');
+    document.body.classList.remove('dd-open');
     _dropOpen = null;
   }
 
@@ -648,6 +652,7 @@
     });
     _dropOpen=id;
     ov.classList.add('open');
+    document.body.classList.add('dd-open');   // masque les séparateurs dégradés pendant l'ouverture
   }
 
   // FOCUS CLAVIER : empêche le WebView de voler le focus clavier d'Ableton.

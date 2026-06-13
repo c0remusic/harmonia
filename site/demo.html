@@ -66,6 +66,7 @@
     font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:center;transition:background .07s,color .07s;pointer-events:auto}
   .dd-cell:hover{background-color:rgba(255,255,255,.08);color:var(--txt)}
   .dd-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+  body.dd-open .vsep, body.dd-open .sep{opacity:0}   /* menu ouvert : pas de séparateur dégradé */
 
   .row{height:32px;flex:none;display:flex;gap:8px}
   .sync{flex:0 0 32px;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--cell);
@@ -100,7 +101,8 @@
   .exs-track:hover{background:rgba(255,255,255,.11)}
   .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.25);pointer-events:none}
   .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.9;border-radius:3px;pointer-events:none}
-  .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 48px;text-align:right}
+  .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 54px;text-align:right;white-space:nowrap}
+  .exs-lbl{white-space:nowrap}
   .exs-val.off{color:var(--muted)}
   .exrow-curve{display:flex;align-items:center;gap:9px;height:32px;padding:0 0 0 10px;transition:opacity .12s}
   .exrow-curve.off{opacity:.4;pointer-events:none}
@@ -649,14 +651,14 @@
       if(a[parseInt(k.dataset.midi)])k.classList.add('lit'); else k.classList.remove('lit'); }); }
 
   var _dropOpen=null;
-  function closeDrop(){ document.getElementById('ddOv').classList.remove('open'); _dropOpen=null; }
+  function closeDrop(){ document.getElementById('ddOv').classList.remove('open'); document.body.classList.remove('dd-open'); _dropOpen=null; }
   function openDrop(id,title,arr,cur,ncols,onSel){ if(_dropOpen===id){closeDrop();return;} closeDrop();
     var ov=document.getElementById('ddOv'); document.getElementById('ddTitle').textContent=title;
     var grid=document.getElementById('ddGrid'); grid.style.gridTemplateColumns='repeat('+ncols+',1fr)'; grid.innerHTML='';
     arr.forEach(function(name,i){ var c=document.createElement('div'); c.className='dd-cell'+(i===cur?' on':''); c.textContent=name;
       c.addEventListener('mousedown',function(e){ e.preventDefault(); e.stopPropagation(); onSel(i,name); closeDrop(); });
       grid.appendChild(c); });
-    _dropOpen=id; ov.classList.add('open'); }
+    _dropOpen=id; ov.classList.add('open'); document.body.classList.add('dd-open'); }
   document.addEventListener('mousedown',function(e){ if(!_dropOpen)return;
     var ov=document.getElementById('ddOv'); if(!ov.contains(e.target))closeDrop(); });
   document.addEventListener('mouseup',function(){ releaseAll(); });
