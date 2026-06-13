@@ -155,6 +155,9 @@
     .hero h1 .h1-accent { color: var(--gold); }
     .hero-desc { font-size: 18px; color: var(--muted); max-width: 500px; line-height: 1.7; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .hero-help { margin-top: 22px; font-size: 14px; color: var(--muted); max-width: 500px; }
+    .hero-help a { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(142,204,232,0.4); }
+    .hero-help a:hover { color: var(--white); }
 
     /* SECTION SHELL */
     section.block { padding: 90px 48px; max-width: 1200px; margin: 0 auto; }
@@ -402,6 +405,7 @@
         <a href="#device" class="btn-secondary btn-blue"><span aria-hidden="true">&#9654;&#xFE0E;</span> Try it</a>
         <a href="#features" class="btn-secondary">Features</a>
       </div>
+      <p class="hero-help">New to building chords? <a href="./manual/">Read the manual</a> &mdash; it walks through every control and the harmony behind the grid.</p>
      </div>
     </div>
   </section>
@@ -540,6 +544,7 @@
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9m0 0L4 7m3.5 3L11 7M1 13h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Download .zip <span style="opacity:.55;font-weight:400">&middot; ~40&nbsp;KB</span>
         </a>
+        <a href="./manual/" class="btn-secondary">Read the manual</a>
         <a href="https://github.com/c0remusic/tuple" target="_blank" rel="noopener" class="btn-secondary">GitHub</a>
       </div>
     </div>
@@ -597,6 +602,7 @@
   <footer>
     <span class="wordmark footer-logo">Tuple</span>
     <span class="footer-links">
+      <a href="./manual/">Manual</a>
       <a href="#" id="legal-link">Legal notice</a>
       <a href="https://github.com/c0remusic/tuple" target="_blank" rel="noopener">GitHub</a>
     </span>

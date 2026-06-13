@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuple — Manuel d'utilisation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE 1 — COUVERTURE
+     ============================================================ -->
+<section class="page dark cover" data-screen-label="Couverture">
+  <div class="brandrow">
+    <span>Max&nbsp;for&nbsp;Live</span><span style="opacity:.4">·</span><span>Ableton&nbsp;Live&nbsp;11&nbsp;/&nbsp;12</span>
+  </div>
+
+  <div>
+    <div class="wordmark">Tuple</div>
+    <div class="tag">Chaque accord de votre gamme, à un clic.</div>
+    <p class="sub">Un instrument à grille d'accords pour Ableton Live : explorez,
+      jouez et enregistrez l'harmonie en temps réel — triades, septièmes, neuvièmes,
+      accords empruntés et dominantes secondaires, tous voicés et reliés entre eux.</p>
+
+    <div class="cover-grid" aria-hidden="true">
+      <div class="cg" style="background:rgba(255,220,130,.16);border-color:rgba(255,220,130,.4)"></div>
+      <div class="cg"></div><div class="cg"></div>
+      <div class="cg" style="background:rgba(142,204,232,.14);border-color:rgba(142,204,232,.34)"></div>
+      <div class="cg"></div><div class="cg"></div>
+      <div class="cg" style="background:rgba(196,160,240,.14);border-color:rgba(196,160,240,.34)"></div>
+      <div class="cg"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="metaline">
+      <div>Document<b>Manuel d'utilisation</b></div>
+      <div>Édition<b>2026 · FR</b></div>
+      <div>En ligne<b>tuple.live</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 2 — SOMMAIRE + INTRO
+     ============================================================ -->
+<section class="page" data-screen-label="Sommaire">
+  <div class="kicker"><span class="num">00</span> Bienvenue</div>
+  <h1 class="title">Un seul écran, toute votre harmonie.</h1>
+  <p class="lead">Tuple n'est pas un séquenceur. C'est un outil de composition et de
+    performance qui dispose <strong>tous les accords valides</strong> de votre tonalité
+    sous forme de grille jouable — toujours visibles, jamais cachés derrière un menu.</p>
+
+  <div class="two-37">
+    <div>
+      <p>Choisissez une tonalité et une gamme : Tuple génère instantanément la grille
+        complète des accords diatoniques, colonne par colonne, du degré <span class="mono">I</span>
+        au degré <span class="mono">VII</span>. Les <strong>accords empruntés</strong> et les
+        <strong>dominantes secondaires</strong> restent dans la même grille — pas d'assistant,
+        pas de page séparée.</p>
+      <p>Cliquez une case (ou frappez un pad sur le Push&nbsp;2) : l'accord se joue
+        immédiatement, déjà voicé et relié harmoniquement au précédent. Vous gardez les
+        mains sur la musique.</p>
+      <div class="tip">
+        <div class="th">À retenir</div>
+        <p>Tuple émet <strong>l'accord seulement</strong>. La basse se joue sur un instrument
+          séparé — chaque voicing reste un accord cohérent, jouable d'une seule main.</p>
+      </div>
+    </div>
+    <div>
+      <ol class="toc">
+        <li><span class="tn">01</span><span class="tt">Installation &amp; prérequis</span><span class="tl"></span><span class="tp">p.3</span></li>
+        <li><span class="tn">02</span><span class="tt">Démarrage rapide</span><span class="tl"></span><span class="tp">p.4</span></li>
+        <li><span class="tn">03</span><span class="tt">Vue d'ensemble de l'interface</span><span class="tl"></span><span class="tp">p.5</span></li>
+        <li><span class="tn">04</span><span class="tt">Tonalité — Key · Scale · Sync</span><span class="tl"></span><span class="tp">p.7</span></li>
+        <li><span class="tn">05</span><span class="tt">Style d'accord — Octave · Voicing · VL</span><span class="tl"></span><span class="tp">p.8</span></li>
+        <li><span class="tn">06</span><span class="tt">La grille &amp; les accords empruntés</span><span class="tl"></span><span class="tp">p.10</span></li>
+        <li><span class="tn">07</span><span class="tt">Logiques de couleur (Layout)</span><span class="tl"></span><span class="tp">p.11</span></li>
+        <li><span class="tn">08</span><span class="tt">Référence des voicings</span><span class="tl"></span><span class="tp">p.12</span></li>
+        <li><span class="tn">09</span><span class="tt">Référence des familles d'accords</span><span class="tl"></span><span class="tp">p.13</span></li>
+        <li><span class="tn">10</span><span class="tt">Monitor, Hold &amp; double fenêtre</span><span class="tl"></span><span class="tp">p.14</span></li>
+        <li><span class="tn">11</span><span class="tt">Intégration Push&nbsp;2</span><span class="tl"></span><span class="tp">p.15</span></li>
+        <li><span class="tn">12</span><span class="tt">Astuces, dépannage &amp; crédits</span><span class="tl"></span><span class="tp">p.16</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>Manuel d'utilisation</span><span>02</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 3 — INSTALLATION
+     ============================================================ -->
+<section class="page" data-screen-label="Installation">
+  <div class="kicker"><span class="num">01</span> Installation &amp; prérequis</div>
+  <h1 class="title">Mettre Tuple sur une piste.</h1>
+
+  <div class="two-37">
+    <div>
+      <h2 class="sec">Prérequis</h2>
+      <ul class="ticks">
+        <li><strong>Ableton Live 11 ou 12</strong>, édition Suite — ou Standard/Intro avec l'extension <strong>Max&nbsp;for&nbsp;Live</strong>.</li>
+        <li>Environ <strong>50&nbsp;Mo</strong> d'espace disque.</li>
+        <li><strong>Push&nbsp;2</strong> — optionnel, pour jouer la grille sur les pads.</li>
+        <li>Un <strong>instrument</strong> (synthé, piano…) sur la même piste pour entendre les accords.</li>
+      </ul>
+
+      <h2 class="sec">Installation</h2>
+      <ol class="steps">
+        <li>Téléchargez la dernière archive <span class="mono">.amxd</span> depuis <a href="https://tuple.live">tuple.live</a> (ou la page maxforlive.com).</li>
+        <li>Décompressez l'archive et <b>gardez tous les fichiers dans le même dossier</b> — l'interface se charge depuis ces fichiers.</li>
+        <li>Dans Live, glissez <span class="mono">tuple.amxd</span> sur une <b>piste MIDI</b>.</li>
+        <li>Placez Tuple <b>avant l'instrument</b> dans la chaîne d'effets MIDI.</li>
+        <li>Armez la piste : les accords joués alimentent l'instrument.</li>
+      </ol>
+    </div>
+
+    <div>
+      <div class="fig">
+        <div class="device">
+          <div class="dev-title"><span class="dot"></span> MIDI — chaîne de piste</div>
+          <div style="display:flex;align-items:stretch;gap:7px;font-size:9px">
+            <div style="flex:1;background:rgba(255,220,130,.1);border:1px solid rgba(255,220,130,.32);border-radius:6px;padding:10px 8px;text-align:center">
+              <div style="color:var(--gold);font-weight:700;font-family:var(--display);font-size:13px">Tuple</div>
+              <div style="color:var(--dmuted);margin-top:3px">effet MIDI</div>
+            </div>
+            <div style="align-self:center;color:var(--dmuted);font-size:13px">→</div>
+            <div style="flex:1;background:var(--cell);border:1px solid var(--cell-bd);border-radius:6px;padding:10px 8px;text-align:center">
+              <div style="color:var(--dtxt);font-weight:600">Instrument</div>
+              <div style="color:var(--dmuted);margin-top:3px">synthé / piano</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:stretch;gap:7px;font-size:9px">
+            <div style="flex:1;background:var(--cell);border:1px solid var(--cell-bd);border-radius:6px;padding:8px;text-align:center;color:var(--dmuted)">
+              Basse — <span style="color:var(--blue)">piste séparée</span>
+            </div>
+          </div>
+        </div>
+        <div class="fig-cap"><b>Ordre de la chaîne.</b> Tuple → instrument, sur la même piste MIDI. La basse vit sur sa propre piste.</div>
+      </div>
+
+      <div class="tip blue">
+        <div class="th">Important</div>
+        <p>Ne renommez pas et ne déplacez pas les fichiers livrés séparément : l'interface
+          est chargée depuis le dossier. Gardez l'ensemble intact.</p>
+      </div>
+      <div class="tip">
+        <div class="th">Le saviez-vous</div>
+        <p>Tuple sort uniquement l'accord. Pour une basse, ajoutez une seconde piste avec
+          son propre instrument — vous gardez le contrôle total du registre grave.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>01 · Installation</span><span>03</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 4 — DÉMARRAGE RAPIDE
+     ============================================================ -->
+<section class="page" data-screen-label="Démarrage rapide">
+  <div class="kicker"><span class="num">02</span> Démarrage rapide</div>
+  <h1 class="title">Votre première progression en 60&nbsp;secondes.</h1>
+
+  <ol class="steps">
+    <li><b>Réglez la tonalité.</b> Cliquez <span class="note-name">KEY</span> et <span class="note-name">SCALE</span>, ou pressez <span class="note-name">SYNC&nbsp;♪</span> pour importer la gamme courante de Live.</li>
+    <li><b>Ouvrez la grille.</b> Cliquez <span class="note-name">OPEN</span> pour afficher la fenêtre complète avec tous les accords.</li>
+    <li><b>Jouez un accord.</b> Cliquez une case dans la colonne <span class="mono">I</span> — l'accord sonne et ses notes s'affichent dans le Monitor.</li>
+    <li><b>Enchaînez.</b> Passez aux colonnes <span class="mono">IV</span>, <span class="mono">V</span>, <span class="mono">VI</span>… Avec le <em>Voice Leading</em> activé, les transitions restent fluides.</li>
+    <li><b>Tenez l'accord.</b> Activez <span class="note-name">HOLD</span> pour laisser sonner et garder les mains libres.</li>
+    <li><b>Enregistrez.</b> Armez la piste, lancez l'enregistrement et performez la grille en direct.</li>
+  </ol>
+
+  <div class="divider"></div>
+
+  <div class="two">
+    <div>
+      <h3 class="sub">Une progression pour commencer</h3>
+      <p>En <span class="note-name">C&nbsp;Major</span>, essayez la marche classique
+        <span class="mono">I&nbsp;–&nbsp;V&nbsp;–&nbsp;vi&nbsp;–&nbsp;IV</span> :</p>
+      <div style="display:flex;gap:7px;margin:10px 0;flex-wrap:wrap">
+        <span class="chip-key">C</span><span style="color:var(--ink3)">→</span>
+        <span class="chip-key">G</span><span style="color:var(--ink3)">→</span>
+        <span class="chip-key">Am</span><span style="color:var(--ink3)">→</span>
+        <span class="chip-key">F</span>
+      </div>
+      <p>Montez ensuite d'une rangée pour passer aux septièmes
+        (<span class="mono">CM7 · G7 · Am7 · FM7</span>) : la grille range les enrichissements
+        verticalement, du plus simple au plus coloré.</p>
+    </div>
+    <div>
+      <div class="tip purple">
+        <div class="th">Astuce performance</div>
+        <p>La <strong>colonne BORROWED</strong> (à droite) ajoute couleur et tension sans
+          quitter la tonalité : glissez un <span class="mono">bVII</span> ou un
+          <span class="mono">V/vi</span> au milieu d'une progression diatonique.</p>
+      </div>
+      <div class="tip blue">
+        <div class="th">Raccourci</div>
+        <p>Plutôt que de régler KEY/SCALE à la main, posez Tuple sur une piste dont
+          l'échelle Live est déjà définie, puis pressez <span class="mono">SYNC</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>02 · Démarrage rapide</span><span>04</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 5 — VUE D'ENSEMBLE : LE STRIP
+     ============================================================ -->
+<section class="page" data-screen-label="Interface — strip">
+  <div class="kicker"><span class="num">03</span> Vue d'ensemble de l'interface</div>
+  <h1 class="title">La bande de contrôle (strip).</h1>
+  <p class="lead">Dans le rack de Live, Tuple occupe une bande compacte : les commandes
+    à gauche, le Monitor à droite. La grille complète s'ouvre dans une seconde fenêtre.</p>
+
+  <div class="fig">
+    <div class="device" style="position:relative;overflow:visible">
+      <div class="dev-title"><span class="dot"></span> tuple</div>
+      <div class="dev-row">
+        <!-- CONFIG -->
+        <div class="cfg" style="position:relative">
+          <div class="dlbl">Tonalité</div>
+          <div class="crow">
+            <div class="sync">♪</div>
+            <div class="csel"><span class="cl">KEY</span><span class="cv">C</span></div>
+            <div class="csel"><span class="cl">SCL</span><span class="cv">MAJ</span></div>
+          </div>
+          <div class="dlbl" style="margin-top:3px">Octave</div>
+          <div class="oct">
+            <span>-3</span><span>-2</span><span>-1</span><span class="on">0</span><span>+1</span><span>+2</span><span>+3</span>
+          </div>
+          <div class="dlbl" style="margin-top:3px">Style d'accord</div>
+          <div class="csel"><span class="cl">VOICING</span><span class="cv">CLASSIC</span></div>
+          <div class="toggle on"><span style="color:var(--dmuted);font-size:9px;letter-spacing:.1em">VOICE LEADING</span><span class="v">ON</span></div>
+          <div class="toggle on"><span style="color:var(--dmuted);font-size:9px;letter-spacing:.1em">VL MODE</span><span class="v">ANCHOR</span></div>
+
+          <span class="callout" style="left:-11px;top:22px">1</span>
+          <span class="callout" style="left:-11px;top:46px">2</span>
+          <span class="callout" style="left:-11px;top:80px">3</span>
+          <span class="callout" style="left:-11px;top:126px">4</span>
+          <span class="callout" style="left:-11px;top:168px">5</span>
+        </div>
+
+        <div class="vsep"></div>
+
+        <!-- MONITOR -->
+        <div class="mon" style="position:relative;margin-left:auto">
+          <div class="dlbl">Monitor</div>
+          <div class="mon-notes">C3 · E3 · G3</div>
+          <div class="kbd">
+            <div class="wk act"></div><div class="wk"></div><div class="wk act"></div>
+            <div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk"></div>
+            <div class="bk" style="left:14.3%"></div><div class="bk" style="left:28.6%"></div>
+            <div class="bk" style="left:57.2%"></div><div class="bk" style="left:71.5%"></div><div class="bk" style="left:85.8%"></div>
+          </div>
+          <div class="hold">HOLD</div>
+          <span class="callout" style="right:-11px;top:24px">6</span>
+          <span class="callout" style="right:-11px;top:118px">7</span>
+        </div>
+      </div>
+    </div>
+    <div class="fig-cap"><b>Figure 3.1</b> — La bande compacte telle qu'elle apparaît dans le rack de périphériques de Live.</div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><span class="ln">1</span><span class="lt"><b>Sync&nbsp;♪</b> — <span>importe tonalité &amp; gamme depuis Live</span></span></div>
+    <div class="li"><span class="ln">2</span><span class="lt"><b>Key / Scale</b> — <span>fondamentale et gamme</span></span></div>
+    <div class="li"><span class="ln">3</span><span class="lt"><b>Octave</b> — <span>transpose le registre (−3…+3)</span></span></div>
+    <div class="li"><span class="ln">4</span><span class="lt"><b>Voicing</b> — <span>disposition des notes (10&nbsp;modes)</span></span></div>
+    <div class="li"><span class="ln">5</span><span class="lt"><b>Voice Leading + Mode</b> — <span>liaison des accords</span></span></div>
+    <div class="li"><span class="ln">6</span><span class="lt"><b>Monitor</b> — <span>notes jouées + mini-clavier</span></span></div>
+    <div class="li"><span class="ln">7</span><span class="lt"><b>Hold</b> — <span>maintient l'accord (latch)</span></span></div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>03 · Interface</span><span>05</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 6 — VUE D'ENSEMBLE : LA FENÊTRE COMPLÈTE
+     ============================================================ -->
+<section class="page" data-screen-label="Interface — fenêtre complète">
+  <div class="kicker"><span class="num">03</span> Vue d'ensemble · suite</div>
+  <h1 class="title">La fenêtre complète (grille).</h1>
+  <p class="lead">Un clic sur <span class="note-name">OPEN</span> déploie la grille entière :
+    sept colonnes de degrés, la colonne <span style="color:var(--purple-ink)">BORROWED</span>,
+    et une colonne d'outils à droite.</p>
+
+  <div class="fig">
+    <div class="device">
+      <div class="dev-title"><span class="dot"></span> tuple — full window</div>
+      <div class="grid">
+        <!-- headers -->
+        <div class="gh" style="background:rgba(255,220,130,.18);color:var(--gold)">I</div>
+        <div class="gh" style="background:rgba(242,182,92,.18);color:#F2B65C">II</div>
+        <div class="gh" style="background:rgba(159,209,127,.18);color:#9FD17F">III</div>
+        <div class="gh" style="background:rgba(127,208,196,.18);color:#7FD0C4">IV</div>
+        <div class="gh" style="background:rgba(142,204,232,.18);color:var(--blue)">V</div>
+        <div class="gh" style="background:rgba(169,182,240,.18);color:#A9B6F0">VI</div>
+        <div class="gh" style="background:rgba(196,160,240,.18);color:var(--purple)">VII</div>
+        <div class="gh" style="background:rgba(196,160,240,.13);color:var(--purple)">BORR</div>
+        <!-- row 1 -->
+        <div class="gcell">C</div><div class="gcell">Dm</div><div class="gcell">Em</div><div class="gcell">F</div><div class="gcell">G</div><div class="gcell">Am</div><div class="gcell">Bdim</div><div class="gcell bor">E♭ ♭III</div>
+        <!-- row 2 -->
+        <div class="gcell act">CM7</div><div class="gcell">Dm7</div><div class="gcell">Em7</div><div class="gcell">FM7</div><div class="gcell">G7</div><div class="gcell">Am7</div><div class="gcell">Bø7</div><div class="gcell bor">Fm iv</div>
+        <!-- row 3 -->
+        <div class="gcell">CM9</div><div class="gcell">Dm9</div><div class="gcell">Esus4</div><div class="gcell">FM9</div><div class="gcell">G9</div><div class="gcell">Am9</div><div class="gcell empty"></div><div class="gcell bor">A♭ ♭VI</div>
+        <!-- row 4 -->
+        <div class="gcell">Csus4</div><div class="gcell">Dsus4</div><div class="gcell">E7sus4</div><div class="gcell">Fsus2</div><div class="gcell">Gsus4</div><div class="gcell">Asus4</div><div class="gcell empty"></div><div class="gcell bor">B♭ ♭VII</div>
+        <!-- row 5 -->
+        <div class="gcell">Csus2</div><div class="gcell">Dsus2</div><div class="gcell empty"></div><div class="gcell">Fadd9</div><div class="gcell">Gsus2</div><div class="gcell">Asus2</div><div class="gcell empty"></div><div class="gcell bor">D7 V/V</div>
+        <!-- row 6 -->
+        <div class="gcell">Cadd9</div><div class="gcell">Dmadd9</div><div class="gcell empty"></div><div class="gcell">F6</div><div class="gcell">Gadd9</div><div class="gcell">Amadd9</div><div class="gcell empty"></div><div class="gcell bor">A7 V/ii</div>
+        <!-- row 7 -->
+        <div class="gcell">C6/9</div><div class="gcell">Dm6</div><div class="gcell empty"></div><div class="gcell">F6/9</div><div class="gcell">G6</div><div class="gcell">A7sus4</div><div class="gcell empty"></div><div class="gcell bor">E7 V/vi</div>
+      </div>
+    </div>
+    <div class="fig-cap"><b>Figure 3.2</b> — La grille en gamme <span class="mono">C&nbsp;Major</span>. Case active en or (<span class="mono">CM7</span>), accords empruntés en violet.</div>
+  </div>
+
+  <div class="two">
+    <div>
+      <h3 class="sub">Lire la grille</h3>
+      <ul class="ticks">
+        <li><b>Colonnes</b> = les sept degrés, du <span class="mono">I</span> (tonique) au <span class="mono">VII</span> (sensible).</li>
+        <li><b>Rangées</b> = familles d'accords, classées de la plus simple (triade) à la plus colorée (extensions).</li>
+        <li><b>Colonne droite</b> = emprunts &amp; dominantes secondaires.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="sub">Outils (colonne de droite)</h3>
+      <ul class="ticks">
+        <li><b>Layout</b> — change la logique de couleur des degrés.</li>
+        <li><b>Push</b> — récupère la grille des pads du Push&nbsp;2.</li>
+        <li><b>Always on top · Open/Close</b> — gestion de la fenêtre.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>03 · Interface</span><span>06</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 7 — TONALITÉ
+     ============================================================ -->
+<section class="page" data-screen-label="Tonalité">
+  <div class="kicker"><span class="num">04</span> Tonalité</div>
+  <h1 class="title">Key · Scale · Sync.</h1>
+  <p class="lead">La section Tonalité définit l'univers harmonique : toute la grille est
+    recalculée dès que vous changez de fondamentale ou de gamme.</p>
+
+  <h2 class="sec">Key — la fondamentale</h2>
+  <p>Choisissez l'une des douze fondamentales chromatiques, de <span class="note-name">C</span>
+    à <span class="note-name">B</span>. C'est le centre tonal autour duquel les degrés
+    <span class="mono">I–VII</span> sont construits.</p>
+
+  <h2 class="sec">Scale — la gamme</h2>
+  <p>Sept gammes déterminent la couleur des degrés et les accords disponibles :</p>
+  <table class="ref">
+    <thead><tr><th>Gamme</th><th>Caractère</th><th>Degré I typique</th></tr></thead>
+    <tbody>
+      <tr><td class="nm">Major</td><td class="desc">Lumineux, stable — la référence tonale</td><td class="ex">I maj</td></tr>
+      <tr><td class="nm">Minor</td><td class="desc">Sombre, mineur naturel (éolien)</td><td class="ex">i&nbsp;m</td></tr>
+      <tr><td class="nm">Dorian</td><td class="desc">Mineur avec sixte majeure — jazz, modal</td><td class="ex">i&nbsp;m</td></tr>
+      <tr><td class="nm">Phrygian</td><td class="desc">Mineur tendu, seconde mineure — couleur espagnole</td><td class="ex">i&nbsp;m</td></tr>
+      <tr><td class="nm">Lydian</td><td class="desc">Majeur rêveur, quarte augmentée</td><td class="ex">I maj</td></tr>
+      <tr><td class="nm">Mixolydian</td><td class="desc">Majeur avec septième mineure — groove, blues</td><td class="ex">I&nbsp;7</td></tr>
+      <tr><td class="nm">Harmonic Minor</td><td class="desc">Mineur dramatique, sensible haussée</td><td class="ex">i&nbsp;m</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Sync ♪ — importer depuis Live</h2>
+  <div class="two-37">
+    <div>
+      <p>Le bouton <span class="note-name">SYNC</span> (icône diapason) lit la tonalité et la
+        gamme actuellement définies dans Live et les applique à Tuple en un clic. Idéal
+        quand votre projet a déjà une échelle réglée — pas besoin de la ressaisir.</p>
+      <p>Si vous modifiez ensuite KEY ou SCALE à la main, Tuple se désynchronise de Live
+        jusqu'au prochain clic sur SYNC.</p>
+    </div>
+    <div>
+      <div class="tip blue">
+        <div class="th">Workflow</div>
+        <p>Réglez l'échelle dans Live une fois, puis synchronisez tous vos périphériques
+          Tuple dessus. Changez de tonalité dans Live et resynchronisez pour transposer
+          toute une session.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>04 · Tonalité</span><span>07</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 8 — STYLE D'ACCORD (octave, voicing, VL)
+     ============================================================ -->
+<section class="page" data-screen-label="Style d'accord">
+  <div class="kicker"><span class="num">05</span> Style d'accord</div>
+  <h1 class="title">Octave · Voicing · Voice&nbsp;Leading.</h1>
+  <p class="lead">Quatre réglages, dans cet ordre : le registre, puis la répartition des
+    notes, puis leur mouvement d'un accord au suivant.</p>
+
+  <div class="two">
+    <div>
+      <h2 class="sec">Octave</h2>
+      <p>Transpose tout l'accord, de <span class="mono">−3</span> à <span class="mono">+3</span>
+        octaves. Sélection directe — cliquez la valeur voulue. Utile pour caler les accords
+        dans le bon registre face à la basse et à la mélodie.</p>
+
+      <h2 class="sec">Voicing</h2>
+      <p>Définit comment les notes de l'accord sont réparties dans le registre. Dix voicings,
+        de la position serrée aux nappes larges — voir la <a class="xref" href="#ch08">référence p.12</a>.</p>
+      <div class="tip">
+        <div class="th">Règle de conception</div>
+        <p>Tous les voicings sont jouables d'une seule main, tonique comprise. Seul
+          <span class="mono">PIANO</span> est délibérément à deux mains (fondamentale grave
+          + accord à la main droite).</p>
+      </div>
+    </div>
+    <div>
+      <h2 class="sec">Voice Leading</h2>
+      <p>Activé, le <em>Voice Leading</em> rapproche chaque nouvel accord du précédent :
+        les voix bougent le moins possible, les transitions deviennent fluides et musicales
+        plutôt que sautillantes.</p>
+
+      <h3 class="sub">Trois modes de liaison</h3>
+      <table class="ref">
+        <tbody>
+          <tr><td class="nm">Anchor</td><td class="desc">Ancre les voix autour d'un registre fixe — stable et prévisible.</td></tr>
+          <tr><td class="nm">Relative</td><td class="desc">Mouvement minimal relatif à l'accord précédent — le plus fluide.</td></tr>
+          <tr><td class="nm">Piano</td><td class="desc">Conduite pianistique, pensée pour le voicing à deux mains.</td></tr>
+        </tbody>
+      </table>
+      <div class="tip purple">
+        <div class="th">En pratique</div>
+        <p>Pour des nappes legato, gardez VL <span class="mono">ON</span> en mode
+          <span class="mono">Relative</span>. Pour des stabs rythmiques répétés, désactivez-le
+          afin que chaque accord retombe toujours au même endroit.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>05 · Style d'accord</span><span>08</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 9 — STYLE D'ACCORD : démonstration VL
+     ============================================================ -->
+<section class="page" data-screen-label="Voice Leading démo">
+  <div class="kicker"><span class="num">05</span> Style d'accord · suite</div>
+  <h1 class="title">Ce que change le Voice&nbsp;Leading.</h1>
+
+  <div class="two">
+    <div>
+      <h3 class="sub">Sans Voice Leading</h3>
+      <p>Chaque accord est joué à sa position racine. Les voix sautent d'un accord à l'autre.</p>
+      <div class="fig">
+        <div class="device">
+          <div class="dev-title"><span class="dot" style="background:var(--dmuted);box-shadow:none"></span> VL — OFF</div>
+          <div style="display:flex;gap:6px">
+            <div style="flex:1;text-align:center">
+              <div class="mon-notes" style="color:var(--dmuted);font-size:9px">C–E–G</div>
+              <div class="kbd" style="height:30px;margin-top:4px">
+                <div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk"></div>
+              </div>
+            </div>
+            <div style="align-self:center;color:var(--dmuted)">→</div>
+            <div style="flex:1;text-align:center">
+              <div class="mon-notes" style="color:var(--dmuted);font-size:9px">F–A–C</div>
+              <div class="kbd" style="height:30px;margin-top:4px">
+                <div class="wk"></div><div class="wk"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk act"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fig-cap"><b>C&nbsp;→&nbsp;F</b> : la main « saute » vers la droite.</div>
+      </div>
+    </div>
+    <div>
+      <h3 class="sub">Avec Voice Leading</h3>
+      <p>L'accord cible est réarrangé pour rester proche du précédent. Les doigts bougent à peine.</p>
+      <div class="fig">
+        <div class="device">
+          <div class="dev-title"><span class="dot"></span> VL — ON · Relative</div>
+          <div style="display:flex;gap:6px">
+            <div style="flex:1;text-align:center">
+              <div class="mon-notes" style="font-size:9px">C–E–G</div>
+              <div class="kbd" style="height:30px;margin-top:4px">
+                <div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk"></div>
+              </div>
+            </div>
+            <div style="align-self:center;color:var(--gold)">→</div>
+            <div style="flex:1;text-align:center">
+              <div class="mon-notes" style="font-size:9px">C–F–A</div>
+              <div class="kbd" style="height:30px;margin-top:4px">
+                <div class="wk act"></div><div class="wk"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div><div class="wk act"></div><div class="wk"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fig-cap"><b>C&nbsp;→&nbsp;F</b> : <span class="mono">C</span> est commun, seules deux voix glissent d'un demi-ton.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip blue">
+    <div class="th">À l'oreille</div>
+    <p>Le Voice Leading ne change pas <em>quel</em> accord vous jouez — seulement
+      <em>comment</em> il est disposé. La fonction harmonique reste identique ; c'est la
+      douceur de la transition qui change.</p>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>05 · Style d'accord</span><span>09</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 10 — LA GRILLE & EMPRUNTS
+     ============================================================ -->
+<section class="page" data-screen-label="Grille & emprunts">
+  <div class="kicker"><span class="num">06</span> La grille &amp; les emprunts</div>
+  <h1 class="title">Tous les accords valides, jamais cachés.</h1>
+  <p class="lead">Le principe de Tuple : afficher le maximum d'accords valides pour la
+    gamme choisie, et garder les emprunts dans la même grille.</p>
+
+  <div class="two-37">
+    <div>
+      <h2 class="sec">Les degrés diatoniques</h2>
+      <p>Chaque colonne est un degré de la gamme, nommé par sa fonction :</p>
+      <table class="ref">
+        <tbody>
+          <tr><td class="nm">I</td><td class="desc">Tonique — le repos</td></tr>
+          <tr><td class="nm">II</td><td class="desc">Sus-tonique</td></tr>
+          <tr><td class="nm">III</td><td class="desc">Médiante</td></tr>
+          <tr><td class="nm">IV</td><td class="desc">Sous-dominante — l'élan</td></tr>
+          <tr><td class="nm">V</td><td class="desc">Dominante — la tension</td></tr>
+          <tr><td class="nm">VI</td><td class="desc">Sus-dominante — le relatif</td></tr>
+          <tr><td class="nm">VII</td><td class="desc">Sensible — l'instabilité</td></tr>
+        </tbody>
+      </table>
+      <p>Les rangées empilent les familles d'accords du degré, de la triade aux extensions.
+        Une colonne s'arrête là où la gamme ne fournit plus d'accord valide — d'où les
+        hauteurs de colonnes inégales.</p>
+    </div>
+    <div>
+      <h2 class="sec" style="color:var(--purple-ink)">La colonne Borrowed</h2>
+      <p>La dernière colonne réunit les <strong>accords empruntés</strong> (modal interchange)
+        et les <strong>dominantes secondaires</strong> — des couleurs venues d'ailleurs qui
+        enrichissent la tonalité sans la quitter.</p>
+      <table class="ref">
+        <thead><tr><th>En majeur</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td class="ex">♭III ♭VI ♭VII</td><td class="desc">Emprunts au mineur parallèle</td></tr>
+          <tr><td class="ex">iv</td><td class="desc">Sous-dominante mineure</td></tr>
+          <tr><td class="ex">V/V V/ii V/vi</td><td class="desc">Dominantes secondaires</td></tr>
+        </tbody>
+      </table>
+      <div class="tip purple">
+        <div class="th">Couleur express</div>
+        <p>Un <span class="mono">iv</span> mineur juste avant le retour au <span class="mono">I</span>
+          est l'un des emprunts les plus émouvants de la pop.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>06 · La grille</span><span>10</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 11 — COLOR LOGICS
+     ============================================================ -->
+<section class="page" data-screen-label="Logiques de couleur">
+  <div class="kicker"><span class="num">07</span> Logiques de couleur</div>
+  <h1 class="title">Layout — lire la grille en couleurs.</h1>
+  <p class="lead">Le bouton <span class="note-name">LAYOUT</span> cycle entre cinq logiques
+    de coloration. La grille reste identique ; seule la façon de la lire change.</p>
+
+  <div class="spectrum">
+    <div class="sw" style="background:#FFdc82">I</div>
+    <div class="sw" style="background:#F2B65C">II</div>
+    <div class="sw" style="background:#9FD17F">III</div>
+    <div class="sw" style="background:#7FD0C4">IV</div>
+    <div class="sw" style="background:#8ECCE8">V</div>
+    <div class="sw" style="background:#A9B6F0">VI</div>
+    <div class="sw" style="background:#C4A0F0">VII</div>
+  </div>
+
+  <table class="ref">
+    <thead><tr><th style="width:22%">Logique</th><th>Ce que la couleur encode</th><th style="width:30%">Pour…</th></tr></thead>
+    <tbody>
+      <tr><td class="nm"><span class="dot-i" style="background:#8ECCE8"></span>Spectrum</td><td class="desc">Une teinte distincte par degré, en arc-en-ciel.</td><td class="desc">repérer instantanément la colonne.</td></tr>
+      <tr><td class="nm"><span class="dot-i" style="background:#FFdc82"></span>Function</td><td class="desc">Couleur par fonction : tonique, sous-dominante, dominante.</td><td class="desc">penser en termes de tension/repos.</td></tr>
+      <tr><td class="nm"><span class="dot-i" style="background:#C4A0F0"></span>Tension</td><td class="desc">Du calme au tendu selon la dissonance de l'accord.</td><td class="desc">doser la couleur d'une progression.</td></tr>
+      <tr><td class="nm"><span class="dot-i" style="background:#7FD0C4"></span>Fifths</td><td class="desc">Position sur le cycle des quintes.</td><td class="desc">composer par mouvements de quinte.</td></tr>
+      <tr><td class="nm"><span class="dot-i" style="background:#9FD17F"></span>Quality</td><td class="desc">Couleur par qualité : majeur, mineur, diminué, dominante…</td><td class="desc">trier les accords par type.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    <div class="th">Conseil</div>
+    <p>Débutez en <strong>Spectrum</strong> pour mémoriser la position des degrés, puis passez
+      à <strong>Function</strong> une fois que vous pensez en tonique / sous-dominante / dominante.</p>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>07 · Couleurs</span><span>11</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 12 — RÉFÉRENCE VOICINGS
+     ============================================================ -->
+<section class="page" id="ch08" data-screen-label="Référence voicings">
+  <div class="kicker"><span class="num">08</span> Référence</div>
+  <h1 class="title">Les dix voicings.</h1>
+  <p class="lead">Le voicing décide de la disposition des notes. Tous sont jouables d'une
+    main (sauf <span class="mono">Piano</span>), la tonique restant dans le registre de l'accord.</p>
+
+  <table class="ref">
+    <thead><tr><th style="width:18%">Voicing</th><th>Disposition</th><th style="width:30%">Usage idéal</th></tr></thead>
+    <tbody>
+      <tr><td class="nm">Classic</td><td class="desc">Position serrée, notes empilées au plus près.</td><td class="desc">référence neutre, polyvalente</td></tr>
+      <tr><td class="nm">Piano</td><td class="desc">Fondamentale grave + reste de l'accord groupé au-dessus (deux mains).</td><td class="desc">parties de piano, ballades</td></tr>
+      <tr><td class="nm">Open</td><td class="desc">Deuxième voix montée d'une octave — accord aéré.</td><td class="desc">nappes, clarté</td></tr>
+      <tr><td class="nm">Spread</td><td class="desc">Une voix sur deux montée — large et ouvert.</td><td class="desc">cordes, pads cinématiques</td></tr>
+      <tr><td class="nm">House</td><td class="desc">Accord + doublure de la fondamentale à l'octave (stab).</td><td class="desc">house, deep house</td></tr>
+      <tr><td class="nm">Prog</td><td class="desc">Nappe large prog-techno : grave + tierce / extensions aiguës.</td><td class="desc">prog, techno mélodique</td></tr>
+      <tr><td class="nm">Rootless A</td><td class="desc">Sans fondamentale, structure telle quelle (3-5-7-9).</td><td class="desc">jazz, quand la basse joue la fondamentale</td></tr>
+      <tr><td class="nm">Rootless B</td><td class="desc">Sans fondamentale, moitié basse montée (7-9-3-5).</td><td class="desc">comping jazz alterné</td></tr>
+      <tr><td class="nm">Drop 2</td><td class="desc">2ᵉ voix depuis le haut descendue d'une octave.</td><td class="desc">guitare/jazz, son équilibré</td></tr>
+      <tr><td class="nm">Drop 3</td><td class="desc">3ᵉ voix depuis le haut descendue d'une octave.</td><td class="desc">voicings larges, basse claire</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip blue">
+    <div class="th">Rappel</div>
+    <p>Comme la basse se joue séparément, les voicings <strong>Rootless</strong> brillent : ils
+      libèrent le bas du spectre et laissent respirer la basse.</p>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>08 · Voicings</span><span>12</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 13 — RÉFÉRENCE FAMILLES D'ACCORDS
+     ============================================================ -->
+<section class="page" data-screen-label="Référence accords">
+  <div class="kicker"><span class="num">09</span> Référence</div>
+  <h1 class="title">Les familles d'accords.</h1>
+  <p class="lead">Chaque colonne empile ces familles, dans l'ordre de priorité ci-dessous.
+    Le moteur n'affiche une famille que si la gamme la rend valide pour ce degré.</p>
+
+  <table class="ref">
+    <thead><tr><th style="width:20%">Famille</th><th style="width:26%">Exemples de libellés</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td class="nm">Triade</td><td class="ex">maj · m · dim · aug</td><td class="desc">L'accord à trois sons — toujours disponible.</td></tr>
+      <tr><td class="nm">Septième</td><td class="ex">M7 · m7 · 7 · dim7 · ø7</td><td class="desc">Ajoute la 7ᵉ — profondeur et direction.</td></tr>
+      <tr><td class="nm">Neuvième</td><td class="ex">M9 · m9 · 9</td><td class="desc">Étend à la 9ᵉ majeure.</td></tr>
+      <tr><td class="nm">Sixte</td><td class="ex">6 · m6</td><td class="desc">Couleur douce, sans tension de septième.</td></tr>
+      <tr><td class="nm">Add9</td><td class="ex">add9 · madd9</td><td class="desc">Triade + 9ᵉ, sans la 7ᵉ — lumineux.</td></tr>
+      <tr><td class="nm">Sus4</td><td class="ex">sus4 · 7sus4</td><td class="desc">Quarte à la place de la tierce — suspension.</td></tr>
+      <tr><td class="nm">Sus2</td><td class="ex">sus2</td><td class="desc">Seconde à la place de la tierce — ouvert.</td></tr>
+      <tr><td class="nm">Six/Neuf</td><td class="ex">6/9 · m6/9</td><td class="desc">Sixte + neuvième — riche et stable.</td></tr>
+      <tr><td class="nm">mMaj7</td><td class="ex">mMaj7</td><td class="desc">Mineur à 7ᵉ majeure — couleur dramatique.</td></tr>
+      <tr><td class="nm">7♭9 / 7♯9</td><td class="ex">7b9 · 7#9</td><td class="desc">Dominantes altérées — tension forte.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    <div class="th">Logique du moteur</div>
+    <p>Tuple détecte la qualité réelle de chaque accord à partir de la gamme : un même degré
+      sonnera <span class="mono">M7</span>, <span class="mono">m7</span> ou <span class="mono">7</span>
+      selon le contexte, automatiquement.</p>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>09 · Familles d'accords</span><span>13</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 14 — MONITOR, HOLD, DOUBLE FENÊTRE
+     ============================================================ -->
+<section class="page" data-screen-label="Monitor & fenêtres">
+  <div class="kicker"><span class="num">10</span> Monitor &amp; fenêtres</div>
+  <h1 class="title">Voir, tenir, organiser.</h1>
+
+  <div class="two">
+    <div>
+      <h2 class="sec">Monitor</h2>
+      <p>Le panneau de droite affiche en temps réel les <strong>notes de l'accord en cours</strong>
+        (en doré) et les surligne sur un <strong>mini-clavier</strong>. C'est un retour visuel
+        instantané — utile pour apprendre les voicings ou vérifier le registre.</p>
+
+      <h2 class="sec">Hold</h2>
+      <p>Le bouton <span class="note-name">HOLD</span> (latch) maintient l'accord après le
+        relâchement : il continue de sonner jusqu'à ce que vous en jouiez un autre. Parfait
+        pour poser une nappe et garder les mains libres pour d'autres réglages.</p>
+      <div class="tip">
+        <div class="th">Astuce</div>
+        <p>Avec HOLD actif, balayez les colonnes de degrés pour auditionner une progression
+          sans rien tenir — Tuple enchaîne les accords proprement.</p>
+      </div>
+    </div>
+    <div>
+      <h2 class="sec">Le workflow à deux fenêtres</h2>
+      <p>Tuple sépare la performance en deux surfaces :</p>
+      <ul class="ticks">
+        <li>La <strong>bande compacte</strong> dans le rack — commandes et Monitor toujours sous les yeux.</li>
+        <li>La <strong>fenêtre complète</strong> avec la grille entière, ouverte via <span class="note-name">OPEN</span>, à un clic.</li>
+      </ul>
+      <p>La grille n'est jamais réduite : la hauteur limitée du rack la cacherait, donc elle
+        vit dans sa propre fenêtre — l'accès complet reste immédiat.</p>
+
+      <h3 class="sub">Always on top</h3>
+      <p>Gardez la fenêtre grille au premier plan pendant que vous travaillez dans Live :
+        activez <span class="note-name">ALWAYS ON TOP</span> dans le groupe Window.</p>
+      <div class="tip blue">
+        <div class="th">Configuration conseillée</div>
+        <p>Fenêtre grille « always on top » sur un côté de l'écran, Live dessous : vous
+          composez à la grille tout en gardant l'arrangement visible.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>10 · Monitor &amp; fenêtres</span><span>14</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 15 — PUSH 2
+     ============================================================ -->
+<section class="page" data-screen-label="Push 2">
+  <div class="kicker"><span class="num">11</span> Intégration Push&nbsp;2</div>
+  <h1 class="title">La grille, sous vos doigts.</h1>
+  <p class="lead">Avec un Push&nbsp;2, jouez la grille d'accords directement sur les pads —
+    un accord par pad, les couleurs reprenant celles de l'écran.</p>
+
+  <div class="two-37">
+    <div>
+      <h2 class="sec">Activer</h2>
+      <ol class="steps">
+        <li>Connectez le Push&nbsp;2 et ouvrez la fenêtre complète de Tuple.</li>
+        <li>Cliquez <span class="note-name">PUSH</span> dans la section Device : Tuple récupère la grille des pads.</li>
+        <li>Les pads s'allument selon la logique de couleur (Layout) en cours.</li>
+        <li>Frappez un pad : l'accord se joue, voicé et relié, comme à l'écran.</li>
+      </ol>
+      <p>Push <strong>prolonge</strong> la grille, il ne la remplace pas : colonnes = degrés
+        <span class="mono">I–VII</span> + Borrowed, rangées = familles d'accords.</p>
+    </div>
+    <div>
+      <div class="fig">
+        <div class="push2">
+          <div class="push2-encoders"><div class="enc"></div><div class="enc"></div><div class="enc"></div><div class="enc"></div><div class="enc"></div><div class="enc"></div><div class="enc"></div><div class="enc"></div></div>
+          <div class="push2-screen">
+            <div class="ps-top"><span class="ps-name">tuple</span><span class="ps-chord">CM7 · C·E·G·B</span></div>
+            <div class="ps-degrees"><span style="color:#FFdc82">I</span><span style="color:#F2B65C">II</span><span style="color:#9FD17F">III</span><span style="color:#7FD0C4">IV</span><span style="color:#8ECCE8">V</span><span style="color:#A9B6F0">VI</span><span style="color:#C4A0F0">VII</span><span style="color:#C4A0F0">B</span></div>
+          </div>
+          <div class="push2-body">
+            <div class="push2-strip"></div>
+            <div class="push2-pads"><div class="pad lit" style="background:rgba(255,220,130,0.92);"></div><div class="pad lit" style="background:rgba(242,182,92,0.92);"></div><div class="pad lit" style="background:rgba(159,209,127,0.92);"></div><div class="pad lit" style="background:rgba(127,208,196,0.92);"></div><div class="pad lit" style="background:rgba(142,204,232,0.92);"></div><div class="pad lit" style="background:rgba(169,182,240,0.92);"></div><div class="pad lit" style="background:rgba(196,160,240,0.92);"></div><div class="pad lit" style="background:rgba(196,160,240,0.92);"></div><div class="pad lit active" style="background:rgba(255,220,130,0.72);"></div><div class="pad lit" style="background:rgba(242,182,92,0.72);"></div><div class="pad lit" style="background:rgba(159,209,127,0.72);"></div><div class="pad lit" style="background:rgba(127,208,196,0.72);"></div><div class="pad lit" style="background:rgba(142,204,232,0.72);"></div><div class="pad lit" style="background:rgba(169,182,240,0.72);"></div><div class="pad lit" style="background:rgba(196,160,240,0.72);"></div><div class="pad lit" style="background:rgba(196,160,240,0.72);"></div><div class="pad lit" style="background:rgba(255,220,130,0.5);"></div><div class="pad lit" style="background:rgba(242,182,92,0.5);"></div><div class="pad lit" style="background:rgba(159,209,127,0.5);"></div><div class="pad lit" style="background:rgba(127,208,196,0.5);"></div><div class="pad lit" style="background:rgba(142,204,232,0.5);"></div><div class="pad lit" style="background:rgba(169,182,240,0.5);"></div><div class="pad lit" style="background:rgba(196,160,240,0.5);"></div><div class="pad lit" style="background:rgba(196,160,240,0.5);"></div><div class="pad" style="background:rgba(255,220,130,0.34);"></div><div class="pad" style="background:rgba(242,182,92,0.34);"></div><div class="pad" style="background:rgba(159,209,127,0.34);"></div><div class="pad" style="background:rgba(127,208,196,0.34);"></div><div class="pad" style="background:rgba(142,204,232,0.34);"></div><div class="pad" style="background:rgba(169,182,240,0.34);"></div><div class="pad" style="background:rgba(196,160,240,0.34);"></div><div class="pad" style="background:rgba(196,160,240,0.34);"></div><div class="pad" style="background:rgba(255,220,130,0.2);"></div><div class="pad" style="background:rgba(242,182,92,0.2);"></div><div class="pad" style="background:rgba(159,209,127,0.2);"></div><div class="pad" style="background:rgba(127,208,196,0.2);"></div><div class="pad" style="background:rgba(142,204,232,0.2);"></div><div class="pad" style="background:rgba(169,182,240,0.2);"></div><div class="pad" style="background:rgba(196,160,240,0.2);"></div><div class="pad" style="background:rgba(196,160,240,0.2);"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div><div class="pad"></div></div>
+          </div>
+          <span class="pbrand">Push</span>
+        </div>
+        <div class="fig-cap"><b>Figure 11.1</b> — Un accord par pad, couleurs synchronisées avec l'écran.</div>
+      </div>
+      <div class="tip">
+        <div class="th">Note</div>
+        <p>L'intégration Push est propre au périphérique. Elle est optionnelle : tout
+          fonctionne sans Push, à la souris ou via mappage MIDI.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="wm">Tuple<b>.</b></span><span>11 · Push 2</span><span>15</span></div>
+</section>
+
+<!-- ============================================================
+     PAGE 16 — ASTUCES, FAQ, CRÉDITS (dark)
+     ============================================================ -->
+<section class="page dark" data-screen-label="Astuces & crédits">
+  <div class="kicker"><span class="num">12</span> Astuces · Dépannage · Crédits</div>
+  <h1 class="title" style="color:var(--dtxt)">Pour aller plus loin.</h1>
+
+  <div class="two" style="margin-top:6px">
+    <div>
+      <h3 class="sub" style="color:var(--gold)">Astuces de workflow</h3>
+      <ul class="ticks" style="color:var(--dmuted)">
+        <li style="color:var(--dmuted)">Composez à la grille, enregistrez le MIDI, puis éditez les notes — Tuple sème les idées.</li>
+        <li style="color:var(--dmuted)">Mélangez 2-3 emprunts dans une progression diatonique pour un refrain qui « décolle ».</li>
+        <li style="color:var(--dmuted)">Changez de voicing entre couplet et refrain sans changer les accords.</li>
+        <li style="color:var(--dmuted)">Dupliquez la piste avec un autre voicing pour doubler / superposer les textures.</li>
+      </ul>
+
+      <h3 class="sub" style="color:var(--blue)">Dépannage</h3>
+      <table class="ref" style="font-size:11px">
+        <tbody>
+          <tr><td class="nm" style="color:var(--dtxt)">Pas de son</td><td class="desc" style="color:var(--dmuted)">Tuple doit être <b style="color:var(--dtxt)">avant</b> l'instrument, piste armée.</td></tr>
+          <tr><td class="nm" style="color:var(--dtxt)">Interface vide</td><td class="desc" style="color:var(--dmuted)">Fichiers déplacés — gardez le dossier intact, rechargez le périphérique.</td></tr>
+          <tr><td class="nm" style="color:var(--dtxt)">Sync inactif</td><td class="desc" style="color:var(--dmuted)">Définissez d'abord une échelle dans Live, puis pressez SYNC.</td></tr>
+          <tr><td class="nm" style="color:var(--dtxt)">Basse trop grave</td><td class="desc" style="color:var(--dmuted)">Essayez un voicing Rootless et jouez la basse à part.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 class="sub" style="color:var(--purple)">FAQ</h3>
+      <p style="color:var(--dmuted);font-size:12px"><b style="color:var(--dtxt)">Tuple est-il un séquenceur&nbsp;?</b><br>Non. C'est un outil pour choisir, explorer et performer des accords en temps réel.</p>
+      <p style="color:var(--dmuted);font-size:12px"><b style="color:var(--dtxt)">Faut-il un Push&nbsp;2&nbsp;?</b><br>Non, il est optionnel. Tout se joue à la souris ou via MIDI.</p>
+      <p style="color:var(--dmuted);font-size:12px"><b style="color:var(--dtxt)">Pourquoi pas de basse&nbsp;?</b><br>Par choix : la basse se joue sur une piste séparée, pour un contrôle total du grave.</p>
+
+      <div class="credit-spec">
+        <div class="cs"><div class="csl">Compatibilité</div><div class="csv">Ableton Live 11 / 12 · Max for Live</div></div>
+        <div class="cs"><div class="csl">Contrôleur</div><div class="csv">Push 2 (optionnel)</div></div>
+        <div class="cs"><div class="csl">Licence</div><div class="csv">MIT · gratuit</div></div>
+        <div class="cs"><div class="csl">Web &amp; démo</div><div class="csv"><a href="https://tuple.live">tuple.live</a></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:30px;padding-top:20px;border-top:1px solid rgba(237,233,224,.14);display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <div style="font-family:var(--display);font-weight:800;font-size:40px;color:var(--gold);letter-spacing:-.02em;line-height:1">Tuple</div>
+      <p style="color:var(--dmuted);font-size:11px;margin-top:6px;max-width:42ch">Chaque accord de votre gamme, à un clic. Essayez la démo dans votre navigateur avant d'installer.</p>
+    </div>
+    <div style="text-align:right;color:var(--dmuted);font-size:10px;letter-spacing:.06em">
+      <div>Manuel d'utilisation — Édition 2026</div>
+      <div style="margin-top:3px">tuple.live</div>
+    </div>
+  </div>
+
+  <div class="foot" style="border-top-color:rgba(237,233,224,.14);color:var(--dmuted)"><span class="wm" style="color:var(--dmuted)">Tuple<b style="color:var(--gold)">.</b></span><span>12 · Astuces &amp; crédits</span><span>16</span></div>
+</section>
+
+<script>
+  (async function(){
+    try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+    await new Promise(r=>setTimeout(r,600));
+    window.print();
+  })();
+</script>
+</body>
+</html>
