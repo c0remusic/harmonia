@@ -88,12 +88,14 @@
   .btn.on{color:var(--gold);background:var(--gold-dim);border-color:var(--gold-bd);font-weight:600}
 
   /* Sliders Expression (drag + molette, 0 = off) — miroir device */
-  .exslider{display:flex;align-items:center;gap:8px;height:24px}
+  .exslider{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
+  .exslider.dim{opacity:.35;pointer-events:none}
   .exs-lbl{font-size:9px;letter-spacing:.06em;color:var(--muted);flex:0 0 56px;font-weight:500}
   .exs-track{flex:1;height:8px;background:var(--cell);border:1px solid var(--cell-bd);border-radius:4px;position:relative;cursor:ew-resize;touch-action:none}
   .exs-track:hover{border-color:rgba(255,255,255,.18)}
+  .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:1px;bottom:1px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.22);pointer-events:none}
   .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.85;border-radius:3px;pointer-events:none}
-  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 36px;text-align:right}
+  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 40px;text-align:right}
   .exs-val.off{color:var(--muted)}
   .exrow-curve{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
   .exrow-curve.off{opacity:.35;pointer-events:none}
@@ -196,9 +198,9 @@
 
       <div class="zone">
         <div class="lbl">Expression</div>
-        <div class="exslider" id="strumSld" title="Strum spread — drag or scroll. 0 = off">
+        <div class="exslider" id="strumSld" title="Strum — drag or scroll. Left = down (high→low), center = off, right = up (low→high)">
           <div class="exs-lbl">Strum</div>
-          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-track bipolar"><div class="exs-fill"></div></div>
           <div class="exs-val off">OFF</div>
         </div>
         <div class="exrow-curve off" id="curveRow" title="Strum shape">
@@ -208,6 +210,11 @@
             <div class="exseg-cell" data-i="1" title="Accelerate">Acc</div>
             <div class="exseg-cell" data-i="2" title="Decelerate">Dec</div>
           </div>
+        </div>
+        <div class="exslider dim" id="rampSld" title="Velocity ramp across the strum — left = fade (first note loudest), center = flat, right = build">
+          <div class="exs-lbl">Ramp</div>
+          <div class="exs-track bipolar"><div class="exs-fill"></div></div>
+          <div class="exs-val off">FLAT</div>
         </div>
         <div class="exslider" id="humanSld" title="Humanize — velocity + timing. Drag or scroll. 0 = off">
           <div class="exs-lbl">Humanize</div>
@@ -512,25 +519,29 @@
   var _emitTimers=[];
   function _clearEmit(){ for(var i=0;i<_emitTimers.length;i++)clearTimeout(_emitTimers[i]); _emitTimers=[]; }
   function _bell(){ return Math.random()+Math.random()-1; }
-  function humVel(v){ if(!state.humanize)return v;
+  function humVel(v){ v=Math.max(1,Math.min(127,Math.round(v)));   // clamp toujours (la rampe peut dépasser 127)
+    if(!state.humanize)return v;
     return Math.max(1,Math.min(127,Math.round(v+_bell()*state.humanize*0.25))); }
   function humTime(){ if(!state.humanize)return 0; return _bell()*(state.humanize/100*15); }
 
   // Émission audio + moniteur (notes déjà voicées/voice-led en amont).
   function emit(name,notes){ notes=notes.slice(0,6);
     allNotesOff(); _clearEmit(); eActiveNotes=notes.slice();
-    var n=notes.length, strum=state.strumMs>0&&n>1;
+    var n=notes.length, mag=Math.abs(state.strumMs), strum=mag>0&&n>1;
     if(!strum && !state.humanize){
       for(var i=0;i<n;i++)noteOn(notes[i],curVel);
     } else {
-      // strum du grave vers l'aigu (rang de hauteur, pas l'ordre du voicing) — cf. Ableton Strum
+      // rang de hauteur (l'ordre du voicing n'est pas trié) — cf. Ableton Strum
       var order=[]; for(var j=0;j<n;j++)order.push(j);
       order.sort(function(a,b){return notes[a]-notes[b];});
       var rank=[]; for(var rr=0;rr<n;rr++)rank[order[rr]]=rr;
-      var T=strum?(n-1)*state.strumMs:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
+      var up=state.strumMs>=0, T=strum?(n-1)*mag:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
       for(var k=0;k<n;k++){ (function(idx){
-        var off=(strum?T*Math.pow(rank[idx]/(n-1),p):0)+humTime(); if(off<0)off=0;
-        var nv=humVel(curVel);
+        var seq=strum?(up?rank[idx]:(n-1-rank[idx])):0;
+        var off=(strum?T*Math.pow(seq/(n-1),p):0)+humTime(); if(off<0)off=0;
+        var v=curVel;
+        if(strum && state.strumRamp){ var pos=(n>1)?seq/(n-1):0; v=curVel*(1+(state.strumRamp/100)*(pos*2-1)*0.5); }
+        var nv=humVel(v);
         if(off<0.5){ noteOn(notes[idx],nv); }
         else { _emitTimers.push(setTimeout(function(){ noteOn(notes[idx],nv); },off)); }
       })(k); }
@@ -605,8 +616,8 @@
   function borColorFor(){ return BORCOLOR; }
 
   var cols=[[],[],[],[],[],[],[]], bor=[];
-  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strumMs:0,strumCurveIdx:0,humanize:0};
-  var STRUM_MAX=60, STRUM_CURVE_P=[1.0,0.55,1.8];
+  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strumMs:0,strumRamp:0,strumCurveIdx:0,humanize:0};
+  var STRUM_CURVE_P=[1.0,0.55,1.8];
   var activeCol=-1, activeRow=-1, activeChordName='';
 
   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
@@ -684,14 +695,18 @@
     vm.className='btn lblbtn'+(state.vl?'':' off');
     var vmv=VLMODES[state.vlmodeIdx]; document.getElementById('vlmodeV').textContent=vmv.charAt(0)+vmv.slice(1).toLowerCase();
     renderOct(); renderExpr(); }
-  var _strumSld=null, _humanSld=null;
-  function makeSlider(rootId,min,max,fmt,onChange){
+  var _strumSld=null, _rampSld=null, _humanSld=null;
+  function makeSlider(rootId,min,max,fmt,onChange,bipolar){
     var root=document.getElementById(rootId);
     var track=root.querySelector('.exs-track'), fill=root.querySelector('.exs-fill'), valEl=root.querySelector('.exs-val');
-    var cur=min, dragging=false;
+    var cur=0, dragging=false;
     function clamp(v){ return Math.max(min,Math.min(max,v)); }
-    function paint(){ fill.style.width=((cur-min)/(max-min)*100)+'%'; valEl.textContent=fmt(cur);
-      if(cur===min) valEl.classList.add('off'); else valEl.classList.remove('off'); }
+    function paint(){
+      if(bipolar){ if(cur>=0){ fill.style.left='50%'; fill.style.width=(max?cur/max*50:0)+'%'; }
+        else { var w=(min?(-cur)/(-min)*50:0); fill.style.left=(50-w)+'%'; fill.style.width=w+'%'; } }
+      else { fill.style.left='0'; fill.style.width=((cur-min)/(max-min)*100)+'%'; }
+      valEl.textContent=fmt(cur);
+      if(cur===0) valEl.classList.add('off'); else valEl.classList.remove('off'); }
     function fromX(x){ var r=track.getBoundingClientRect(); return clamp(Math.round(min+(x-r.left)/r.width*(max-min))); }
     function apply(v){ var nv=clamp(v); if(nv!==cur){ cur=nv; paint(); onChange(cur); } else paint(); }
     track.addEventListener('pointerdown',function(e){ e.preventDefault(); dragging=true;
@@ -705,14 +720,17 @@
   }
   function renderExpr(){
     if(_strumSld) _strumSld.set(state.strumMs);
+    if(_rampSld)  _rampSld.set(state.strumRamp);
     if(_humanSld) _humanSld.set(state.humanize);
     var seg=document.getElementById('curveSeg');
     if(seg){ var c=seg.children; for(var i=0;i<c.length;i++) c[i].className='exseg-cell'+(i===state.strumCurveIdx?' on':''); }
-    var crow=document.getElementById('curveRow');
-    if(crow) crow.className='exrow-curve'+(state.strumMs>0?'':' off');
+    var dim=(state.strumMs===0);
+    var crow=document.getElementById('curveRow'); if(crow) crow.className='exrow-curve'+(dim?' off':'');
+    var rrow=document.getElementById('rampSld');  if(rrow) rrow.className='exslider'+(dim?' dim':'');
   }
   function initExpr(){
-    _strumSld=makeSlider('strumSld',0,STRUM_MAX,function(v){ return v===0?'OFF':v+'ms'; },function(v){ state.strumMs=v; renderExpr(); });
+    _strumSld=makeSlider('strumSld',-60,60,function(v){ return v===0?'OFF':(Math.abs(v)+'ms '+(v>0?'↑':'↓')); },function(v){ state.strumMs=v; renderExpr(); },true);
+    _rampSld=makeSlider('rampSld',-100,100,function(v){ return v===0?'FLAT':((v>0?'+':'')+v+'%'); },function(v){ state.strumRamp=v; renderExpr(); },true);
     _humanSld=makeSlider('humanSld',0,100,function(v){ return v===0?'OFF':v+'%'; },function(v){ state.humanize=v; });
     var seg=document.getElementById('curveSeg');
     Array.prototype.forEach.call(seg.children,function(cell){

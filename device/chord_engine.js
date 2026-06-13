@@ -123,7 +123,8 @@ var activeNotes         = [];
 var vlMode              = "anchored";  // "anchored" | "flow"
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
-var _strumMs            = 0;          // ms/note : 0 = off, sinon espacement du strum (slider 0-60)
+var _strumMs            = 0;          // ms/note SIGNÉ : 0 = off, >0 = montant (grave→aigu), <0 = descendant (aigu→grave). Slider -60..60
+var strumRamp           = 0;          // -100..100 : rampe de vélocité sur le strum. <0 = 1ère note forte puis fade, >0 = crescendo
 var STRUM_CURVE_P       = [1.0, 0.55, 1.8];  // exposant : Linear · Accel · Decel
 var strumCurve          = 0;          // Linear par défaut
 var humanizeAmt         = 0;          // 0-100 : 0 = off ; variation vélocité ±25% + timing ±15ms
@@ -185,7 +186,7 @@ function list() {
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
 		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
-		colorscheme: colorscheme, strumms: strumms,
+		colorscheme: colorscheme, strumms: strumms, strumramp: strumramp,
 		strumcurve: strumcurve, humanizeamt: humanizeamt
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
@@ -255,6 +256,7 @@ function pushConfigState() {
 	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
 	outlet(7, "vlmode", vlMode);
 	outlet(7, "strumms",    _strumMs);
+	outlet(7, "strumramp",  strumRamp);
 	outlet(7, "strumcurve", strumCurve);
 	outlet(7, "humanize",   humanizeAmt);
 }
@@ -647,8 +649,12 @@ function playcell(col, row) {
 function padvel(v) { currentVelocity = parseInt(v); }
 
 function strumms(v) {
-	_strumMs = Math.max(0, Math.min(60, parseInt(v) || 0));
+	_strumMs = Math.max(-60, Math.min(60, parseInt(v) || 0));   // signé : <0 descendant, >0 montant
 	outlet(7, "strumms", _strumMs);
+}
+function strumramp(v) {
+	strumRamp = Math.max(-100, Math.min(100, parseInt(v) || 0));
+	outlet(7, "strumramp", strumRamp);
 }
 function strumcurve(v) {
 	var i = parseInt(v);
@@ -1248,6 +1254,7 @@ function _vl2_play(fn,d,colorSemis,colorType){
 function _bell() { return Math.random() + Math.random() - 1; }
 
 function humanizeVel(v) {
+	v = Math.max(1, Math.min(127, Math.round(v)));   // clamp toujours (la rampe peut dépasser 127)
 	if (!humanizeAmt) return v;
 	var spread = humanizeAmt * 0.25;           // 100% → ±25
 	var off = Math.round(_bell() * spread);
@@ -1271,30 +1278,38 @@ function _cancelEmit() {
 // Chemin rapide (tout à 0) si ni strum ni humanize → aucun Task créé.
 function _emitNotes(notes) {
 	var n = notes.length;
-	var strum = _strumMs > 0 && n > 1;
+	var mag = Math.abs(_strumMs);
+	var strum = mag > 0 && n > 1;
 	if (!strum && !humanizeAmt) {
 		outlet(0, currentVelocity);
 		for (var i = 0; i < n && i < 6; i++) outlet(i + 1, notes[i]);
 		return;
 	}
-	// Le strum part TOUJOURS de la note la plus grave vers l'aigu (cf. Ableton Strum :
-	// "starting with the lowest note"). On classe par hauteur — l'ordre interne du voicing
-	// (rootless, drop, spread…) n'est PAS trié, d'où un strum incohérent si on suit l'index.
-	// rank[idx] = position du note[idx] dans l'ordre croissant des hauteurs (0 = plus grave).
+	// On classe par hauteur (l'ordre interne du voicing n'est PAS trié).
+	// rank[idx] = position de note[idx] dans l'ordre croissant des hauteurs (0 = plus grave).
 	var order = [];
 	for (var j = 0; j < n; j++) order.push(j);
 	order.sort(function(a, b) { return notes[a] - notes[b]; });
 	var rank = [];
 	for (var rr = 0; rr < n; rr++) rank[order[rr]] = rr;
 
-	var T = strum ? (n - 1) * _strumMs : 0;     // durée nominale du strum
+	var up = _strumMs >= 0;                      // sens : >0 grave→aigu, <0 aigu→grave
+	var T = strum ? (n - 1) * mag : 0;           // durée nominale du strum
 	var p = STRUM_CURVE_P[strumCurve] || 1.0;
 	for (var k = 0; k < n && k < 6; k++) {
 		(function(idx, note) {
-			var base = strum ? T * Math.pow(rank[idx] / (n - 1), p) : 0;
+			// seq = position dans la SÉQUENCE de jeu (0 = 1ère note jouée), selon le sens.
+			var seq = strum ? (up ? rank[idx] : (n - 1 - rank[idx])) : 0;
+			var base = strum ? T * Math.pow(seq / (n - 1), p) : 0;
 			var off = base + humanizeTime();
 			if (off < 0) off = 0;
-			var nv = humanizeVel(currentVelocity);
+			// Rampe de vélocité le long de la séquence : pos 0..1, facteur 1±0.5·ramp.
+			var v = currentVelocity;
+			if (strum && strumRamp) {
+				var pos = (n > 1) ? seq / (n - 1) : 0;
+				v = currentVelocity * (1 + (strumRamp / 100) * (pos * 2 - 1) * 0.5);
+			}
+			var nv = humanizeVel(Math.round(v));
 			if (off < 0.5) { outlet(0, nv); outlet(idx + 1, note); return; }
 			var t = new Task(function() { outlet(0, nv); outlet(idx + 1, note); });
 			_emitTasks.push(t);

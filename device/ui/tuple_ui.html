@@ -233,12 +233,15 @@
   body.strip .expr-sep  {display:none}
   body.strip .expr-zone {display:none!important}
   /* Sliders Expression (drag + molette, 0 = off) */
-  .exslider{display:flex;align-items:center;gap:8px;height:24px}
+  .exslider{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
+  .exslider.dim{opacity:.35;pointer-events:none}
   .exs-lbl{font-size:9px;letter-spacing:.06em;color:var(--muted);flex:0 0 56px;font-weight:500}
   .exs-track{flex:1;height:8px;background:var(--cell);border:1px solid var(--cell-bd);border-radius:4px;position:relative;cursor:ew-resize;touch-action:none}
   .exs-track:hover{border-color:rgba(255,255,255,.18)}
+  /* repère central pour les sliders bipolaires (off/flat au milieu) */
+  .exs-track.bipolar::after{content:'';position:absolute;left:50%;top:1px;bottom:1px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.22);pointer-events:none}
   .exs-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--gold);opacity:.85;border-radius:3px;pointer-events:none}
-  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 36px;text-align:right}
+  .exs-val{font-size:9px;font-family:var(--mono);color:var(--gold);flex:0 0 40px;text-align:right}
   .exs-val.off{color:var(--muted)}
   /* Sélecteur de courbe (3 segments) */
   .exrow-curve{display:flex;align-items:center;gap:8px;height:24px;transition:opacity .12s}
@@ -432,9 +435,9 @@
       <!-- Zone EXPRESSION (full uniquement) — sliders drag + molette, 0 = off -->
       <div class="zone expr-zone">
         <div class="lbl">Expression</div>
-        <div class="exslider" id="strumSld" title="Strum spread — drag or scroll. 0 = off">
+        <div class="exslider" id="strumSld" title="Strum — drag or scroll. Left = down (high→low), center = off, right = up (low→high)">
           <div class="exs-lbl">Strum</div>
-          <div class="exs-track"><div class="exs-fill"></div></div>
+          <div class="exs-track bipolar"><div class="exs-fill"></div></div>
           <div class="exs-val off">OFF</div>
         </div>
         <div class="exrow-curve off" id="curveRow" title="Strum shape">
@@ -444,6 +447,11 @@
             <div class="exseg-cell" data-i="1" title="Accelerate">Acc</div>
             <div class="exseg-cell" data-i="2" title="Decelerate">Dec</div>
           </div>
+        </div>
+        <div class="exslider dim" id="rampSld" title="Velocity ramp across the strum — left = fade (first note loudest), center = flat, right = build">
+          <div class="exs-lbl">Ramp</div>
+          <div class="exs-track bipolar"><div class="exs-fill"></div></div>
+          <div class="exs-val off">FLAT</div>
         </div>
         <div class="exslider" id="humanSld" title="Humanize — velocity + timing. Drag or scroll. 0 = off">
           <div class="exs-lbl">Humanize</div>
@@ -532,8 +540,7 @@
   var cols = [[],[],[],[],[],[],[]];
   var bor  = [];
   var tmpCols = null, tmpBor = null;
-  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0, strumMs:0, strumCurveIdx:0, humanize:0 };
-  var STRUM_MAX = 60;   // ms/note max du slider Strum
+  var state = { root:4, scaleIdx:1, oct:0, voicingIdx:0, vl:false, vlmodeIdx:0, strumMs:0, strumRamp:0, strumCurveIdx:0, humanize:0 };
   var activeCol = -1, activeRow = -1, activeChordName = '';
   var mode = 'strip';
   var windowOpen = false;
@@ -745,19 +752,23 @@
 
   // Slider générique : drag (pointer capture) + molette. 0 = off.
   // onChange(v) appelé à chaque variation ; fmt(v) → texte affiché.
-  var _strumSld=null, _humanSld=null;
-  function makeSlider(rootId, min, max, fmt, onChange){
+  var _strumSld=null, _rampSld=null, _humanSld=null;
+  function makeSlider(rootId, min, max, fmt, onChange, bipolar){
     var root=document.getElementById(rootId);
     var track=root.querySelector('.exs-track');
     var fill=root.querySelector('.exs-fill');
     var valEl=root.querySelector('.exs-val');
-    var cur=min, dragging=false;
+    var cur=0, dragging=false;
     function clamp(v){ return Math.max(min, Math.min(max, v)); }
     function paint(){
-      var pct=(cur-min)/(max-min)*100;
-      fill.style.width=pct+'%';
+      if(bipolar){                                   // remplissage depuis le centre (0)
+        if(cur>=0){ fill.style.left='50%'; fill.style.width=(max?cur/max*50:0)+'%'; }
+        else { var w=(min?(-cur)/(-min)*50:0); fill.style.left=(50-w)+'%'; fill.style.width=w+'%'; }
+      } else {
+        fill.style.left='0'; fill.style.width=((cur-min)/(max-min)*100)+'%';
+      }
       valEl.textContent=fmt(cur);
-      if(cur===min) valEl.classList.add('off'); else valEl.classList.remove('off');
+      if(cur===0) valEl.classList.add('off'); else valEl.classList.remove('off');
     }
     function fromX(x){ var r=track.getBoundingClientRect(); return clamp(Math.round(min+(x-r.left)/r.width*(max-min))); }
     function apply(v){ var nv=clamp(v); if(nv!==cur){ cur=nv; paint(); onChange(cur); } else paint(); }
@@ -773,17 +784,22 @@
 
   function renderExpr(){
     if(_strumSld) _strumSld.set(state.strumMs);
+    if(_rampSld)  _rampSld.set(state.strumRamp);
     if(_humanSld) _humanSld.set(state.humanize);
     var seg=document.getElementById('curveSeg');
     if(seg){ var c=seg.children; for(var i=0;i<c.length;i++) c[i].className='exseg-cell'+(i===state.strumCurveIdx?' on':''); }
-    var crow=document.getElementById('curveRow');
-    if(crow) crow.className='exrow-curve'+(state.strumMs>0?'':' off');   // courbe grisée si strum off
+    var dim = (state.strumMs===0);   // Curve + Ramp ne servent que si le strum est actif
+    var crow=document.getElementById('curveRow'); if(crow) crow.className='exrow-curve'+(dim?' off':'');
+    var rrow=document.getElementById('rampSld');  if(rrow) rrow.className='exslider'+(dim?' dim':'');
   }
 
   function initExpr(){
-    _strumSld=makeSlider('strumSld',0,STRUM_MAX,
-      function(v){ return v===0?'OFF':v+'ms'; },
-      function(v){ state.strumMs=v; renderExpr(); send('strumms',v); });
+    _strumSld=makeSlider('strumSld',-60,60,
+      function(v){ return v===0?'OFF':(Math.abs(v)+'ms '+(v>0?'↑':'↓')); },
+      function(v){ state.strumMs=v; renderExpr(); send('strumms',v); }, true);
+    _rampSld=makeSlider('rampSld',-100,100,
+      function(v){ return v===0?'FLAT':((v>0?'+':'')+v+'%'); },
+      function(v){ state.strumRamp=v; renderExpr(); send('strumramp',v); }, true);
     _humanSld=makeSlider('humanSld',0,100,
       function(v){ return v===0?'OFF':v+'%'; },
       function(v){ state.humanize=v; send('humanizeamt',v); });
@@ -922,6 +938,7 @@
     M.bindInlet('clearnotes',function(){ activeCol=-1;activeRow=-1;activeChordName=''; renderNotes([]); updateActive(); });
     M.bindInlet('sync',      function(){ if(!syncClickPending) flash(document.getElementById('sync')); });
     M.bindInlet('strumms',   function(v){ state.strumMs=parseInt(v)||0; renderExpr(); });
+    M.bindInlet('strumramp', function(v){ state.strumRamp=parseInt(v)||0; renderExpr(); });
     M.bindInlet('strumcurve',function(v){ var i=parseInt(v); if(i>=0&&i<3) state.strumCurveIdx=i; renderExpr(); });
     M.bindInlet('humanize',  function(v){ state.humanize=parseInt(v)||0; renderExpr(); });
     M.bindInlet('mode',      function(m){ setMode(String(m)); });
