@@ -6,6 +6,46 @@
   <title>Tuple &mdash; chord device for Ableton</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta name="description" content="A harmonic composition tool for fast and musical chord selection, exploration and performance inside Ableton Live.">
+  <meta name="theme-color" content="#161616">
+  <link rel="canonical" href="https://tuple.live/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tuple">
+  <meta property="og:title" content="Tuple — chord device for Ableton">
+  <meta property="og:description" content="A free, open-source Max for Live chord device — fast, musical chord selection, voicing and voice leading inside Ableton Live.">
+  <meta property="og:url" content="https://tuple.live/">
+  <meta property="og:image" content="https://tuple.live/chord_selector_screenshot.png">
+  <meta property="og:image:alt" content="The Tuple chord device running inside Ableton Live">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tuple — chord device for Ableton">
+  <meta name="twitter:description" content="A free, open-source Max for Live chord device — fast, musical chord selection, voicing and voice leading inside Ableton Live.">
+  <meta name="twitter:image" content="https://tuple.live/chord_selector_screenshot.png">
+
+  <!-- Preload self-hosted brand fonts (TTF — see note: WOFF2 conversion pending) -->
+  <link rel="preload" href="./fonts/Syne-Variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="./fonts/SpaceGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Tuple",
+    "applicationCategory": "MultimediaApplication",
+    "applicationSubCategory": "Max for Live device",
+    "operatingSystem": "Ableton Live 11+ with Max for Live",
+    "description": "A harmonic composition tool for fast and musical chord selection, exploration and performance inside Ableton Live.",
+    "url": "https://tuple.live/",
+    "image": "https://tuple.live/chord_selector_screenshot.png",
+    "license": "https://opensource.org/licenses/MIT",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "c0re" }
+  }
+  </script>
   <style>
     /* Brand typography (self-hosted) — Syne (display) + Space Grotesk (text) */
     @font-face { font-family: 'Syne'; src: url('./fonts/Syne-Variable.ttf') format('truetype');
@@ -23,8 +63,8 @@
       --blue: #8ECCE8;
       --blue-dim: rgba(142, 204, 232, 0.12);
       --white: #ede9e0;
-      --muted: rgba(237,233,224,0.45);
-      --muted2: rgba(237,233,224,0.35);
+      --muted: rgba(237,233,224,0.62);   /* bumped from .45 for WCAG AA on dark bg */
+      --muted2: rgba(237,233,224,0.46);  /* bumped from .35 */
     }
     html { scroll-behavior: smooth; }
     body {
@@ -33,6 +73,28 @@
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; }
+
+    /* Keyboard focus — visible ring for all interactive elements */
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+    /* Skip-to-content link (visible only on keyboard focus) */
+    .skip-link { position: fixed; top: 10px; left: 10px; z-index: 300; transform: translateY(-200%);
+      background: var(--gold); color: #161616; font-weight: 600; font-size: 14px;
+      padding: 10px 16px; border-radius: 7px; text-decoration: none; transition: transform .2s; }
+    .skip-link:focus { transform: none; }
+
+    /* Back-to-top button */
+    .to-top { position: fixed; bottom: 28px; right: 28px; z-index: 90; width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center; border-radius: 50%;
+      background: var(--gold-dim); border: 1px solid rgba(255,220,130,0.35); color: var(--gold);
+      cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(10px);
+      transition: opacity .25s, transform .25s, background .2s; }
+    .to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+    .to-top:hover { background: rgba(255,220,130,0.2); border-color: var(--gold); }
+
+    /* Active nav link (scrollspy) */
+    .nav-links a.active { color: var(--gold); }
 
     /* GLOBAL BACKGROUND — grid + glow, fixed behind everything */
     .page-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
@@ -259,9 +321,24 @@
       .card { grid-template-columns: 1fr; padding: 36px 28px; }
       .card-actions { min-width: 0; }
     }
+
+    /* Tablet — intermediate step so voicings/features don't jump straight to 1-2 cols */
+    @media (min-width: 921px) and (max-width: 1140px) {
+      .voicings-grid { grid-template-columns: repeat(4, 1fr); }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Respect reduced-motion preference — disable transitions & animations */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    }
   </style>
 </head>
 <body>
+
+  <a href="#main" class="skip-link">Skip to content</a>
 
   <div class="page-bg">
     <div class="grid"></div>
@@ -296,8 +373,10 @@
     <a href="#contact"   id="mn-con">Contact</a>
   </div>
 
+  <main id="main">
+
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" aria-label="Introduction">
     <div class="hero-content">
      <div class="hero-inner">
       <p class="eyebrow">Max for Live &middot; Ableton Live</p>
@@ -316,7 +395,7 @@
   </section>
 
   <!-- DEVICE SHOWCASE — embedded interactive demo -->
-  <section class="showcase" id="device">
+  <section class="showcase" id="device" aria-label="Interactive demo">
     <div class="frame">
       <div class="frame-bar">
         <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
@@ -327,12 +406,12 @@
   </section>
 
   <!-- ABLETON LIVE INTEGRATION -->
-  <section class="block" id="live">
+  <section class="block" id="live" aria-labelledby="live-h">
     <div class="features-head">
       <div>
         <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4v16M7 7v13M11 9v11M15 4v16M19 11v9M23 8v12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
         <p class="label">Ableton Live</p>
-        <p class="heading">Built right into<br>your session</p>
+        <h2 class="heading" id="live-h">Built right into<br>your session</h2>
       </div>
       <p class="sub">Tuple isn&rsquo;t a standalone app &mdash; it&rsquo;s a <b>Max for Live</b> device that lives on a MIDI track. It reads your project, plays your instruments and follows you while you write.</p>
     </div>
@@ -361,12 +440,12 @@
   </section>
 
   <!-- FEATURES -->
-  <section class="block" id="features">
+  <section class="block" id="features" aria-labelledby="features-h">
     <div class="features-head">
       <div>
         <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg></div>
         <p class="label">Features</p>
-        <p class="heading">Everything you need,<br>nothing you don&rsquo;t</p>
+        <h2 class="heading" id="features-h">Everything you need,<br>nothing you don&rsquo;t</h2>
       </div>
       <p class="sub">A focused, performance-ready harmonic tool &mdash; built around a single idea: give you instant access to every valid chord for your key and scale.</p>
     </div>
@@ -405,10 +484,10 @@
   </section>
 
   <!-- VOICINGS -->
-  <section class="block" id="voicings">
+  <section class="block" id="voicings" aria-labelledby="voicings-h">
     <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 4v10M15 4v10" stroke="currentColor" stroke-width="1.6"/><rect x="7.3" y="4" width="3.4" height="7" rx="1" fill="currentColor"/><rect x="13.3" y="4" width="3.4" height="7" rx="1" fill="currentColor"/></svg></div>
     <p class="label">Voicings</p>
-    <p class="heading">15 ways to voice any chord</p>
+    <h2 class="heading" id="voicings-h">15 ways to voice any chord</h2>
     <div class="voicings-grid">
       <div class="chip"><div class="name">Classic</div><div class="d">Close position</div></div>
       <div class="chip"><div class="name">Piano</div><div class="d">Bass + grouped upper</div></div>
@@ -429,11 +508,11 @@
   </section>
 
   <!-- DOWNLOAD -->
-  <section class="block" id="download">
+  <section class="block" id="download" aria-labelledby="download-h">
     <div class="card">
       <div>
         <div class="sec-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <h2>Free download</h2>
+        <h2 id="download-h">Free download</h2>
         <p class="req">
           Requires <b>Ableton Live 11+</b> &middot; <b>Max for Live</b><br>
           Unzip, then drag <code>tuple.amxd</code> onto a MIDI track that feeds a virtual instrument. Keep all extracted files in the same folder.
@@ -450,11 +529,11 @@
   </section>
 
   <!-- SUPPORT -->
-  <section class="block" id="support">
+  <section class="block" id="support" aria-labelledby="support-h">
     <div class="card support">
       <div>
         <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
-        <h2>Support the project</h2>
+        <h2 id="support-h">Support the project</h2>
         <p class="txt">Tuple is free and open source. If it&rsquo;s been useful to you, a small donation goes a long way &mdash; it helps keep the project alive and fund future features.</p>
       </div>
       <div class="card-actions">
@@ -464,10 +543,10 @@
   </section>
 
   <!-- CONTACT & COMMUNITY -->
-  <section class="block" id="contact">
+  <section class="block" id="contact" aria-labelledby="contact-h">
     <div class="sec-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H7l-3 3V4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
     <p class="label">Contact &amp; community</p>
-    <p class="heading">Get in touch &amp; join the community</p>
+    <h2 class="heading" id="contact-h">Get in touch &amp; join the community</h2>
     <div class="contact-grid">
       <div class="contact-card">
         <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.3 1.4 13.7 13.7 0 0 0-15-.05A14.8 14.8 0 0 1 8.8 3.5L8.55 3A19.7 19.7 0 0 0 3.7 4.4 20.3 20.3 0 0 0 .2 18.1a19.9 19.9 0 0 0 6 3 14.7 14.7 0 0 0 1.27-2.06 12.9 12.9 0 0 1-2-.96l.5-.37a14.2 14.2 0 0 0 12.07 0l.5.37a12.7 12.7 0 0 1-2 .96A14.3 14.3 0 0 0 17.8 21a19.8 19.8 0 0 0 6-3 20.3 20.3 0 0 0-3.5-13.6zM8.02 15.3c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.95 2.41-2.15 2.41zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.2 0 2.17 1.09 2.15 2.4 0 1.33-.94 2.41-2.15 2.41z"/></svg>
@@ -495,6 +574,8 @@
       </div>
     </div>
   </section>
+
+  </main>
 
   <footer>
     <span class="wordmark footer-logo">Tuple</span>
@@ -542,9 +623,35 @@
     </div>
   </div>
 
+  <!-- BACK TO TOP -->
+  <button class="to-top" id="to-top" aria-label="Back to top">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 14V4m0 0L4 9m5-5l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
   <script>
     const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+    const toTop = document.getElementById('to-top');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+      toTop.classList.toggle('show', window.scrollY > 600);
+    });
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // Logo → scroll to top without leaving a "#" in the URL
+    document.querySelector('.nav-logo').addEventListener('click', (e) => {
+      e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Scrollspy — highlight the nav link of the section in view
+    const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        const id = en.target.id;
+        navLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    document.querySelectorAll('main section[id]').forEach((s) => spy.observe(s));
 
     // Mobile nav
     const mobileNav = document.getElementById('nav-mobile');
@@ -555,12 +662,33 @@
     mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobile));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobile(); });
 
-    // Legal modal
+    // Legal modal — with focus management (open → focus modal, close → return focus, trap + Esc)
     const legalModal = document.getElementById('legal-modal');
-    document.getElementById('legal-link').addEventListener('click', (e) => { e.preventDefault(); legalModal.classList.add('open'); });
-    document.getElementById('legal-close').addEventListener('click', () => legalModal.classList.remove('open'));
-    legalModal.addEventListener('click', (e) => { if (e.target === legalModal) legalModal.classList.remove('open'); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') legalModal.classList.remove('open'); });
+    const legalDialog = legalModal.querySelector('.modal');
+    const legalClose = document.getElementById('legal-close');
+    let lastFocused = null;
+    function openLegal(e) {
+      if (e) e.preventDefault();
+      lastFocused = document.activeElement;
+      legalModal.classList.add('open');
+      legalClose.focus();
+    }
+    function closeLegal() {
+      legalModal.classList.remove('open');
+      if (lastFocused) lastFocused.focus();
+    }
+    document.getElementById('legal-link').addEventListener('click', openLegal);
+    legalClose.addEventListener('click', closeLegal);
+    legalModal.addEventListener('click', (e) => { if (e.target === legalModal) closeLegal(); });
+    legalModal.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const f = legalDialog.querySelectorAll('a[href], button');
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && legalModal.classList.contains('open')) closeLegal(); });
 
     // Contact form (Formspree AJAX)
     const form = document.getElementById('contact-form');
