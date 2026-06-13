@@ -181,8 +181,16 @@
         <div class="lbl">Expression</div>
         <div class="row">
           <div class="btn" id="strumBtn" style="flex:1" title="Strum: notes play in sequence">STRUM</div>
-          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity variation">
+          <div class="btn lblbtn" id="humanizeBtn" style="flex:2" title="Humanize: velocity + timing variation">
             <span class="cl">HUM</span><span class="cv" id="humanizeV">OFF</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="btn lblbtn" id="strumSpeedBtn" style="flex:1" title="Strum speed">
+            <span class="cl">SPD</span><span class="cv" id="strumSpeedV">Med</span>
+          </div>
+          <div class="btn lblbtn" id="strumCurveBtn" style="flex:1" title="Strum shape: linear / accelerate / decelerate">
+            <span class="cl">CRV</span><span class="cv" id="strumCurveV">Linear</span>
           </div>
         </div>
       </div>
@@ -478,10 +486,30 @@
   function v2() { if(!v2eng && window.VL2) v2eng=window.VL2.createEngine(); return v2eng; }
   function v2reset(){ if(v2eng) v2eng.reset(); }
 
+  // Expression : strum (espacement courbé) + humanize (vélocité + timing).
+  // Miroir de _emitNotes/_bell/humanizeVel/humanizeTime du moteur device.
+  var _emitTimers=[];
+  function _clearEmit(){ for(var i=0;i<_emitTimers.length;i++)clearTimeout(_emitTimers[i]); _emitTimers=[]; }
+  function _bell(){ return Math.random()+Math.random()-1; }
+  function humVel(v){ if(!state.humanizeIdx)return v; var amt=HUM_PCTS[state.humanizeIdx];
+    return Math.max(1,Math.min(127,Math.round(v+_bell()*amt*0.25))); }
+  function humTime(){ if(!state.humanizeIdx)return 0; return _bell()*(HUM_PCTS[state.humanizeIdx]/100*15); }
+
   // Émission audio + moniteur (notes déjà voicées/voice-led en amont).
   function emit(name,notes){ notes=notes.slice(0,6);
-    allNotesOff(); eActiveNotes=notes.slice();
-    for(var i=0;i<notes.length;i++)noteOn(notes[i],curVel);
+    allNotesOff(); _clearEmit(); eActiveNotes=notes.slice();
+    var n=notes.length, strum=state.strum&&n>1;
+    if(!strum && !state.humanizeIdx){
+      for(var i=0;i<n;i++)noteOn(notes[i],curVel);
+    } else {
+      var T=strum?(n-1)*STRUM_SPEEDS[state.strumSpeedIdx]:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
+      for(var k=0;k<n;k++){ (function(idx){
+        var off=(strum?T*Math.pow(idx/(n-1),p):0)+humTime(); if(off<0)off=0;
+        var nv=humVel(curVel);
+        if(off<0.5){ noteOn(notes[idx],nv); }
+        else { _emitTimers.push(setTimeout(function(){ noteOn(notes[idx],nv); },off)); }
+      })(k); }
+    }
     activeChordName=name; renderNotes(eActiveNotes); }
 
   // v1 : voicing → voice leading inline, puis émission.
@@ -552,8 +580,10 @@
   function borColorFor(){ return BORCOLOR; }
 
   var cols=[[],[],[],[],[],[],[]], bor=[];
-  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strum:false,humanizeIdx:0};
+  var state={root:0,scaleIdx:0,oct:0,voicingIdx:0,vl:false,vlmodeIdx:0,strum:false,humanizeIdx:0,strumSpeedIdx:1,strumCurveIdx:0};
   var HUM_PCTS=[0,25,50,75,100];
+  var STRUM_SPEEDS_UI=['Slow','Med','Fast'], STRUM_SPEEDS=[50,25,10];
+  var STRUM_CURVES_UI=['Linear','Accel','Decel'], STRUM_CURVE_P=[1.0,0.55,1.8];
   var activeCol=-1, activeRow=-1, activeChordName='';
 
   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
@@ -636,6 +666,14 @@
     if(sb) sb.className='btn'+(state.strum?' on':'');
     var hv=document.getElementById('humanizeV');
     if(hv) hv.textContent=HUM_PCTS[state.humanizeIdx]===0?'OFF':HUM_PCTS[state.humanizeIdx]+'%';
+    var sp=document.getElementById('strumSpeedBtn');
+    if(sp) sp.className='btn lblbtn'+(state.strum?'':' off');
+    var cb=document.getElementById('strumCurveBtn');
+    if(cb) cb.className='btn lblbtn'+(state.strum?'':' off');
+    var spv=document.getElementById('strumSpeedV');
+    if(spv) spv.textContent=STRUM_SPEEDS_UI[state.strumSpeedIdx];
+    var cvv=document.getElementById('strumCurveV');
+    if(cvv) cvv.textContent=STRUM_CURVES_UI[state.strumCurveIdx];
   }
   function renderNotes(arr){ var midi=(arr||[]).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<128;});
     document.getElementById('chordName').textContent=activeChordName||'—';
@@ -691,6 +729,8 @@
   document.getElementById('vl').onmousedown=function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onmousedown=function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
   document.getElementById('strumBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strum=!state.strum; renderExpr(); };
+  document.getElementById('strumSpeedBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strumSpeedIdx=(state.strumSpeedIdx+1)%STRUM_SPEEDS_UI.length; renderExpr(); };
+  document.getElementById('strumCurveBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.strumCurveIdx=(state.strumCurveIdx+1)%STRUM_CURVES_UI.length; renderExpr(); };
   document.getElementById('humanizeBtn').onmousedown=function(e){ if(e)e.preventDefault(); state.humanizeIdx=(state.humanizeIdx+1)%HUM_PCTS.length; renderExpr(); };
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;

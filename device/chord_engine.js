@@ -124,9 +124,13 @@ var vlMode              = "anchored";  // "anchored" | "flow"
 var lastColorSemis      = 0;          // dernier accord emprunté (pour vl2)
 var lastColorType       = "maj";
 var strumEnabled        = false;
-var _strumMs            = 25;         // ms entre chaque note du strum
-var humanizeAmt         = 0;          // 0-100 : variation de vélocité ±25%
-var _strumTasks         = [];         // Tasks actives du strum en cours
+var STRUM_SPEEDS        = [50, 25, 10];   // ms/note : Slow · Med · Fast
+var strumSpeedIdx       = 1;          // Med par défaut
+var _strumMs            = 25;         // = STRUM_SPEEDS[strumSpeedIdx]
+var STRUM_CURVE_P       = [1.0, 0.55, 1.8];  // exposant : Linear · Accel · Decel
+var strumCurve          = 0;          // Linear par défaut
+var humanizeAmt         = 0;          // 0-100 : variation vélocité ±25% + timing ±15ms
+var _emitTasks          = [];         // Tasks de notes différées (strum/humanize) en cours
 
 function loadbang() {
 	try {
@@ -184,8 +188,8 @@ function list() {
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
 		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
-		colorscheme: colorscheme, strumset: strumset, strumdelay: strumdelay,
-		humanizeamt: humanizeamt
+		colorscheme: colorscheme, strumset: strumset, strumspeed: strumspeed,
+		strumcurve: strumcurve, humanizeamt: humanizeamt
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
@@ -253,8 +257,10 @@ function pushConfigState() {
 	if (vi >= 0) outlet(7, "voicing", vi);
 	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
 	outlet(7, "vlmode", vlMode);
-	outlet(7, "strum",    strumEnabled ? 1 : 0);
-	outlet(7, "humanize", humanizeAmt);
+	outlet(7, "strum",      strumEnabled ? 1 : 0);
+	outlet(7, "strumspeed", strumSpeedIdx);
+	outlet(7, "strumcurve", strumCurve);
+	outlet(7, "humanize",   humanizeAmt);
 }
 
 // Relaie l'état complet (tonalité + config) ET rebuilde la grille.
@@ -646,8 +652,15 @@ function strumset(v) {
 	strumEnabled = !!parseInt(v);
 	outlet(7, "strum", strumEnabled ? 1 : 0);
 }
-function strumdelay(v) {
-	_strumMs = Math.max(5, Math.min(200, parseInt(v)));
+function strumspeed(v) {
+	var i = parseInt(v);
+	if (i >= 0 && i < STRUM_SPEEDS.length) { strumSpeedIdx = i; _strumMs = STRUM_SPEEDS[i]; }
+	outlet(7, "strumspeed", strumSpeedIdx);
+}
+function strumcurve(v) {
+	var i = parseInt(v);
+	if (i >= 0 && i < STRUM_CURVE_P.length) strumCurve = i;
+	outlet(7, "strumcurve", strumCurve);
 }
 function humanizeamt(v) {
 	humanizeAmt = Math.max(0, Math.min(100, parseInt(v)));
@@ -1238,33 +1251,58 @@ function _vl2_play(fn,d,colorSemis,colorType){
 
 // =====================================================
 
+// Distribution triangulaire centrée sur 0, plage [-1,1] (somme de 2 uniformes).
+// Plus musical qu'une uniforme : les petites variations dominent, les extrêmes rares.
+function _bell() { return Math.random() + Math.random() - 1; }
+
 function humanizeVel(v) {
 	if (!humanizeAmt) return v;
-	var spread = Math.floor(humanizeAmt * 0.25);
-	var off = Math.floor((Math.random() * 2 - 1) * spread);
+	var spread = humanizeAmt * 0.25;           // 100% → ±25
+	var off = Math.round(_bell() * spread);
 	return Math.max(1, Math.min(127, v + off));
 }
 
-function _cancelStrum() {
-	for (var ci = 0; ci < _strumTasks.length; ci++) {
-		try { _strumTasks[ci].cancel(); } catch(e) {}
-	}
-	_strumTasks = [];
+// Micro-décalage de timing en ms (humanize). 100% → ±15ms environ.
+function humanizeTime() {
+	if (!humanizeAmt) return 0;
+	return _bell() * (humanizeAmt / 100 * 15);
 }
 
-function _scheduleStrum(notes) {
-	for (var si = 0; si < notes.length && si < 6; si++) {
-		(function(idx, n) {
+function _cancelEmit() {
+	for (var ci = 0; ci < _emitTasks.length; ci++) {
+		try { _emitTasks[ci].cancel(); } catch(e) {}
+	}
+	_emitTasks = [];
+}
+
+// Émet les notes avec strum (espacement courbé) et/ou humanize (vélocité + timing).
+// Chemin rapide (tout à 0) si ni strum ni humanize → aucun Task créé.
+function _emitNotes(notes) {
+	var n = notes.length;
+	var strum = strumEnabled && n > 1;
+	if (!strum && !humanizeAmt) {
+		outlet(0, currentVelocity);
+		for (var i = 0; i < n && i < 6; i++) outlet(i + 1, notes[i]);
+		return;
+	}
+	var T = strum ? (n - 1) * _strumMs : 0;     // durée nominale du strum
+	var p = STRUM_CURVE_P[strumCurve] || 1.0;
+	for (var k = 0; k < n && k < 6; k++) {
+		(function(idx, note) {
+			var base = strum ? T * Math.pow(idx / (n - 1), p) : 0;
+			var off = base + humanizeTime();
+			if (off < 0) off = 0;
 			var nv = humanizeVel(currentVelocity);
-			var t = new Task(function() { outlet(0, nv); outlet(idx + 1, n); });
-			_strumTasks.push(t);
-			t.schedule(idx * _strumMs);
-		})(si, notes[si]);
+			if (off < 0.5) { outlet(0, nv); outlet(idx + 1, note); return; }
+			var t = new Task(function() { outlet(0, nv); outlet(idx + 1, note); });
+			_emitTasks.push(t);
+			t.schedule(off);
+		})(k, notes[k]);
 	}
 }
 
 function sendNoteOff() {
-	_cancelStrum();
+	_cancelEmit();
 	if (activeNotes.length === 0) return;
 	outlet(0, 0);  // velocity=0 arrive en PREMIER dans tous les noteout
 	for (var i = 0; i < activeNotes.length && i < 6; i++) {
@@ -1281,14 +1319,7 @@ function sendChord(name, notes) {
 	notes = (v2 && v2.length) ? v2 : applyVoicing(notes);
 	sendNoteOff();
 	activeNotes = notes.slice();
-	if (strumEnabled && notes.length > 1) {
-		_scheduleStrum(notes);
-	} else {
-		outlet(0, humanizeVel(currentVelocity));
-		for (var i = 0; i < notes.length && i < 6; i++) {
-			outlet(i + 1, notes[i]);
-		}
-	}
+	_emitNotes(notes);
 	outlet(7, "active", lastFn, lastDegree);   // highlight grille
 	outlet(7, ["notes"].concat(activeNotes));  // → clavier moniteur
 }
