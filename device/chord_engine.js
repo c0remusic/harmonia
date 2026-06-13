@@ -1276,11 +1276,21 @@ function _emitNotes(notes) {
 		for (var i = 0; i < n && i < 6; i++) outlet(i + 1, notes[i]);
 		return;
 	}
+	// Le strum part TOUJOURS de la note la plus grave vers l'aigu (cf. Ableton Strum :
+	// "starting with the lowest note"). On classe par hauteur — l'ordre interne du voicing
+	// (rootless, drop, spread…) n'est PAS trié, d'où un strum incohérent si on suit l'index.
+	// rank[idx] = position du note[idx] dans l'ordre croissant des hauteurs (0 = plus grave).
+	var order = [];
+	for (var j = 0; j < n; j++) order.push(j);
+	order.sort(function(a, b) { return notes[a] - notes[b]; });
+	var rank = [];
+	for (var rr = 0; rr < n; rr++) rank[order[rr]] = rr;
+
 	var T = strum ? (n - 1) * _strumMs : 0;     // durée nominale du strum
 	var p = STRUM_CURVE_P[strumCurve] || 1.0;
 	for (var k = 0; k < n && k < 6; k++) {
 		(function(idx, note) {
-			var base = strum ? T * Math.pow(idx / (n - 1), p) : 0;
+			var base = strum ? T * Math.pow(rank[idx] / (n - 1), p) : 0;
 			var off = base + humanizeTime();
 			if (off < 0) off = 0;
 			var nv = humanizeVel(currentVelocity);

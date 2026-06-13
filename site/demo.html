@@ -522,9 +522,13 @@
     if(!strum && !state.humanize){
       for(var i=0;i<n;i++)noteOn(notes[i],curVel);
     } else {
+      // strum du grave vers l'aigu (rang de hauteur, pas l'ordre du voicing) — cf. Ableton Strum
+      var order=[]; for(var j=0;j<n;j++)order.push(j);
+      order.sort(function(a,b){return notes[a]-notes[b];});
+      var rank=[]; for(var rr=0;rr<n;rr++)rank[order[rr]]=rr;
       var T=strum?(n-1)*state.strumMs:0, p=STRUM_CURVE_P[state.strumCurveIdx]||1.0;
       for(var k=0;k<n;k++){ (function(idx){
-        var off=(strum?T*Math.pow(idx/(n-1),p):0)+humTime(); if(off<0)off=0;
+        var off=(strum?T*Math.pow(rank[idx]/(n-1),p):0)+humTime(); if(off<0)off=0;
         var nv=humVel(curVel);
         if(off<0.5){ noteOn(notes[idx],nv); }
         else { _emitTimers.push(setTimeout(function(){ noteOn(notes[idx],nv); },off)); }
