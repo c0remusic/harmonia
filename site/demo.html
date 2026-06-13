@@ -195,7 +195,6 @@
 
       <div class="devgrp">
         <div class="lbl">Device</div>
-        <div class="btn" id="extBtn" title="Show all chord types (beyond 8 per column)">EXT</div>
         <div class="btn" id="colorBtn">LAYOUT · Spectrum</div>
         <div class="btn on" id="soundBtn">SOUND ON</div>
       </div>
@@ -246,7 +245,6 @@
 
   var eRoot=0, eScaleName='major', eScale=SCALES.major, eOct=0;
   var eVoicing='classic', eVL=false, eVlMode='anchored';
-  var eExtMode=false, EXT_CAP=8;
   var prevChord=null, lockedV=null, lastFn=null, lastDegree=null, lastFnL=null, lastDegL=null;
   var eActiveNotes=[], curVel=100, flatGrid=[];
 
@@ -504,14 +502,8 @@
   // ── Reconstruction de la grille (équivalent broadcastGrid) ──
   function rebuildGrid(){ cols=[[],[],[],[],[],[],[]]; bor=[]; flatGrid=[];
     var degMask=SCALE_VALID_DEGREES[eScaleName];
-    for(var d=0;d<7;d++){ if(degMask&&!degMask[d])continue;
-      var colCount=0;
-      for(var t=0;t<GRID_TYPES.length;t++){
-        if(!eExtMode&&colCount>=EXT_CAP) break;
-        var fn=GRID_TYPES[t];
-        if(gridTypeValid(d,fn)){ cols[d].push({label:gridLabel(d,fn),fn:fn}); flatGrid.push({kind:'d',fn:fn,degree:d}); colCount++; }
-      }
-    }
+    for(var d=0;d<7;d++){ if(degMask&&!degMask[d])continue; for(var t=0;t<GRID_TYPES.length;t++){ var fn=GRID_TYPES[t];
+      if(gridTypeValid(d,fn)){ cols[d].push({label:gridLabel(d,fn),fn:fn}); flatGrid.push({kind:'d',fn:fn,degree:d}); } } }
     var bl=borrowedFor();
     for(var i=0;i<bl.length;i++){ var c=bl[i];
       bor.push({label:NOTE_NAMES[(eRoot+c.semis)%12]+c.suf,roman:c.roman,semis:c.semis,type:c.type});
@@ -644,7 +636,6 @@
   // ── Dispatcher : remplace la sortie Max — tout part dans le moteur local ──
   function send(){ var a=Array.prototype.slice.call(arguments); demoHandle(a); }
   function demoHandle(a){ var m=a[0];
-    if(m==='ext'){ eExtMode=(parseInt(a[1])===1); var eb=document.getElementById('extBtn'); if(eb) eb.classList.toggle('on',eExtMode); rebuildGrid(); return; }
     if(m==='rootidx'){ eRoot=parseInt(a[1]); v2reset(); rebuildGrid(); return; }
     if(m==='scaleidx'){ eScaleName=SCALEKEYS[parseInt(a[1])]; eScale=SCALES[eScaleName]; v2reset(); rebuildGrid(); return; }
     if(m==='octave'){ eOct=parseInt(a[1]); v2reset(); return; }
@@ -675,8 +666,6 @@
     openDrop('voicing','VOICING',VOICINGS,state.voicingIdx,2,function(i,name){ state.voicingIdx=i; document.getElementById('voicingV').textContent=name; send('voicingidx',i); }); };
   document.getElementById('vl').onmousedown=function(e){ if(e)e.preventDefault(); state.vl=!state.vl; renderConfig(); send('voiceleading',state.vl?1:0); };
   document.getElementById('vlmode').onmousedown=function(e){ if(e)e.preventDefault(); state.vlmodeIdx=(state.vlmodeIdx+1)%VLMODES.length; renderConfig(); send('vlmode',VLMODE_MSG[state.vlmodeIdx]); };
-  document.getElementById('extBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
-  document.getElementById('extBtn').onclick=function(){ send('ext',eExtMode?0:1); };
   document.getElementById('colorBtn').onmousedown=function(e){ if(e)e.preventDefault(); };
   document.getElementById('colorBtn').onclick=function(){ colorScheme=(colorScheme+1)%SCHEME_NAMES.length;
     this.textContent='LAYOUT · '+SCHEME_NAMES[colorScheme]; applyScheme(); };

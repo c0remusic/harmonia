@@ -184,7 +184,7 @@ function list() {
 		voicing: voicing, synclive: synclive, requestgrid: requestgrid,
 		requeststate: requeststate, midinote: midinote, key: key,
 		keynote: keynote, keynoteup: keynoteup, pushmode: pushmode,
-		colorscheme: colorscheme, ext: ext
+		colorscheme: colorscheme
 	};
 	if (D[sel]) { D[sel].apply(null, rest); }
 	else { post("list: selecteur jweb inconnu '" + sel + "' (" + rest.join(" ") + ")\n"); }
@@ -244,7 +244,7 @@ function key(k) {
 	}
 }
 
-// Relaie uniquement l'état de config (octave, voicing, vl, vlmode, ext) SANS rebuild de grille.
+// Relaie uniquement l'état de config (octave, voicing, vl, vlmode) SANS rebuild de grille.
 // À appeler quand seuls ces paramètres changent — la grille ne dépend pas d'eux.
 function pushConfigState() {
 	outlet(7, "octave", currentOctave);
@@ -252,12 +252,6 @@ function pushConfigState() {
 	if (vi >= 0) outlet(7, "voicing", vi);
 	outlet(7, "vl", voiceLeadingEnabled ? 1 : 0);
 	outlet(7, "vlmode", vlMode);
-	outlet(7, "ext", extMode ? 1 : 0);
-}
-
-function ext(v) {
-	extMode = (parseInt(v) === 1);
-	broadcastGrid();
 }
 
 // Relaie l'état complet (tonalité + config) ET rebuilde la grille.
@@ -587,9 +581,6 @@ var flatGrid = [];
 // Pour jouer une case par (colonne, rangée) — utilisé par le Push.
 var gCols = [[],[],[],[],[],[],[]];
 var gBor  = [];
-// Mode étendu : si false, cap à 8 accords par colonne (lisibilité + Push 8 rows max).
-var extMode = false;
-var EXT_CAP = 8;
 
 // Qualité du triade diatonique par degré : 0=majeur 1=mineur 2=diminué 3=augmenté.
 function chordQuality(d) {
@@ -610,15 +601,12 @@ function broadcastGrid() {
 	var degMask = SCALE_VALID_DEGREES[scaleName];
 	for (var d = 0; d < 7; d++) {
 		if (degMask && !degMask[d]) continue;
-		var colCount = 0;
 		for (var t = 0; t < GRID_TYPES.length; t++) {
-			if (!extMode && colCount >= EXT_CAP) break;
 			var fn = GRID_TYPES[t];
 			if (gridTypeValid(d, fn)) {
 				outlet(7, "gridcell", d, fn, gridLabel(d, fn));
 				flatGrid.push({ kind:"d", fn:fn, degree:d });
 				gCols[d].push({ fn:fn });
-				colCount++;
 			}
 		}
 	}
