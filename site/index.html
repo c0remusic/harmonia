@@ -42,6 +42,8 @@
     "image": "https://tuple.live/chord_selector_screenshot.png",
     "license": "https://opensource.org/licenses/MIT",
     "isAccessibleForFree": true,
+    "downloadUrl": "https://tuple.live/tuple.zip",
+    "softwareVersion": "1.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": { "@type": "Person", "name": "c0re" }
   }
@@ -94,7 +96,7 @@
     .to-top:hover { background: rgba(255,220,130,0.2); border-color: var(--gold); }
 
     /* Active nav link (scrollspy) */
-    .nav-links a.active { color: var(--gold); }
+    .nav-links a.active { color: var(--gold); transition: color .2s; }
 
     /* GLOBAL BACKGROUND — grid + glow, fixed behind everything */
     .page-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
@@ -150,7 +152,7 @@
     .eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--gold); opacity: .55; }
     .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(56px, 8vw, 96px);
       line-height: .95; letter-spacing: -0.02em; margin-bottom: 26px; color: var(--gold); }
-    .hero h1 em { font-style: normal; color: var(--gold); }
+    .hero h1 .h1-accent { color: var(--gold); }
     .hero-desc { font-size: 18px; color: var(--muted); max-width: 500px; line-height: 1.7; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
@@ -314,7 +316,7 @@
       .nav-hamburger { display: flex; }
       .features-head { grid-template-columns: 1fr; }
       .features-grid, #live .features-grid { grid-template-columns: 1fr; }
-      .voicings-grid { grid-template-columns: repeat(2, 1fr); }
+      .voicings-grid { grid-template-columns: repeat(3, 1fr); }   /* 15 chips: 3-col stays compact */
       .legal-grid { grid-template-columns: 1fr; }
       .contact-grid { grid-template-columns: 1fr; }
       .modal { padding: 36px 26px; }
@@ -326,6 +328,12 @@
     @media (min-width: 921px) and (max-width: 1140px) {
       .voicings-grid { grid-template-columns: repeat(4, 1fr); }
       .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Small phones — 2-col voicings + shorter demo so it doesn't dwarf the viewport */
+    @media (max-width: 520px) {
+      .voicings-grid { grid-template-columns: repeat(2, 1fr); }
+      .demo-frame { height: 440px; }
     }
 
     /* Respect reduced-motion preference — disable transitions & animations */
@@ -380,7 +388,7 @@
     <div class="hero-content">
      <div class="hero-inner">
       <p class="eyebrow">Max for Live &middot; Ableton Live</p>
-      <h1>Tu<em>ple</em></h1>
+      <h1>Tu<span class="h1-accent">ple</span></h1>
       <p class="hero-desc">A harmonic composition tool for fast and musical chord selection, exploration and performance &mdash; directly inside Ableton Live.</p>
       <div class="hero-actions">
         <a href="#download" class="btn-primary">
@@ -554,7 +562,7 @@
         <p>Share presets and progressions, get help, and follow development with other Tuple users.</p>
         <a href="https://discord.gg/N52jGhGE" target="_blank" rel="noopener" class="btn-primary btn-blue">Join the Discord</a>
         <!-- Widget requires "Server Widget" enabled in the Discord server settings -->
-        <iframe class="discord-widget" src="https://discord.com/widget?id=1514004893994713138&theme=dark" height="300" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Discord server"></iframe>
+        <iframe class="discord-widget" src="https://discord.com/widget?id=1514004893994713138&theme=dark" height="300" loading="lazy" allowtransparency="true" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Discord server"></iframe>
       </div>
       <div class="contact-card">
         <svg class="mail-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -569,7 +577,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.7"/></svg>
             Send message
           </button>
-          <p class="form-status" id="form-status"></p>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
         </form>
       </div>
     </div>
@@ -631,15 +639,18 @@
   <script>
     const nav = document.getElementById('nav');
     const toTop = document.getElementById('to-top');
+    // Respect reduced-motion: JS smooth scroll bypasses the CSS rule, so gate it here too.
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollTop = () => window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 40);
       toTop.classList.toggle('show', window.scrollY > 600);
     });
-    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    toTop.addEventListener('click', scrollTop);
 
     // Logo → scroll to top without leaving a "#" in the URL
     document.querySelector('.nav-logo').addEventListener('click', (e) => {
-      e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' });
+      e.preventDefault(); scrollTop();
     });
 
     // Scrollspy — highlight the nav link of the section in view
@@ -653,13 +664,29 @@
     }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
     document.querySelectorAll('main section[id]').forEach((s) => spy.observe(s));
 
-    // Mobile nav
+    // Mobile nav — with focus management (focus into menu, trap Tab, return focus on close)
     const mobileNav = document.getElementById('nav-mobile');
-    function openMobile()  { mobileNav.classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeMobile() { mobileNav.classList.remove('open'); document.body.style.overflow=''; }
-    document.getElementById('nav-hamburger').addEventListener('click', openMobile);
+    const hamburger = document.getElementById('nav-hamburger');
+    function openMobile()  {
+      mobileNav.classList.add('open'); document.body.style.overflow='hidden';
+      const first = mobileNav.querySelector('a, button'); if (first) first.focus();
+    }
+    function closeMobile() {
+      if (!mobileNav.classList.contains('open')) return;
+      mobileNav.classList.remove('open'); document.body.style.overflow='';
+      hamburger.focus();
+    }
+    hamburger.addEventListener('click', openMobile);
     document.getElementById('nav-mobile-close').addEventListener('click', closeMobile);
     mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobile));
+    mobileNav.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const f = mobileNav.querySelectorAll('a[href], button');
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobile(); });
 
     // Legal modal — with focus management (open → focus modal, close → return focus, trap + Esc)
