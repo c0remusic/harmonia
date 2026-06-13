@@ -72,6 +72,7 @@
     display:none;flex-direction:column;
     padding:12px 10px;gap:10px;
     border-right:1px solid rgba(255,220,130,.10);
+    pointer-events:none;
   }
   body.strip .dd-ov{width:205px}
   .dd-ov.open{display:flex}
@@ -87,6 +88,7 @@
     color:var(--muted);letter-spacing:.01em;
     display:flex;align-items:center;
     transition:background .07s,color .07s,border-color .07s;
+    pointer-events:auto;
   }
   body.strip .dd-cell{padding:4px 6px;font-size:9px;letter-spacing:0}
   body.strip .dd-ov{padding:8px 8px;gap:6px}
