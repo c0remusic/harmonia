@@ -714,6 +714,8 @@
     track.addEventListener('pointercancel',function(){ dragging=false; });
     track.addEventListener('wheel',function(e){ e.preventDefault(); e.stopPropagation();
       var step=Math.max(1,Math.round((max-min)/100)); apply(cur+(e.deltaY>0?-step:step)); },{passive:false});
+    var resetVal=(min<=0&&max>=0)?0:min;   // double-clic = reset (off/centre)
+    track.addEventListener('dblclick',function(e){ e.preventDefault(); apply(resetVal); });
     return { set:function(v){ cur=clamp(v); paint(); } };
   }
   function renderExpr(){
