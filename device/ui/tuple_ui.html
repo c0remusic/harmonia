@@ -255,15 +255,8 @@
   .exs-val{font-size:10px;color:var(--gold);font-weight:500;flex:0 0 54px;text-align:right;white-space:nowrap}
   .exs-val.off{color:var(--muted)}
   .exs-lbl{white-space:nowrap}
-  /* Sélecteur de courbe (3 segments) — même idiome que la rangée Octave */
-  .exrow-curve{display:flex;align-items:center;gap:9px;height:32px;padding:0 0 0 10px;transition:opacity .12s}
-  .exrow-curve.off{opacity:.4;pointer-events:none}
-  .exrow-curve .exs-lbl{flex:0 0 52px}
-  .exseg{flex:1;display:flex;gap:5px;height:100%}
-  .exseg-cell{flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;border-radius:5px;cursor:pointer;
-    background:var(--cell);border:1px solid var(--cell-bd);color:var(--muted);transition:all .1s;font-weight:500}
-  .exseg-cell:hover{background-color:rgba(255,255,255,.08);border-color:rgba(255,255,255,.13)}
-  .exseg-cell.on{background:var(--gold-dim);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+  /* Curve = cycler lblbtn (comme VL MODE) à hauteur de cellule Expression */
+  #curveBtn{height:32px;padding:0 10px;font-size:10px}
   /* DEVICE group (Push · Layout) — full uniquement, colonne droite. Caché en strip. */
   .devgrp{display:none}
   body.full .devgrp{display:flex;flex-direction:column;gap:8px;flex:none;margin-top:10px}
@@ -453,13 +446,8 @@
           <div class="exs-track bipolar"><div class="exs-fill"></div></div>
           <div class="exs-val off">OFF</div>
         </div>
-        <div class="exrow-curve off" id="curveRow" title="Strum shape">
-          <div class="exs-lbl">Curve</div>
-          <div class="exseg" id="curveSeg">
-            <div class="exseg-cell on" data-i="0" title="Linear">Lin</div>
-            <div class="exseg-cell" data-i="1" title="Accelerate">Acc</div>
-            <div class="exseg-cell" data-i="2" title="Decelerate">Dec</div>
-          </div>
+        <div class="btn lblbtn off" id="curveBtn" title="Strum shape: Linear / Accelerate / Decelerate">
+          <span class="cl">CURVE</span><span class="cv" id="curveV">Linear</span>
         </div>
         <div class="exslider dim" id="rampSld" title="Velocity ramp across the strum — left = fade (first note loudest), center = flat, right = build">
           <div class="exs-lbl">Ramp</div>
@@ -529,6 +517,7 @@
   var VOICINGS = ['Classic','Piano','Open','Spread','House','Prog','Rootless A','Rootless B','Drop 2','Drop 3','Jazz','Nu-House','Trap','Trance','Funk'];
   var VLMODES  = ['ANCHOR','FLOW'];
   var VLMODE_MSG = ['anchored','flow'];
+  var STRUM_CURVES = ['Linear','Accel','Decel'];   // libellés du cycler Curve
   // Couleur par degré — légende écran ↔ pads Push. Plusieurs logiques, cyclables.
   var SCHEMES = [
     // 0 — Spectre : arc-en-ciel par degré, DÉMARRE AU BLEU (tonique) → magenta.
@@ -801,10 +790,10 @@
     if(_strumSld) _strumSld.set(state.strumMs);
     if(_rampSld)  _rampSld.set(state.strumRamp);
     if(_humanSld) _humanSld.set(state.humanize);
-    var seg=document.getElementById('curveSeg');
-    if(seg){ var c=seg.children; for(var i=0;i<c.length;i++) c[i].className='exseg-cell'+(i===state.strumCurveIdx?' on':''); }
     var dim = (state.strumMs===0);   // Curve + Ramp ne servent que si le strum est actif
-    var crow=document.getElementById('curveRow'); if(crow) crow.className='exrow-curve'+(dim?' off':'');
+    var cb=document.getElementById('curveBtn');
+    if(cb){ var cvv=document.getElementById('curveV'); if(cvv) cvv.textContent=STRUM_CURVES[state.strumCurveIdx]||'Linear';
+      cb.className='btn lblbtn'+(dim?' off':''); }
     var rrow=document.getElementById('rampSld');  if(rrow) rrow.className='exslider'+(dim?' dim':'');
   }
 
@@ -818,11 +807,8 @@
     _humanSld=makeSlider('humanSld',0,100,
       function(v){ return v===0?'OFF':v+'%'; },
       function(v){ state.humanize=v; send('humanizeamt',v); });
-    var seg=document.getElementById('curveSeg');
-    Array.prototype.forEach.call(seg.children,function(cell){
-      cell.onmousedown=function(e){ if(e)e.preventDefault();
-        state.strumCurveIdx=parseInt(this.getAttribute('data-i')); renderExpr(); send('strumcurve',state.strumCurveIdx); };
-    });
+    document.getElementById('curveBtn').onmousedown=function(e){ if(e)e.preventDefault();
+      state.strumCurveIdx=(state.strumCurveIdx+1)%STRUM_CURVES.length; renderExpr(); send('strumcurve',state.strumCurveIdx); };
   }
 
   function renderNotes(arr){
